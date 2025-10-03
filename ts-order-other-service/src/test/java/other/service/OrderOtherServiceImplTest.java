@@ -23,6 +23,7 @@ import other.repository.OrderOtherRepository;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -67,7 +68,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testFindOrderById1() {
         String id = UUID.randomUUID().toString();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.findOrderById(id, headers);
         Assert.assertEquals(new Response<>(0, "No Content by this id", null), result);
     }
@@ -76,7 +77,7 @@ public class OrderOtherServiceImplTest {
     public void testFindOrderById2() {
         String id = UUID.randomUUID().toString();
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Response result = orderOtherServiceImpl.findOrderById(id, headers);
         Assert.assertEquals(new Response<>(1, "Success", order), result);
     }
@@ -84,6 +85,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testCreate1() {
         Order order = new Order();
+        order.setAccountId("test-account");
         ArrayList<Order> accountOrders = new ArrayList<>();
         accountOrders.add(order);
         Mockito.when(orderOtherRepository.findByAccountId(Mockito.any(String.class))).thenReturn(accountOrders);
@@ -94,9 +96,10 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testCreate2() {
         Order order = new Order();
+        order.setAccountId("test-account");
         ArrayList<Order> accountOrders = new ArrayList<>();
         Mockito.when(orderOtherRepository.findByAccountId(Mockito.any(String.class))).thenReturn(accountOrders);
-        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(order);
         Response result = orderOtherServiceImpl.create(order, headers);
         Assert.assertEquals("Success", result.getMsg());
     }
@@ -104,7 +107,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testInitOrder1() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
         orderOtherServiceImpl.initOrder(order, headers);
         Mockito.verify(orderOtherRepository, times(1)).save(Mockito.any(Order.class));
@@ -113,8 +116,8 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testInitOrder2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
-        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
+        order.setId("test-id");
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         orderOtherServiceImpl.initOrder(order, headers);
         Mockito.verify(orderOtherRepository, times(0)).save(Mockito.any(Order.class));
     }
@@ -122,20 +125,23 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testAlterOrder1() {
         OrderAlterInfo oai = new OrderAlterInfo();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.alterOrder(oai, headers);
         Assert.assertEquals(new Response<>(0, "Old Order Does Not Exists", null), result);
     }
 
     @Test
     public void testAlterOrder2() {
-        OrderAlterInfo oai = new OrderAlterInfo(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "login_token", new Order());
+        Order newOrder = new Order();
+        newOrder.setAccountId("test-account");
+        OrderAlterInfo oai = new OrderAlterInfo(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "login_token", newOrder);
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
         //mock create()
         ArrayList<Order> accountOrders = new ArrayList<>();
         Mockito.when(orderOtherRepository.findByAccountId(Mockito.any(String.class))).thenReturn(accountOrders);
+        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(newOrder);
         Response result = orderOtherServiceImpl.alterOrder(oai, headers);
         Assert.assertEquals("Alter Order Success", result.getMsg());
     }
@@ -145,6 +151,9 @@ public class OrderOtherServiceImplTest {
         ArrayList<Order> list = new ArrayList<>();
         Order order = new Order();
         order.setStatus(1);
+        order.setAccountId("test-account");
+        order.setBoughtDate("2023-01-01 10:00:00");
+        order.setTravelDate("2023-01-02 10:00:00");
         list.add(order);
         Mockito.when(orderOtherRepository.findByAccountId(Mockito.any(String.class))).thenReturn(list);
         QueryInfo qi = new QueryInfo();
@@ -152,7 +161,11 @@ public class OrderOtherServiceImplTest {
         qi.setEnableBoughtDateQuery(false);
         qi.setEnableTravelDateQuery(false);
         qi.setState(1);
-        Response result = orderOtherServiceImpl.queryOrders(qi, UUID.randomUUID().toString().toString(), headers);
+        qi.setLoginId("test-login");
+        qi.setTravelDateEnd("2023-12-31 23:59:59");
+        qi.setBoughtDateStart("2023-01-01 00:00:00");
+        qi.setBoughtDateEnd("2023-12-31 23:59:59");
+        Response result = orderOtherServiceImpl.queryOrders(qi, "test-account", headers);
         Assert.assertEquals(new Response<>(1, "Get order num", list), result);
     }
 
@@ -180,23 +193,23 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testQueryForStationId() {
         List<String> ids = new ArrayList<>();
-        HttpEntity requestEntity = new HttpEntity<>(ids, headers);
-        Response<List<String>> response = new Response<>();
+        HttpEntity requestEntity = new HttpEntity(ids, null);
+        Response<List<String>> response = new Response<>(1, "Success", ids);
         ResponseEntity<Response<List<String>>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-station-service:12345/api/v1/stationservice/stations/namelist",
+                "http://ts-station-service/api/v1/stationservice/stations/namelist",
                 HttpMethod.POST,
                 requestEntity,
                 new ParameterizedTypeReference<Response<List<String>>>() {
                 })).thenReturn(re);
         List<String> result = orderOtherServiceImpl.queryForStationId(ids, headers);
-        Assert.assertNull(result);
+        Assert.assertEquals(ids, result);
     }
 
     @Test
     public void testSaveChanges1() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.saveChanges(order, headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -204,15 +217,16 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testSaveChanges2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
-        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
+        order.setId("test-id");
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
+        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(order);
         Response result = orderOtherServiceImpl.saveChanges(order, headers);
         Assert.assertEquals(new Response<>(1, "Success", order), result);
     }
 
     @Test
     public void testCancelOrder1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.cancelOrder(UUID.randomUUID().toString(), UUID.randomUUID().toString(), headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -220,8 +234,8 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testCancelOrder2() {
         Order oldOrder = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(oldOrder);
-        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(oldOrder));
+        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(oldOrder);
         Response result = orderOtherServiceImpl.cancelOrder(UUID.randomUUID().toString(), UUID.randomUUID().toString(), headers);
         Assert.assertEquals("Success", result.getMsg());
     }
@@ -251,7 +265,7 @@ public class OrderOtherServiceImplTest {
 
     @Test
     public void testModifyOrder1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.modifyOrder(UUID.randomUUID().toString().toString(), 1, headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -259,7 +273,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testModifyOrder2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
         Response result = orderOtherServiceImpl.modifyOrder(UUID.randomUUID().toString().toString(), 1, headers);
         Assert.assertEquals("Success", result.getMsg());
@@ -267,7 +281,7 @@ public class OrderOtherServiceImplTest {
 
     @Test
     public void testGetOrderPrice1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.getOrderPrice(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", "-1.0"), result);
     }
@@ -275,14 +289,14 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testGetOrderPrice2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Response result = orderOtherServiceImpl.getOrderPrice(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(1, "Success", order.getPrice()), result);
     }
 
     @Test
     public void testPayOrder1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.payOrder(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -290,7 +304,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testPayOrder2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
         Response result = orderOtherServiceImpl.payOrder(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals("Success", result.getMsg());
@@ -298,7 +312,7 @@ public class OrderOtherServiceImplTest {
 
     @Test
     public void testGetOrderById1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.getOrderById(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -306,7 +320,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testGetOrderById2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
         Response result = orderOtherServiceImpl.getOrderById(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(1, "Success", order), result);
     }
@@ -321,7 +335,7 @@ public class OrderOtherServiceImplTest {
 
     @Test
     public void testDeleteOrder1() {
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.deleteOrder(UUID.randomUUID().toString().toString(), headers);
         Assert.assertEquals(new Response<>(0, "Order Not Exist.", null), result);
     }
@@ -330,8 +344,8 @@ public class OrderOtherServiceImplTest {
     public void testDeleteOrder2() {
         Order order = new Order();
         String orderUuid = UUID.randomUUID().toString();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
-        Mockito.doNothing().doThrow(new RuntimeException()).when(orderOtherRepository).deleteById(Mockito.any(String.class));
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
+        Mockito.doNothing().when(orderOtherRepository).deleteById(Mockito.any(String.class));
         Response result = orderOtherServiceImpl.deleteOrder(orderUuid.toString(), headers);
         Assert.assertEquals(new Response<>(1, "Success", orderUuid), result);
     }
@@ -339,6 +353,13 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testAddNewOrder1() {
         Order order = new Order();
+        order.setAccountId("test-account");
+        order.setFrom("shanghai");
+        order.setTo("taiyuan");
+        order.setTrainNumber("G1235");
+        order.setTravelDate("2023-01-01");
+        order.setTravelTime("08:00");
+        
         ArrayList<Order> accountOrders = new ArrayList<>();
         accountOrders.add(order);
         Mockito.when(orderOtherRepository.findByAccountId(Mockito.any(String.class))).thenReturn(accountOrders);
@@ -359,7 +380,7 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testUpdateOrder1() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(null);
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.empty());
         Response result = orderOtherServiceImpl.updateOrder(order, headers);
         Assert.assertEquals(new Response<>(0, "Order Not Found", null), result);
     }
@@ -367,8 +388,9 @@ public class OrderOtherServiceImplTest {
     @Test
     public void testUpdateOrder2() {
         Order order = new Order();
-        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class)).get()).thenReturn(order);
-        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(null);
+        order.setId("test-id");
+        Mockito.when(orderOtherRepository.findById(Mockito.any(String.class))).thenReturn(Optional.of(order));
+        Mockito.when(orderOtherRepository.save(Mockito.any(Order.class))).thenReturn(order);
         Response result = orderOtherServiceImpl.updateOrder(order, headers);
         Assert.assertEquals("Success", result.getMsg());
     }
