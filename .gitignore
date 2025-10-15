@@ -34,3 +34,4 @@ env.bak/
 venv.bak/
 docs/steps/
 *.jar
+logs/

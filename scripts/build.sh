@@ -25,7 +25,7 @@ build_service() {
         return 1
     fi
     
-    echo -e "${BLUE}Building $service_dir...${NC}"
+    echo -e "${BLUE}[$(date '+%H:%M:%S')] Building $service_dir...${NC}"
     
     # Build the service with minimal output
     cd "$service_dir"
@@ -35,6 +35,7 @@ build_service() {
         return 0
     else
         echo -e "${RED}✗ $service_dir: Build failed${NC}"
+        echo -e "${YELLOW}  → Run 'cd $service_dir && mvn clean install' for detailed error${NC}"
         cd ..
         return 1
     fi

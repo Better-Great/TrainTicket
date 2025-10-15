@@ -1,0 +1,124 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║           TRAIN TICKET MICROSERVICES - PORT REFERENCE                    ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🌐 MAIN ACCESS POINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  UI Dashboard:                http://localhost:8080   ⭐ START HERE
+  Redis Cache:                 localhost:6379
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔐 AUTHENTICATION & USER SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Auth Service:                http://localhost:12340
+  User Service:                http://localhost:12342
+  Verification Code:           http://localhost:15678
+  Contacts Service:            http://localhost:12347
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎫 BOOKING SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Travel Service:              http://localhost:12346
+  Travel2 Service:             http://localhost:16346
+  Travel Plan Service:         http://localhost:14322
+  Preserve Service:            http://localhost:14568
+  Preserve Other Service:      http://localhost:14569
+  Order Service:               http://localhost:12031
+  Order Other Service:         http://localhost:12032
+  Cancel Service:              http://localhost:18885
+  Rebook Service:              http://localhost:18886
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💳 PAYMENT SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Payment Service:             http://localhost:19001
+  Inside Payment Service:      http://localhost:18673
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚆 TRAIN & ROUTE SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Train Service:               http://localhost:14567
+  Route Service:               http://localhost:11178
+  Route Plan Service:          http://localhost:14578
+  Station Service:             http://localhost:12345
+  Seat Service:                http://localhost:18898
+  Config Service:              http://localhost:15679
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💰 PRICING SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Price Service:               http://localhost:16579
+  Basic Service:               http://localhost:15680
+  Assurance Service:           http://localhost:18888
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🍔 FOOD SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Food Service:                http://localhost:18856
+  Food Map Service:            http://localhost:18855
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔧 ADDITIONAL SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Security Service:            http://localhost:11188
+  Execute Service:             http://localhost:12386
+  Notification Service:        http://localhost:17853
+  Consign Service:             http://localhost:16111
+  Consign Price Service:       http://localhost:16110
+  News Service:                http://localhost:12862
+  Ticket Office Service:       http://localhost:16108
+  Voucher Service (Python):    http://localhost:16101
+  Avatar Service:              http://localhost:17001
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  👨‍💼 ADMIN SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Admin Basic Info Service:    http://localhost:18767
+  Admin Order Service:         http://localhost:16112
+  Admin Route Service:         http://localhost:16113
+  Admin Travel Service:        http://localhost:16114
+  Admin User Service:          http://localhost:16115
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚠️  SERVICES NOT IN DOCKER-COMPOSE (Manual Start Required)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Gateway Service:             http://localhost:18888  ⭐ API Gateway
+  Wait Order Service:          http://localhost:17525
+  Train Food Service:          http://localhost:19999
+  Station Food Service:        http://localhost:18855
+  Food Delivery Service:       http://localhost:18957
+  Delivery Service:            http://localhost:18808
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 QUICK STATS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Total Services in Docker:    43
+  Services Needing Manual Start: 6
+  Total Port Range:            8080 - 19999
+  Main UI Port:                8080
+  Redis Port:                  6379
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚀 QUICK COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Start all services:          ./scripts/start.sh
+  Stop all services:           ./scripts/stop.sh
+  Build all services:          ./scripts/build.sh all
+  View logs:                   docker-compose logs -f
+  Check running services:      docker-compose ps
+
+╚══════════════════════════════════════════════════════════════════════════╝
+
