@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-auth-collections
+      author: application
+      changes:
+        - createCollection:
+            collectionName: users
+            databaseName: ts_auth
+        - createCollection:
+            collectionName: roles
+            databaseName: ts_auth
+        - createCollection:
+            collectionName: permissions
+            databaseName: ts_auth
+        - createCollection:
+            collectionName: sessions
+            databaseName: ts_auth
+        - createIndex:
+            collectionName: users
+            databaseName: ts_auth
+            indexName: idx_username_unique
+            unique: true
+            keys:
+              username: 1
+        - createIndex:
+            collectionName: users
+            databaseName: ts_auth
+            indexName: idx_email_unique
+            unique: true
+            keys:
+              email: 1

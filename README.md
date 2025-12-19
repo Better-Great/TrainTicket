@@ -24,7 +24,41 @@ A comprehensive train ticket booking system built with microservices architectur
 
 ## 🚀 Quick Start
 
-### 1. Generate Environment-Specific Configurations
+### Complete Local Deployment
+
+For detailed step-by-step deployment instructions, see **[scripts/DEPLOYMENT.md](scripts/DEPLOYMENT.md)**
+
+**Quick Commands**:
+
+```bash
+# 1. Build token replacement service
+cd ts-token-replacement-service && ./build.sh && cd ..
+
+# 2. Generate configurations for development
+./replace-tokens.sh dev
+
+# 3. Start infrastructure services
+# Note: Check docker-compose.yml for actual service names
+docker compose up -d redis
+
+# For MongoDB instances (if needed):
+docker compose up -d $(docker compose config --services | grep mongo)
+
+# 4. Wait for infrastructure (30 seconds)
+sleep 30
+
+# Note: Use 'docker compose' (space) for v2, or 'docker-compose' (hyphen) for v1
+
+# 5. Start all microservices
+docker compose up -d
+
+# 6. Access the application
+# UI Dashboard: http://localhost:8080
+# Gateway: http://localhost:18888
+# Nacos Console: http://localhost:8848/nacos (nacos/nacos)
+```
+
+### Generate Environment-Specific Configurations
 
 The project uses **Token Replacement Service** to generate environment-specific configurations from templates. This makes the application **environment-agnostic**.
 
@@ -41,28 +75,8 @@ The project uses **Token Replacement Service** to generate environment-specific 
 
 This will:
 - Generate `application.properties` for all 41 Java services
-- Generate `.env` files for non-Java services (Node.js, Python)
 - Replace all `${VariableName}` tokens with actual environment values
-
-### 2. Start Infrastructure Services
-
-```bash
-# Start MySQL, Nacos, RabbitMQ, etc.
-docker-compose up -d mysql nacos rabbitmq
-```
-
-### 3. Start Microservices
-
-```bash
-# Start all services
-docker-compose up -d
-```
-
-### 4. Access the Application
-
-- **UI Dashboard**: http://localhost:8080
-- **Gateway**: http://localhost:18888
-- **Nacos Console**: http://localhost:8848/nacos
+- Create ready-to-use configuration files
 
 ## 📂 Project Structure
 
@@ -236,11 +250,11 @@ VOUCHER_MYSQL_PORT=3306
 ```bash
 # Switch to QA
 ./replace-tokens.sh qa
-docker-compose restart
+docker compose restart
 
 # Switch back to dev
 ./replace-tokens.sh dev
-docker-compose restart
+docker compose restart
 ```
 
 ### Local Development
@@ -250,14 +264,14 @@ docker-compose restart
 ./replace-tokens.sh dev
 
 # 2. Start infrastructure
-docker-compose up -d mysql nacos rabbitmq
+docker compose up -d mysql nacos rabbitmq
 
 # 3. Start services you're working on
 cd ts-auth-service
 mvn spring-boot:run
 
 # 4. Or start all via Docker
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 📊 Statistics
@@ -288,7 +302,7 @@ grep '\${' ts-auth-service/src/main/resources/application.properties
 grep -i mysql properties/dev.application.ini
 
 # Ensure MySQL is running
-docker-compose ps mysql
+docker compose ps mysql
 ```
 
 ### Configuration Not Applied
@@ -328,10 +342,10 @@ docker-compose ps mysql
 mvn clean package
 
 # 3. Build Docker images
-docker-compose build
+docker compose build
 
 # 4. Deploy
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 🆘 Support
