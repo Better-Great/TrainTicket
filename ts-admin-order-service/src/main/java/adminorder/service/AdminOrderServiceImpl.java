@@ -29,10 +29,23 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    // Service hosts and ports from properties (matching dev.application.ini pattern)
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminOrderServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -44,7 +57,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         //From ts-order-service
         HttpEntity requestEntity = new HttpEntity(null);
 
-        String order_service_url = getServiceUrl("ts-order-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
         ResponseEntity<Response<ArrayList<Order>>> re = restTemplate.exchange(
                 order_service_url + "/api/v1/orderservice/order",
                 HttpMethod.GET,
@@ -62,7 +75,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         }
         //From ts-order-other-service
         HttpEntity requestEntity2 = new HttpEntity(null);
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         ResponseEntity<Response<ArrayList<Order>>> re2 = restTemplate.exchange(
                 order_other_service_url + "/api/v1/orderOtherService/orderOther",
                 HttpMethod.GET,
@@ -89,7 +102,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         if (trainNumber.startsWith("G") || trainNumber.startsWith("D")) {
             AdminOrderServiceImpl.LOGGER.info("[deleteOrder][Delete Order][orderId: {}, trainNumber: {}]", orderId, trainNumber);
             HttpEntity requestEntity = new HttpEntity(null);
-            String order_service_url = getServiceUrl("ts-order-service");
+            String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                      order_service_url + "/api/v1/orderservice/order/" + orderId,
                     HttpMethod.DELETE,
@@ -100,7 +113,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         } else {
             AdminOrderServiceImpl.LOGGER.info("[deleteOrder][Delete Order Other][trainNumber doesn't starts With G or D]");
             HttpEntity requestEntity = new HttpEntity(null);
-            String order_other_service_url = getServiceUrl("ts-order-other-service");
+            String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                     order_other_service_url + "/api/v1/orderOtherService/orderOther/" + orderId,
                     HttpMethod.DELETE,
@@ -122,7 +135,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
             AdminOrderServiceImpl.LOGGER.info("[updateOrder][Update Order][trainNumber starts With G or D]");
             HttpEntity requestEntity = new HttpEntity(request, headers);
-            String order_service_url = getServiceUrl("ts-order-service");
+            String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                     order_service_url + "/api/v1/orderservice/order/admin",
                     HttpMethod.PUT,
@@ -133,7 +146,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         } else {
             AdminOrderServiceImpl.LOGGER.info("[updateOrder][Add New Order Other][trainNumber doesn't starts With G or D]");
             HttpEntity requestEntity = new HttpEntity(request, headers);
-            String order_other_service_url = getServiceUrl("ts-order-other-service");
+            String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                     order_other_service_url + "/api/v1/orderOtherService/orderOther/admin",
                     HttpMethod.PUT,
@@ -153,7 +166,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         if (request.getTrainNumber().startsWith("G") || request.getTrainNumber().startsWith("D")) {
             AdminOrderServiceImpl.LOGGER.info("[addOrder][Add New Order][trainNumber starts With G or D]");
             HttpEntity requestEntity = new HttpEntity(request, headers);
-            String order_service_url = getServiceUrl("ts-order-service");
+            String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                     order_service_url + "/api/v1/orderservice/order/admin",
                     HttpMethod.POST,
@@ -164,7 +177,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         } else {
             AdminOrderServiceImpl.LOGGER.info("[addOrder][Add New Order Other][trainNumber doesn't starts With G or D]");
             HttpEntity requestEntity = new HttpEntity(request, headers);
-            String order_other_service_url = getServiceUrl("ts-order-other-service");
+            String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             ResponseEntity<Response> re = restTemplate.exchange(
                      order_other_service_url + "/api/v1/orderOtherService/orderOther/admin",
                     HttpMethod.POST,
