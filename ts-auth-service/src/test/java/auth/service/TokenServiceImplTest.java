@@ -16,15 +16,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
 @RunWith(JUnit4.class)
 public class TokenServiceImplTest {
+
+    // Service host and port from properties/dev.application.ini (matching property names)
+    private static final String verificationCodeServiceHost = "ts-verification-code-service";
+    private static final int verificationCodeServicePort = 15678;
 
     @InjectMocks
     private TokenServiceImpl tokenServiceImpl;
@@ -41,12 +47,18 @@ public class TokenServiceImplTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
     private HttpHeaders headers = new HttpHeaders();
     HttpEntity requestEntity = new HttpEntity(headers);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // Set host and port values from properties using ReflectionTestUtils
+        ReflectionTestUtils.setField(tokenServiceImpl, "verificationCodeServiceHost", verificationCodeServiceHost);
+        ReflectionTestUtils.setField(tokenServiceImpl, "verificationCodeServicePort", verificationCodeServicePort);
     }
 
     @Test
@@ -54,7 +66,7 @@ public class TokenServiceImplTest {
         BasicAuthDto dto = new BasicAuthDto(null, null, "verifyCode");
         ResponseEntity<Boolean> re = new ResponseEntity<>(false, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-verification-code-service:15678/api/v1/verifycode/verify/" + "verifyCode",
+                "http://" + verificationCodeServiceHost + ":" + verificationCodeServicePort + "/api/v1/verifycode/verify/" + "verifyCode",
                 HttpMethod.GET,
                 requestEntity,
                 Boolean.class)).thenReturn(re);
