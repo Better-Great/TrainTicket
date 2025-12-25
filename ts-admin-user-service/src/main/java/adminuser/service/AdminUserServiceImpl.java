@@ -6,6 +6,7 @@ import edu.fudan.common.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -28,19 +29,23 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdminUserServiceImpl.class);
-//    @Value("${user-service.url}")
-//    String user_service_url;
-//    private final String USER_SERVICE_IP_URI = user_service_url + "/api/v1/userservice/users";
+    // Service host and port from properties (matching dev.application.ini pattern)
+    @Value("${UserServiceHost:ts-user-service}")
+    private String userServiceHost;
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    @Value("${UserServicePort:12342}")
+    private int userServicePort;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminUserServiceImpl.class);
+
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
     public Response getAllUsers(HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String user_service_url = getServiceUrl("ts-user-service");
+        String user_service_url = getServiceUrl(userServiceHost, userServicePort);
         String USER_SERVICE_IP_URI = user_service_url + "/api/v1/userservice/users";
         ResponseEntity<Response<List<User>>> re = restTemplate.exchange(
                 USER_SERVICE_IP_URI,
@@ -65,7 +70,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         HttpEntity<Response> requestEntity = new HttpEntity<>(newHeaders);
 
-        String user_service_url = getServiceUrl("ts-user-service");
+        String user_service_url = getServiceUrl(userServiceHost, userServicePort);
         String USER_SERVICE_IP_URI = user_service_url + "/api/v1/userservice/users";
         ResponseEntity<Response> re = restTemplate.exchange(
                 USER_SERVICE_IP_URI + "/" + userId,
@@ -89,7 +94,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         newHeaders.set(HttpHeaders.AUTHORIZATION, token);
 
         HttpEntity requestEntity = new HttpEntity(userDto, newHeaders);
-        String user_service_url = getServiceUrl("ts-user-service");
+        String user_service_url = getServiceUrl(userServiceHost, userServicePort);
         String USER_SERVICE_IP_URI = user_service_url + "/api/v1/userservice/users";
         ResponseEntity<Response> re = restTemplate.exchange(
                 USER_SERVICE_IP_URI,
@@ -110,7 +115,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     public Response addUser(UserDto userDto, HttpHeaders headers) {
         LOGGER.info("[addUser][ADD USER INFO][UserDto: {}]", userDto.toString());
         HttpEntity requestEntity = new HttpEntity(userDto, null);
-        String user_service_url = getServiceUrl("ts-user-service");
+        String user_service_url = getServiceUrl(userServiceHost, userServicePort);
         String USER_SERVICE_IP_URI = user_service_url + "/api/v1/userservice/users";
         ResponseEntity<Response<User>> re = restTemplate.exchange(
                 USER_SERVICE_IP_URI + "/register",
