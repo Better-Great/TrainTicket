@@ -36,3 +36,6 @@ docs/steps/
 *.jar
 #logs/
 logs/*
+
+# Ignore all application.properties files
+application.properties

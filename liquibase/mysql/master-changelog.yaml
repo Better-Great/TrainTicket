@@ -1,0 +1,33 @@
+databaseChangeLog:
+  # ============================================================================
+  # TrainTicket MySQL Database Migrations - Master Changelog
+  # ============================================================================
+  # This file includes all service-specific database migrations.
+  # Each service has its own changelog directory for better organization.
+  # ============================================================================
+  
+  # Auth Service
+  - include:
+      file: ts-auth/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Assurance Service
+  - include:
+      file: ts-assurance/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # User Service
+  - include:
+      file: ts-user/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Consign Price Service
+  - include:
+      file: ts-consign-price/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Consign Service
+  - include:
+      file: ts-consign/changelog.yaml
+      relativeToChangelogFile: true
+

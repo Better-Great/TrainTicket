@@ -1,0 +1,54 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-user-service
+  # ============================================================================
+  # Based on user.entity.User entity:
+  # - Default table name: "User" -> "user" (lowercase)
+  # ============================================================================
+  
+  - changeSet:
+      id: create-user-table
+      author: devops
+      comment: Create user table for ts-user-service
+      changes:
+        - createTable:
+            tableName: user
+            catalogName: ts-user-mysql
+            columns:
+              - column:
+                  name: user_id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: gender
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: document_type
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: document_num
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+

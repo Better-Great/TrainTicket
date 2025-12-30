@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-auth-database
+      author: devops
+      comment: Create database for ts-auth-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-auth-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-auth-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;
+

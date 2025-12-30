@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-consign-database
+      author: devops
+      comment: Create database for ts-consign-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-consign-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-consign-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;
+

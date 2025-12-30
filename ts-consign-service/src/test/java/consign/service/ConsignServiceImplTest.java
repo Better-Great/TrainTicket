@@ -13,8 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -33,11 +35,21 @@ public class ConsignServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    // Service hosts and ports from properties/dev.application.ini (matching property names)
+    private static final String consignPriceServiceHost = "ts-consign-price-service";
+    private static final int consignPriceServicePort = 16110;
+
     private HttpHeaders headers = new HttpHeaders();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // Set host and port values from properties using ReflectionTestUtils
+        ReflectionTestUtils.setField(consignServiceImpl, "consignPriceServiceHost", consignPriceServiceHost);
+        ReflectionTestUtils.setField(consignServiceImpl, "consignPriceServicePort", consignPriceServicePort);
     }
 
     @Test
@@ -48,7 +60,7 @@ public class ConsignServiceImplTest {
         Consign consignRequest = new Consign(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), "handle_date", "target_date", "place_from", "place_to", "consignee", "10001", 1.0, true);
         ConsignRecord consignRecord = new ConsignRecord(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), "handle_date", "target_date", "place_from", "place_to", "consignee", "10001", 1.0, 3.0);
         Mockito.when(restTemplate.exchange(
-                "http://ts-consign-price-service:16110/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
+                "http://" + consignPriceServiceHost + ":" + consignPriceServicePort + "/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Double>>() {
@@ -67,7 +79,7 @@ public class ConsignServiceImplTest {
         ConsignRecord consignRecord = new ConsignRecord(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), "handle_date", "target_date", "place_from", "place_to", "consignee", "10001", 2.0, 3.0);
         Mockito.when(repository.findById(Mockito.anyString())).thenReturn(java.util.Optional.of(consignRecord));
         Mockito.when(restTemplate.exchange(
-                "http://ts-consign-price-service:16110/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
+                "http://" + consignPriceServiceHost + ":" + consignPriceServicePort + "/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Double>>() {

@@ -10,8 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 public class ExecuteServiceImplTest {
@@ -22,12 +24,26 @@ public class ExecuteServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    // Service hosts and ports from properties/dev.application.ini (matching property names)
+    private static final String orderServiceHost = "ts-order-service";
+    private static final int orderServicePort = 12031;
+    private static final String orderOtherServiceHost = "ts-order-other-service";
+    private static final int orderOtherServicePort = 12032;
+
     private HttpHeaders headers = new HttpHeaders();
     private HttpEntity requestEntity = new HttpEntity(headers);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // Set host and port values from properties using ReflectionTestUtils
+        ReflectionTestUtils.setField(executeServiceImpl, "orderServiceHost", orderServiceHost);
+        ReflectionTestUtils.setField(executeServiceImpl, "orderServicePort", orderServicePort);
+        ReflectionTestUtils.setField(executeServiceImpl, "orderOtherServiceHost", orderOtherServiceHost);
+        ReflectionTestUtils.setField(executeServiceImpl, "orderOtherServicePort", orderOtherServicePort);
     }
 
     @Test
@@ -38,7 +54,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -47,7 +63,7 @@ public class ExecuteServiceImplTest {
         Response response2 = new Response(1, null, null);
         ResponseEntity<Response> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/status/" + "order_id" + "/" + 6,
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/status/" + "order_id" + "/" + 6,
                 HttpMethod.GET,
                 requestEntity,
                 Response.class)).thenReturn(re2);
@@ -61,7 +77,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response = new Response<>(0, null, null);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -72,7 +88,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response2 = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/" + "order_id",
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -81,7 +97,7 @@ public class ExecuteServiceImplTest {
         Response response3 = new Response(1, null, null);
         ResponseEntity<Response> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/status/" + "order_id" + "/" + 6,
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/status/" + "order_id" + "/" + 6,
                 HttpMethod.GET,
                 requestEntity,
                 Response.class)).thenReturn(re3);
@@ -97,7 +113,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -106,7 +122,7 @@ public class ExecuteServiceImplTest {
         Response response2 = new Response(1, null, null);
         ResponseEntity<Response> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/status/" + "order_id" + "/" + 2,
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/status/" + "order_id" + "/" + 2,
                 HttpMethod.GET,
                 requestEntity,
                 Response.class)).thenReturn(re2);
@@ -120,7 +136,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response = new Response<>(0, null, null);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -131,7 +147,7 @@ public class ExecuteServiceImplTest {
         Response<Order> response2 = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/" + "order_id",
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -140,7 +156,7 @@ public class ExecuteServiceImplTest {
         Response response3 = new Response(1, null, null);
         ResponseEntity<Response> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/status/" + "order_id" + "/" + 2,
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/status/" + "order_id" + "/" + 2,
                 HttpMethod.GET,
                 requestEntity,
                 Response.class)).thenReturn(re3);

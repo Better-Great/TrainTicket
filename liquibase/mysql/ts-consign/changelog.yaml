@@ -1,0 +1,13 @@
+databaseChangeLog:
+  # ============================================================================
+  # ts-consign-service Database Migrations
+  # ============================================================================
+  
+  - include:
+      file: 001-create-database.yaml
+      relativeToChangelogFile: true
+  
+  - include:
+      file: 002-create-tables.yaml
+      relativeToChangelogFile: true
+

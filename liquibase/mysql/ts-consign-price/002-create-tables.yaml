@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-consign-price-table
+      author: devops
+      comment: Create consign_price table for ts-consign-price-service
+      changes:
+        - sql:
+            sql: |
+              USE `ts-consign-price-mysql`;
+              CREATE TABLE IF NOT EXISTS consign_price (
+                id VARCHAR(36) NOT NULL PRIMARY KEY,
+                idx INT NOT NULL UNIQUE,
+                initial_weight DOUBLE,
+                initial_price DOUBLE,
+                within_price DOUBLE,
+                beyond_price DOUBLE
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
