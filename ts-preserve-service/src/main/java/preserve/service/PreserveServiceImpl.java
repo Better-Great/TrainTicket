@@ -38,11 +38,77 @@ public class PreserveServiceImpl implements PreserveService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${BasicServiceHost:ts-basic-service}")
+    private String basicServiceHost;
+
+    @Value("${BasicServicePort:15678}")
+    private int basicServicePort;
+
+    @Value("${SeatServiceHost:ts-seat-service}")
+    private String seatServiceHost;
+
+    @Value("${SeatServicePort:18898}")
+    private int seatServicePort;
+
+    @Value("${UserServiceHost:ts-user-service}")
+    private String userServiceHost;
+
+    @Value("${UserServicePort:12342}")
+    private int userServicePort;
+
+    @Value("${AssuranceServiceHost:ts-assurance-service}")
+    private String assuranceServiceHost;
+
+    @Value("${AssuranceServicePort:18888}")
+    private int assuranceServicePort;
+
+    @Value("${StationServiceHost:ts-station-service}")
+    private String stationServiceHost;
+
+    @Value("${StationServicePort:12345}")
+    private int stationServicePort;
+
+    @Value("${SecurityServiceHost:ts-security-service}")
+    private String securityServiceHost;
+
+    @Value("${SecurityServicePort:18888}")
+    private int securityServicePort;
+
+    @Value("${TravelServiceHost:ts-travel-service}")
+    private String travelServiceHost;
+
+    @Value("${TravelServicePort:12346}")
+    private int travelServicePort;
+
+    @Value("${ContactsServiceHost:ts-contacts-service}")
+    private String contactsServiceHost;
+
+    @Value("${ContactsServicePort:12347}")
+    private int contactsServicePort;
+
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${FoodServiceHost:ts-food-service}")
+    private String foodServiceHost;
+
+    @Value("${FoodServicePort:18856}")
+    private int foodServicePort;
+
+    @Value("${ConsignServiceHost:ts-consign-service}")
+    private String consignServiceHost;
+
+    @Value("${ConsignServicePort:16111}")
+    private int consignServicePort;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PreserveServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName; }
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
+    }
 
     @Override
     public Response preserve(OrderTicketsInfo oti, HttpHeaders headers) {
@@ -125,7 +191,7 @@ public class PreserveServiceImpl implements PreserveService {
         query.setDepartureTime(StringUtils.Date2String(new Date()));
 
         HttpEntity requestEntity = new HttpEntity(query, headers);
-        String basic_service_url = getServiceUrl("ts-basic-service");
+        String basic_service_url = getServiceUrl(basicServiceHost, basicServicePort);
         ResponseEntity<Response<TravelResult>> re = restTemplate.exchange(
                 basic_service_url + "/api/v1/basicservice/basic/travel",
                 HttpMethod.POST,
@@ -274,7 +340,7 @@ public class PreserveServiceImpl implements PreserveService {
         seatRequest.setStations(stationList);
 
         HttpEntity requestEntityTicket = new HttpEntity(seatRequest, httpHeaders);
-        String seat_service_url = getServiceUrl("ts-seat-service");
+        String seat_service_url = getServiceUrl(seatServiceHost, seatServicePort);
         ResponseEntity<Response<Ticket>> reTicket = restTemplate.exchange(
                 seat_service_url + "/api/v1/seatservice/seats",
                 HttpMethod.POST,
@@ -302,7 +368,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[getAccount][Cancel Order Service][Get Order By Id]");
 
         HttpEntity requestEntitySendEmail = new HttpEntity(httpHeaders);
-        String user_service_url = getServiceUrl("ts-user-service");
+        String user_service_url = getServiceUrl(userServiceHost, userServicePort);
         ResponseEntity<Response<User>> getAccount = restTemplate.exchange(
                 user_service_url + "/api/v1/userservice/users/id/" + accountId,
                 HttpMethod.GET,
@@ -316,7 +382,7 @@ public class PreserveServiceImpl implements PreserveService {
     private Response addAssuranceForOrder(int assuranceType, String orderId, HttpHeaders httpHeaders) {
         PreserveServiceImpl.LOGGER.info("[addAssuranceForOrder][Preserve Service][Add Assurance Type For Order]");
         HttpEntity requestAddAssuranceResult = new HttpEntity(httpHeaders);
-        String assurance_service_url = getServiceUrl("ts-assurance-service");
+        String assurance_service_url = getServiceUrl(assuranceServiceHost, assuranceServicePort);
         ResponseEntity<Response> reAddAssuranceResult = restTemplate.exchange(
                 assurance_service_url + "/api/v1/assuranceservice/assurances/" + assuranceType + "/" + orderId,
                 HttpMethod.GET,
@@ -331,7 +397,7 @@ public class PreserveServiceImpl implements PreserveService {
 
 
         HttpEntity requestQueryForStationId = new HttpEntity(httpHeaders);
-        String station_service_url = getServiceUrl("ts-station-service");
+        String station_service_url = getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response<String>> reQueryForStationId = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/id/" + stationName,
                 HttpMethod.GET,
@@ -346,7 +412,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[checkSecurity][Preserve Other Service][Check Account Security]");
 
         HttpEntity requestCheckResult = new HttpEntity(httpHeaders);
-        String security_service_url = getServiceUrl("ts-security-service");
+        String security_service_url = getServiceUrl(securityServiceHost, securityServicePort);
         ResponseEntity<Response> reCheckResult = restTemplate.exchange(
                 security_service_url + "/api/v1/securityservice/securityConfigs/" + accountId,
                 HttpMethod.GET,
@@ -361,7 +427,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[getTripAllDetailInformation][Preserve Other Service][Get Trip All Detail Information]");
 
         HttpEntity requestGetTripAllDetailResult = new HttpEntity(gtdi, httpHeaders);
-        String travel_service_url = getServiceUrl("ts-travel-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
         ResponseEntity<Response<TripAllDetail>> reGetTripAllDetailResult = restTemplate.exchange(
                 travel_service_url + "/api/v1/travelservice/trip_detail",
                 HttpMethod.POST,
@@ -377,7 +443,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[getContactsById][Preserve Other Service][Get Contacts By Id is]");
 
         HttpEntity requestGetContactsResult = new HttpEntity(httpHeaders);
-        String contacts_service_url = getServiceUrl("ts-contacts-service");
+        String contacts_service_url = getServiceUrl(contactsServiceHost, contactsServicePort);
         ResponseEntity<Response<Contacts>> reGetContactsResult = restTemplate.exchange(
                 contacts_service_url + "/api/v1/contactservice/contacts/" + contactsId,
                 HttpMethod.GET,
@@ -392,7 +458,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[createOrder][Preserve Service][create order]");
 
         HttpEntity requestEntityCreateOrderResult = new HttpEntity(coi, httpHeaders);
-        String order_service_url = getServiceUrl("ts-order-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
         ResponseEntity<Response<Order>> reCreateOrderResult = restTemplate.exchange(
                 order_service_url + "/api/v1/orderservice/order",
                 HttpMethod.POST,
@@ -407,7 +473,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[createFoodOrder][Preserve Service][Add Preserve food Order]");
 
         HttpEntity requestEntityAddFoodOrderResult = new HttpEntity(afi, httpHeaders);
-        String food_service_url = getServiceUrl("ts-food-service");
+        String food_service_url = getServiceUrl(foodServiceHost, foodServicePort);
         ResponseEntity<Response> reAddFoodOrderResult = restTemplate.exchange(
                 food_service_url + "/api/v1/foodservice/orders",
                 HttpMethod.POST,
@@ -421,7 +487,7 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[createConsign][Preserve Service][Add Condign");
 
         HttpEntity requestEntityResultForTravel = new HttpEntity(cr, httpHeaders);
-        String consign_service_url = getServiceUrl("ts-consign-service");
+        String consign_service_url = getServiceUrl(consignServiceHost, consignServicePort);
         ResponseEntity<Response> reResultForTravel = restTemplate.exchange(
                 consign_service_url + "/api/v1/consignservice/consigns",
                 HttpMethod.POST,

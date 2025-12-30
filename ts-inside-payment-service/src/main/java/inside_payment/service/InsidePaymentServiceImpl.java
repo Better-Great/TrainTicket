@@ -36,10 +36,28 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
     @Autowired
     public RestTemplate restTemplate;
 
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
+    @Value("${PaymentServiceHost:ts-payment-service}")
+    private String paymentServiceHost;
+
+    @Value("${PaymentServicePort:19001}")
+    private int paymentServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InsidePaymentServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -48,8 +66,8 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
         String userId = info.getUserId();
 
         String requestOrderURL = "";
-        String order_service_url = getServiceUrl("ts-order-service");
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         if (info.getTripId().startsWith("G") || info.getTripId().startsWith("D")) {
             requestOrderURL =  order_service_url + "/api/v1/orderservice/order/" + info.getOrderId();
         } else {
@@ -106,7 +124,7 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
                 /****这里调用第三方支付***/
 
                 HttpEntity requestEntityOutsidePaySuccess = new HttpEntity(outsidePaymentInfo, headers);
-                String payment_service_url = getServiceUrl("ts-payment-service");
+                String payment_service_url = getServiceUrl(paymentServiceHost, paymentServicePort);
                 ResponseEntity<Response> reOutsidePaySuccess = restTemplate.exchange(
                         payment_service_url + "/api/v1/paymentservice/payment",
                         HttpMethod.POST,
@@ -293,7 +311,7 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
             outsidePaymentInfo.setPrice(info.getPrice());
 
             HttpEntity requestEntityOutsidePaySuccess = new HttpEntity(outsidePaymentInfo, headers);
-            String payment_service_url = getServiceUrl("ts-payment-service");
+            String payment_service_url = getServiceUrl(paymentServiceHost, paymentServicePort);
             ResponseEntity<Response> reOutsidePaySuccess = restTemplate.exchange(
                     payment_service_url + "/api/v1/paymentservice/payment",
                     HttpMethod.POST,
@@ -335,7 +353,7 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
         if (tripId.startsWith("G") || tripId.startsWith("D")) {
 
             HttpEntity requestEntityModifyOrderStatusResult = new HttpEntity(headers);
-            String order_service_url = getServiceUrl("ts-order-service");
+            String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
             ResponseEntity<Response> reModifyOrderStatusResult = restTemplate.exchange(
                     order_service_url + "/api/v1/orderservice/order/status/" + orderId + "/" + orderStatus,
                     HttpMethod.GET,
@@ -345,7 +363,7 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
 
         } else {
             HttpEntity requestEntityModifyOrderStatusResult = new HttpEntity(headers);
-            String order_other_service_url = getServiceUrl("ts-order-other-service");
+            String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             ResponseEntity<Response> reModifyOrderStatusResult = restTemplate.exchange(
                     order_other_service_url + "/api/v1/orderOtherService/orderOther/status/" + orderId + "/" + orderStatus,
                     HttpMethod.GET,
@@ -360,7 +378,7 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
     @Override
     public void initPayment(Payment payment, HttpHeaders headers) {
         Optional<Payment> paymentTemp = paymentRepository.findById(payment.getId());
-        if (paymentTemp == null) {
+        if (!paymentTemp.isPresent()) {
             paymentRepository.save(payment);
         } else {
             InsidePaymentServiceImpl.LOGGER.error("[initPayment][paymentTemp Already Exists][paymentId: {}, orderId: {}]", payment.getId(), payment.getOrderId());

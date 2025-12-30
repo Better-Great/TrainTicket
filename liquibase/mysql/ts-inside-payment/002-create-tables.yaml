@@ -1,0 +1,75 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-inside-payment-service
+  # ============================================================================
+  # Based on inside_payment.entity.Payment and Money entities:
+  # - @Table(name="inside_payment") and @Table(name = "inside_money")
+  # ============================================================================
+
+  - changeSet:
+      id: create-inside-payment-table
+      author: devops
+      comment: Create inside_payment table for ts-inside-payment-service
+      changes:
+        - createTable:
+            tableName: inside_payment
+            catalogName: ts-inside-payment-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: orderId
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: userId
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: create-inside-money-table
+      author: devops
+      comment: Create inside_money table for ts-inside-payment-service
+      changes:
+        - createTable:
+            tableName: inside_money
+            catalogName: ts-inside-payment-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: userId
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: money
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+

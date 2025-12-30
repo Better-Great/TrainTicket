@@ -1,0 +1,99 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-order-service
+  # ============================================================================
+  # Based on order.entity.Order entity:
+  # - @Table(name = "orders")
+  # ============================================================================
+
+  - changeSet:
+      id: create-orders-table
+      author: devops
+      comment: Create orders table for ts-order-service
+      changes:
+        - createTable:
+            tableName: orders
+            catalogName: ts-order-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: boughtDate
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: travelDate
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: travelTime
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: accountId
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contactsName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: documentType
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contactsDocumentNumber
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: trainNumber
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: coachNumber
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seatClass
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seatNumber
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: from_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: to_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+

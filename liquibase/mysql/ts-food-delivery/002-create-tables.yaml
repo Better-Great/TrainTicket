@@ -1,0 +1,95 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-food-delivery-service
+  # ============================================================================
+  # Based on food_delivery.entity.FoodDeliveryOrder entity:
+  # - Default table name: "FoodDeliveryOrder" -> "food_delivery_order"
+  # - @ElementCollection creates FoodDeliveryOrder_foodList collection table (default naming)
+  # ============================================================================
+  
+  - changeSet:
+      id: create-food-delivery-order-table
+      author: devops
+      comment: Create food_delivery_order table for ts-food-delivery-service
+      changes:
+        - createTable:
+            tableName: food_delivery_order
+            catalogName: ts-food-delivery-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: stationFoodStoreId
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: tripId
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: seatNo
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: createdTime
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: deliveryTime
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: deliveryFee
+                  type: double
+                  constraints:
+                    nullable: true
+
+  - changeSet:
+      id: create-food-delivery-order-food-list-table
+      author: devops
+      comment: Create FoodDeliveryOrder_foodList collection table for foodList (ElementCollection with @Embeddable Food)
+      changes:
+        - createTable:
+            tableName: FoodDeliveryOrder_foodList
+            catalogName: ts-food-delivery-mysql
+            columns:
+              - column:
+                  name: FoodDeliveryOrder_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: foodList_foodName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: foodList_price
+                  type: double
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_food_delivery_order_food_list_id
+                  columns:
+                    - column:
+                        name: FoodDeliveryOrder_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_food_delivery_order_food_list_id
+                  referencedTableCatalogName: ts-food-delivery-mysql
+                  referencedTableName: food_delivery_order
+                  referencedColumnNames: id
+                  columns:
+                    - column:
+                        name: FoodDeliveryOrder_id
+

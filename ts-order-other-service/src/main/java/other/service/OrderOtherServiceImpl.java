@@ -17,6 +17,7 @@ import other.entity.Order;
 import other.entity.OrderAlterInfo;
 import other.repository.OrderOtherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,13 +34,19 @@ public class OrderOtherServiceImpl implements OrderOtherService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Value("${StationServiceHost:ts-station-service}")
+    private String stationServiceHost;
+
+    @Value("${StationServicePort:12345}")
+    private int stationServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderOtherServiceImpl.class);
 
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
 //    @Value("${station-service.url}")
@@ -223,7 +230,7 @@ public class OrderOtherServiceImpl implements OrderOtherService {
     public List<String> queryForStationId(List<String> ids, HttpHeaders headers) {
 
         HttpEntity requestEntity = new HttpEntity(ids, null);
-        String station_service_url=getServiceUrl("ts-station-service");
+        String station_service_url=getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response<List<String>>> re = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/namelist",
                 HttpMethod.POST,

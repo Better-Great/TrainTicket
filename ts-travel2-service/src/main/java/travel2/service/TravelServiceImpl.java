@@ -9,6 +9,7 @@ import edu.fudan.common.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -41,10 +42,35 @@ public class TravelServiceImpl implements TravelService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${BasicServiceHost:ts-basic-service}")
+    private String basicServiceHost;
+
+    @Value("${BasicServicePort:15678}")
+    private int basicServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
+    @Value("${RouteServiceHost:ts-route-service}")
+    private String routeServiceHost;
+
+    @Value("${RouteServicePort:11178}")
+    private int routeServicePort;
+
+    @Value("${SeatServiceHost:ts-seat-service}")
+    private String seatServiceHost;
+
+    @Value("${SeatServicePort:18898}")
+    private int seatServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName; }
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
+    }
 
     String success = "Success";
     String noCnontent = "No Content";
@@ -260,7 +286,7 @@ public class TravelServiceImpl implements TravelService {
         TravelServiceImpl.LOGGER.info("[getTicketsByBatch][before get basic][trips: {}]", trips);
 
         HttpEntity requestEntity = new HttpEntity(infos, null);
-        String basic_service_url = getServiceUrl("ts-basic-service");
+        String basic_service_url = getServiceUrl(basicServiceHost, basicServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 basic_service_url + "/api/v1/basicservice/basic/travels",
                 HttpMethod.POST,
@@ -308,7 +334,7 @@ public class TravelServiceImpl implements TravelService {
         query.setDepartureTime(departureTime);
 
         HttpEntity requestEntity = new HttpEntity(query, null);
-        String basic_service_url = getServiceUrl("ts-basic-service");
+        String basic_service_url = getServiceUrl(basicServiceHost, basicServicePort);
         ResponseEntity<Response<TravelResult>> re = restTemplate.exchange(
                 basic_service_url + "/api/v1/basicservice/basic/travel",
                 HttpMethod.POST,
@@ -414,7 +440,7 @@ public class TravelServiceImpl implements TravelService {
 
     private TrainType getTrainTypeByName(String trainTypeName, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String train_service_url = getServiceUrl("ts-train-service");
+        String train_service_url = getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response<TrainType>> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byName/" + trainTypeName,
                 HttpMethod.GET,
@@ -428,7 +454,7 @@ public class TravelServiceImpl implements TravelService {
     private Route getRouteByRouteId(String routeId, HttpHeaders headers) {
         TravelServiceImpl.LOGGER.debug("[getRouteByRouteId][Get Route By Id][Route ID：{}]", routeId);
         HttpEntity requestEntity = new HttpEntity(null);
-        String route_service_url = getServiceUrl("ts-route-service");
+        String route_service_url = getServiceUrl(routeServiceHost, routeServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 route_service_url + "/api/v1/routeservice/routes/" + routeId,
                 HttpMethod.GET,
@@ -459,7 +485,7 @@ public class TravelServiceImpl implements TravelService {
         TravelServiceImpl.LOGGER.info("[getRestTicketNumber][Seat request][request: {}]", seatRequest.toString());
 
         HttpEntity requestEntity = new HttpEntity(seatRequest, null);
-        String seat_service_url = getServiceUrl("ts-seat-service");
+        String seat_service_url = getServiceUrl(seatServiceHost, seatServicePort);
         ResponseEntity<Response<Integer>> re = restTemplate.exchange(
                 seat_service_url + "/api/v1/seatservice/seats/left_tickets",
                 HttpMethod.POST,

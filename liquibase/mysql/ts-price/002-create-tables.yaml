@@ -1,0 +1,55 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-price-service
+  # ============================================================================
+  # Based on price.entity.PriceConfig entity:
+  # - Default entity name 'PriceConfig'
+  # - @Table with unique index on train_type and route_id
+  # ============================================================================
+
+  - changeSet:
+      id: create-priceconfig-table
+      author: devops
+      comment: Create PriceConfig table for ts-price-service
+      changes:
+        - createTable:
+            tableName: PriceConfig
+            catalogName: ts-price-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: train_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: route_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: basicPriceRate
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: firstClassPriceRate
+                  type: double
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: route_type_idx
+            tableName: PriceConfig
+            catalogName: ts-price-mysql
+            unique: true
+            columns:
+              - column:
+                  name: train_type
+              - column:
+                  name: route_id
+

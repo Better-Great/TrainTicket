@@ -41,10 +41,22 @@ public class SecurityServiceImpl implements SecurityService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     String success = "Success";
@@ -129,7 +141,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     private OrderSecurity getSecurityOrderInfoFromOrder(Date checkDate, String accountId, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String order_service_url = getServiceUrl("ts-order-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
         ResponseEntity<Response<OrderSecurity>> re = restTemplate.exchange(
                 order_service_url + "/api/v1/orderservice/order/security/" + checkDate + "/" + accountId,
                 HttpMethod.GET,
@@ -144,7 +156,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     private OrderSecurity getSecurityOrderOtherInfoFromOrder(Date checkDate, String accountId, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         ResponseEntity<Response<OrderSecurity>> re = restTemplate.exchange(
                 order_other_service_url + "/api/v1/orderOtherService/orderOther/security/" + checkDate + "/" + accountId,
                 HttpMethod.GET,

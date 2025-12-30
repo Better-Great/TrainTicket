@@ -37,13 +37,43 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${SeatServiceHost:ts-seat-service}")
+    private String seatServiceHost;
+
+    @Value("${SeatServicePort:18898}")
+    private int seatServicePort;
+
+    @Value("${RoutePlanServiceHost:ts-route-plan-service}")
+    private String routePlanServiceHost;
+
+    @Value("${RoutePlanServicePort:14578}")
+    private int routePlanServicePort;
+
+    @Value("${TravelServiceHost:ts-travel-service}")
+    private String travelServiceHost;
+
+    @Value("${TravelServicePort:12346}")
+    private int travelServicePort;
+
+    @Value("${Travel2ServiceHost:ts-travel2-service}")
+    private String travel2ServiceHost;
+
+    @Value("${Travel2ServicePort:16346}")
+    private int travel2ServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelPlanServiceImpl.class);
 
     String success = "Success";
     String cannotFind = "Cannot Find";
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -240,7 +270,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
         TravelPlanServiceImpl.LOGGER.info("[getRestTicketNumber][Seat Request][Seat Request is: {}]", seatRequest.toString());
         HttpEntity requestEntity = new HttpEntity(seatRequest, null);
-        String seat_service_url = getServiceUrl("ts-seat-service");
+        String seat_service_url = getServiceUrl(seatServiceHost, seatServicePort);
         ResponseEntity<Response<Integer>> re = restTemplate.exchange(
                 seat_service_url + "/api/v1/seatservice/seats/left_tickets",
                 HttpMethod.POST,
@@ -253,7 +283,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     private ArrayList<RoutePlanResultUnit> getRoutePlanResultCheapest(RoutePlanInfo info, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(info, null);
-        String route_plan_service_url = getServiceUrl("ts-route-plan-service");
+        String route_plan_service_url = getServiceUrl(routePlanServiceHost, routePlanServicePort);
         ResponseEntity<Response<ArrayList<RoutePlanResultUnit>>> re = restTemplate.exchange(
                 route_plan_service_url + "/api/v1/routeplanservice/routePlan/cheapestRoute",
                 HttpMethod.POST,
@@ -265,7 +295,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     private ArrayList<RoutePlanResultUnit> getRoutePlanResultQuickest(RoutePlanInfo info, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(info, null);
-        String route_plan_service_url = getServiceUrl("ts-route-plan-service");
+        String route_plan_service_url = getServiceUrl(routePlanServiceHost, routePlanServicePort);
         ResponseEntity<Response<ArrayList<RoutePlanResultUnit>>> re = restTemplate.exchange(
                 route_plan_service_url + "/api/v1/routeplanservice/routePlan/quickestRoute",
                 HttpMethod.POST,
@@ -278,7 +308,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     private ArrayList<RoutePlanResultUnit> getRoutePlanResultMinStation(RoutePlanInfo info, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(info, null);
-        String route_plan_service_url = getServiceUrl("ts-route-plan-service");
+        String route_plan_service_url = getServiceUrl(routePlanServiceHost, routePlanServicePort);
         ResponseEntity<Response<ArrayList<RoutePlanResultUnit>>> re = restTemplate.exchange(
                 route_plan_service_url + "/api/v1/routeplanservice/routePlan/minStopStations",
                 HttpMethod.POST,
@@ -290,7 +320,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     private List<TripResponse> tripsFromHighSpeed(TripInfo info, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(info, null);
-        String travel_service_url=getServiceUrl("ts-travel-service");
+        String travel_service_url=getServiceUrl(travelServiceHost, travelServicePort);
         ResponseEntity<Response<List<TripResponse>>> re = restTemplate.exchange(
                 travel_service_url + "/api/v1/travelservice/trips/left",
                 HttpMethod.POST,
@@ -303,7 +333,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     private ArrayList<TripResponse> tripsFromNormal(TripInfo info, HttpHeaders headers) {
 
         HttpEntity requestEntity = new HttpEntity(info, null);
-        String travel2_service_url=getServiceUrl("ts-travel2-service");
+        String travel2_service_url=getServiceUrl(travel2ServiceHost, travel2ServicePort);
         ResponseEntity<Response<ArrayList<TripResponse>>> re = restTemplate.exchange(
                 travel2_service_url + "/api/v1/travel2service/trips/left",
                 HttpMethod.POST,
@@ -316,7 +346,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     public TrainType queryTrainTypeByName(String trainTypeName, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String train_service_url=getServiceUrl("ts-train-service");
+        String train_service_url=getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byName/" + trainTypeName,
                 HttpMethod.GET,
