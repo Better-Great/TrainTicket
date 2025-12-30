@@ -9,6 +9,7 @@ import edu.fudan.common.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -32,10 +33,42 @@ public class AdminTravelServiceImpl implements AdminTravelService {
     private RestTemplate restTemplate;
     @Autowired
     private DiscoveryClient discoveryClient;
+
+    // Service hosts and ports from properties (matching dev.application.ini pattern)
+    @Value("${TravelServiceHost:ts-travel-service}")
+    private String travelServiceHost;
+
+    @Value("${TravelServicePort:12346}")
+    private int travelServicePort;
+
+    @Value("${Travel2ServiceHost:ts-travel2-service}")
+    private String travel2ServiceHost;
+
+    @Value("${Travel2ServicePort:16346}")
+    private int travel2ServicePort;
+
+    @Value("${StationServiceHost:ts-station-service}")
+    private String stationServiceHost;
+
+    @Value("${StationServicePort:12345}")
+    private int stationServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
+    @Value("${RouteServiceHost:ts-route-service}")
+    private String routeServiceHost;
+
+    @Value("${RouteServicePort:11178}")
+    private int routeServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminTravelServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -45,7 +78,7 @@ public class AdminTravelServiceImpl implements AdminTravelService {
 
         AdminTravelServiceImpl.LOGGER.info("[getAllTravels][Get All Travels]");
         HttpEntity requestEntity = new HttpEntity(headers);
-        String travel_service_url = getServiceUrl("ts-travel-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
         ResponseEntity<Response<ArrayList<AdminTrip>>> re = restTemplate.exchange(
                 travel_service_url + "/api/v1/travelservice/admin_trip",
                 HttpMethod.GET,
@@ -63,7 +96,7 @@ public class AdminTravelServiceImpl implements AdminTravelService {
         }
 
         HttpEntity requestEntity2 = new HttpEntity(headers);
-        String travel2_service_url = getServiceUrl("ts-travel2-service");
+        String travel2_service_url = getServiceUrl(travel2ServiceHost, travel2ServicePort);
         ResponseEntity<Response<ArrayList<AdminTrip>>> re2 = restTemplate.exchange(
                 travel2_service_url + "/api/v1/travel2service/admin_trip",
                 HttpMethod.GET,
@@ -95,8 +128,8 @@ public class AdminTravelServiceImpl implements AdminTravelService {
         Response result;
         String requestUrl;
 
-        String travel_service_url = getServiceUrl("ts-travel-service");
-        String travel2_service_url = getServiceUrl("ts-travel2-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
+        String travel2_service_url = getServiceUrl(travel2ServiceHost, travel2ServicePort);
         String tripId = request.getTripId();
         if (tripId.charAt(0) == 'G' || tripId.charAt(0) == 'D'){
             requestUrl = travel_service_url + "/api/v1/travelservice/trips";
@@ -130,8 +163,8 @@ public class AdminTravelServiceImpl implements AdminTravelService {
 
         Response result;
         String requestUrl = "";
-        String travel_service_url = getServiceUrl("ts-travel-service");
-        String travel2_service_url = getServiceUrl("ts-travel2-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
+        String travel2_service_url = getServiceUrl(travel2ServiceHost, travel2ServicePort);
         String tripId = request.getTripId();
         if (tripId.charAt(0) == 'G' || tripId.charAt(0) == 'D'){
             requestUrl = travel_service_url + "/api/v1/travelservice/trips";
@@ -160,8 +193,8 @@ public class AdminTravelServiceImpl implements AdminTravelService {
 
         Response result;
         String requestUtl = "";
-        String travel_service_url = getServiceUrl("ts-travel-service");
-        String travel2_service_url = getServiceUrl("ts-travel2-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
+        String travel2_service_url = getServiceUrl(travel2ServiceHost, travel2ServicePort);
         if (tripId.charAt(0) == 'G' || tripId.charAt(0) == 'D') {
             requestUtl = travel_service_url + "/api/v1/travelservice/trips/" + tripId;
         } else {
@@ -229,7 +262,7 @@ public class AdminTravelServiceImpl implements AdminTravelService {
     public Response checkStationsExists(List<String> stationNames, HttpHeaders headers) {
         AdminTravelServiceImpl.LOGGER.info("[checkStationsExists][Check Stations Exists][stationNames: {}]", stationNames);
         HttpEntity requestEntity = new HttpEntity(stationNames, null);
-        String station_service_url=getServiceUrl("ts-station-service");
+        String station_service_url=getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/idlist",
                 HttpMethod.POST,
@@ -256,7 +289,7 @@ public class AdminTravelServiceImpl implements AdminTravelService {
     public TrainType queryTrainTypeByName(String trainTypeName, HttpHeaders headers) {
         AdminTravelServiceImpl.LOGGER.info("[queryTrainTypeByName][Query Train Type][Train Type name: {}]", trainTypeName);
         HttpEntity requestEntity = new HttpEntity(null);
-        String train_service_url=getServiceUrl("ts-train-service");
+        String train_service_url=getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byName/" + trainTypeName,
                 HttpMethod.GET,
@@ -270,7 +303,7 @@ public class AdminTravelServiceImpl implements AdminTravelService {
     private Route getRouteByRouteId(String routeId, HttpHeaders headers) {
         AdminTravelServiceImpl.LOGGER.info("[getRouteByRouteId][Get Route By Id][Route ID：{}]", routeId);
         HttpEntity requestEntity = new HttpEntity(null);
-        String route_service_url=getServiceUrl("ts-route-service");
+        String route_service_url=getServiceUrl(routeServiceHost, routeServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 route_service_url + "/api/v1/routeservice/routes/" + routeId,
                 HttpMethod.GET,

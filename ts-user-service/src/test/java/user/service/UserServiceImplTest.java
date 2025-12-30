@@ -35,11 +35,19 @@ public class UserServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private org.springframework.cloud.client.discovery.DiscoveryClient discoveryClient;
+
+    private static final String authServiceHost = "ts-auth-service";
+    private static final int authServicePort = 12340;
+
     private HttpHeaders headers = new HttpHeaders();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        org.springframework.test.util.ReflectionTestUtils.setField(userServiceImpl, "authServiceHost", authServiceHost);
+        org.springframework.test.util.ReflectionTestUtils.setField(userServiceImpl, "authServicePort", authServicePort);
     }
 
     @Test
@@ -117,7 +125,7 @@ public class UserServiceImplTest {
         User user = new User();
         Mockito.when(userRepository.findByUserId(Mockito.any(UUID.class).toString())).thenReturn(user);
         HttpEntity<Response> httpEntity = new HttpEntity<>(headers);
-        Mockito.when(restTemplate.exchange("http://ts-auth-service:12340/api/v1" + "/users/" + userId,
+        Mockito.when(restTemplate.exchange("http://" + authServiceHost + ":" + authServicePort + "/api/v1" + "/users/" + userId,
                 HttpMethod.DELETE,
                 httpEntity,
                 Response.class)).thenReturn(null);
@@ -157,7 +165,7 @@ public class UserServiceImplTest {
     public void testDeleteUserAuth() {
         UUID userId = UUID.randomUUID();
         HttpEntity<Response> httpEntity = new HttpEntity<>(headers);
-        Mockito.when(restTemplate.exchange("http://ts-auth-service:12340/api/v1" + "/users/" + userId,
+        Mockito.when(restTemplate.exchange("http://" + authServiceHost + ":" + authServicePort + "/api/v1" + "/users/" + userId,
                 HttpMethod.DELETE,
                 httpEntity,
                 Response.class)).thenReturn(null);

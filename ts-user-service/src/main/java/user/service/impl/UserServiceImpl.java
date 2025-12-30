@@ -38,8 +38,14 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    @Value("${AuthServiceHost:ts-auth-service}")
+    private String authServiceHost;
+
+    @Value("${AuthServicePort:12340}")
+    private int authServicePort;
+
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -81,7 +87,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("[createDefaultAuthUser][CALL TO AUTH][AuthDto: {}]", dto.toString());
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<AuthDto> entity = new HttpEntity<>(dto, null);
-        String auth_service_url = getServiceUrl("ts-auth-service");
+        String auth_service_url = getServiceUrl(authServiceHost, authServicePort);
 
         List<ServiceInstance> auth_svcs = discoveryClient.getInstances("ts-auth-service");
         if(auth_svcs.size() >0 ){
@@ -178,7 +184,7 @@ public class UserServiceImpl implements UserService {
 
         HttpEntity<Response> httpEntity = new HttpEntity<>(newHeaders);
 
-        String auth_service_url = getServiceUrl("ts-auth-service");
+        String auth_service_url = getServiceUrl(authServiceHost, authServicePort);
         String AUTH_SERVICE_URI = auth_service_url + "/api/v1";
         restTemplate.exchange(AUTH_SERVICE_URI + "/users/" + userId,
                 HttpMethod.DELETE,

@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-consign-record-table
+      author: devops
+      comment: Create consign_record table for ts-consign-service
+      changes:
+        - sql:
+            sql: |
+              USE `ts-consign-mysql`;
+              CREATE TABLE IF NOT EXISTS consign_record (
+                consign_record_id VARCHAR(255) NOT NULL PRIMARY KEY,
+                order_id VARCHAR(255),
+                user_id VARCHAR(255),
+                handle_date VARCHAR(255),
+                target_date VARCHAR(255),
+                from_place VARCHAR(255),
+                to_place VARCHAR(255),
+                consignee VARCHAR(255),
+                consign_record_phone VARCHAR(255),
+                weight DOUBLE NOT NULL,
+                consign_record_price DOUBLE
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

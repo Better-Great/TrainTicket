@@ -36,10 +36,16 @@ public class ConsignServiceImpl implements ConsignService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${ConsignPriceServiceHost:ts-consign-price-service}")
+    private String consignPriceServiceHost;
+
+    @Value("${ConsignPriceServicePort:16110}")
+    private int consignPriceServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsignServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
 
@@ -63,7 +69,7 @@ public class ConsignServiceImpl implements ConsignService {
 
         //get the price
         HttpEntity requestEntity = new HttpEntity(null, headers);
-        String consign_price_service_url = getServiceUrl("ts-consign-price-service");
+        String consign_price_service_url = getServiceUrl(consignPriceServiceHost, consignPriceServicePort);
         ResponseEntity<Response<Double>> re = restTemplate.exchange(
                 consign_price_service_url + "/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
                 HttpMethod.GET,
@@ -96,7 +102,7 @@ public class ConsignServiceImpl implements ConsignService {
         //Recalculate price
         if (originalRecord.getWeight() != consignRequest.getWeight()) {
             HttpEntity requestEntity = new HttpEntity<>(null, headers);
-            String consign_price_service_url = getServiceUrl("ts-consign-price-service");
+            String consign_price_service_url = getServiceUrl(consignPriceServiceHost, consignPriceServicePort);
             ResponseEntity<Response<Double>> re = restTemplate.exchange(
                     consign_price_service_url + "/api/v1/consignpriceservice/consignprice/" + consignRequest.getWeight() + "/" + consignRequest.isWithin(),
                     HttpMethod.GET,

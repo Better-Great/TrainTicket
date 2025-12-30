@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-auth-user-table
+      author: devops
+      comment: Create auth_user table for ts-auth-service
+      changes:
+        - createTable:
+            tableName: auth_user
+            catalogName: ts-auth-mysql
+            columns:
+              - column:
+                  name: user_id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_name
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+
+  - changeSet:
+      id: create-user-roles-table
+      author: devops
+      comment: Create User_roles collection table for auth_user roles
+      changes:
+        - createTable:
+            tableName: User_roles
+            catalogName: ts-auth-mysql
+            columns:
+              - column:
+                  name: User_user_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: roles
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_user_roles_user_id
+                  columns:
+                    - column:
+                        name: User_user_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_user_roles_user_id
+                  referencedTableCatalogName: ts-auth-mysql
+                  referencedTableName: auth_user
+                  referencedColumnNames: user_id
+                  columns:
+                    - column:
+                        name: User_user_id
+

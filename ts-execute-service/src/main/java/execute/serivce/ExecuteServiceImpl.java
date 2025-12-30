@@ -29,11 +29,23 @@ public class ExecuteServiceImpl implements ExecuteService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
     String orderStatusWrong = "Order Status Wrong";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecuteServiceImpl.class);
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
 
@@ -137,7 +149,7 @@ public class ExecuteServiceImpl implements ExecuteService {
         ExecuteServiceImpl.LOGGER.info("[Execute Service][Execute Order] Executing....");
         headers = null;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String order_service_url=getServiceUrl("ts-order-service");
+        String order_service_url=getServiceUrl(orderServiceHost, orderServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 order_service_url + "/api/v1/orderservice/order/status/" + orderId + "/" + status,
                 HttpMethod.GET,
@@ -151,7 +163,7 @@ public class ExecuteServiceImpl implements ExecuteService {
         ExecuteServiceImpl.LOGGER.info("[Execute Service][Execute Order] Executing....");
         headers = null;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String order_other_service_url=getServiceUrl("ts-order-other-service");
+        String order_other_service_url=getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 order_other_service_url + "/api/v1/orderOtherService/orderOther/status/" + orderId + "/" + status,
                 HttpMethod.GET,
@@ -164,7 +176,7 @@ public class ExecuteServiceImpl implements ExecuteService {
         ExecuteServiceImpl.LOGGER.info("[Execute Service][Get Order] Getting....");
         headers = null;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String order_service_url=getServiceUrl("ts-order-service");
+        String order_service_url=getServiceUrl(orderServiceHost, orderServicePort);
         ResponseEntity<Response<Order>> re = restTemplate.exchange(
                 order_service_url + "/api/v1/orderservice/order/" + orderId,
                 HttpMethod.GET,
@@ -178,7 +190,7 @@ public class ExecuteServiceImpl implements ExecuteService {
         ExecuteServiceImpl.LOGGER.info("[getOrderByIdFromOrderOther][Execute Service, Get Order]");
         headers = null;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String order_other_service_url=getServiceUrl("ts-order-other-service");
+        String order_other_service_url=getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         ResponseEntity<Response<Order>> re = restTemplate.exchange(
                 order_other_service_url + "/api/v1/orderOtherService/orderOther/" + orderId,
                 HttpMethod.GET,

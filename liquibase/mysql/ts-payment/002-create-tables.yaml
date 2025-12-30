@@ -1,0 +1,65 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-payment-service
+  # ============================================================================
+  # Based on com.trainticket.entity.Payment and Money entities:
+  # - Default entity name 'Payment' and 'Money'
+  # ============================================================================
+
+  - changeSet:
+      id: create-payment-table
+      author: devops
+      comment: Create Payment table for ts-payment-service
+      changes:
+        - createTable:
+            tableName: Payment
+            catalogName: ts-payment-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: orderId
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: userId
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payment_price
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: create-money-table
+      author: devops
+      comment: Create Money table for ts-payment-service
+      changes:
+        - createTable:
+            tableName: Money
+            catalogName: ts-payment-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: userId
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: money
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+

@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-auth-db-and-user
+      author: application
+      changes:
+        - createDatabase:
+            databaseName: ts_auth
+        - createUser:
+            username: ts_auth_user
+            password: auth_password_123
+            roles:
+              - role: readWrite
+                database: ts_auth
+              - role: dbAdmin
+                database: ts_auth

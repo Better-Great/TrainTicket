@@ -1,0 +1,54 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-food-service
+  # ============================================================================
+  # Based on foodsearch.entity.FoodOrder entity:
+  # - Default entity name 'FoodOrder'
+  # ============================================================================
+
+  - changeSet:
+      id: create-foodorder-table
+      author: devops
+      comment: Create FoodOrder table for ts-food-service
+      changes:
+        - createTable:
+            tableName: FoodOrder
+            catalogName: ts-food-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: orderId
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: foodType
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stationName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: storeName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: foodName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: price
+                  type: double
+                  constraints:
+                    nullable: false
+

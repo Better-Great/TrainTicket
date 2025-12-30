@@ -8,6 +8,7 @@ import edu.fudan.common.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,10 +31,34 @@ public class BasicServiceImpl implements BasicService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${StationServiceHost:ts-station-service}")
+    private String stationServiceHost;
+
+    @Value("${StationServicePort:12345}")
+    private int stationServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
+    @Value("${RouteServiceHost:ts-route-service}")
+    private String routeServiceHost;
+
+    @Value("${RouteServicePort:11178}")
+    private int routeServicePort;
+
+    @Value("${PriceServiceHost:ts-price-service}")
+    private String priceServiceHost;
+
+    @Value("${PriceServicePort:16579}")
+    private int priceServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -324,7 +349,7 @@ public class BasicServiceImpl implements BasicService {
     public Response queryForStationId(String stationName, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[queryForStationId][Query For Station Id][stationName: {}]", stationName);
         HttpEntity requestEntity = new HttpEntity(null);
-        String station_service_url=getServiceUrl("ts-station-service");
+        String station_service_url=getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/id/" + stationName,
                 HttpMethod.GET,
@@ -341,7 +366,7 @@ public class BasicServiceImpl implements BasicService {
     public Map<String,String> checkStationsExists(List<String> stationNames, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[checkStationsExists][Check Stations Exists][stationNames: {}]", stationNames);
         HttpEntity requestEntity = new HttpEntity(stationNames, null);
-        String station_service_url=getServiceUrl("ts-station-service");
+        String station_service_url=getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/idlist",
                 HttpMethod.POST,
@@ -358,7 +383,7 @@ public class BasicServiceImpl implements BasicService {
     public boolean checkStationExists(String stationName, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[checkStationExists][Check Station Exists][stationName: {}]", stationName);
         HttpEntity requestEntity = new HttpEntity(null);
-        String station_service_url=getServiceUrl("ts-station-service");
+        String station_service_url=getServiceUrl(stationServiceHost, stationServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 station_service_url + "/api/v1/stationservice/stations/id/" + stationName,
                 HttpMethod.GET,
@@ -372,7 +397,7 @@ public class BasicServiceImpl implements BasicService {
     public List<TrainType> queryTrainTypeByNames(List<String> trainTypeNames, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[queryTrainTypeByNames][Query Train Type][Train Type names: {}]", trainTypeNames);
         HttpEntity requestEntity = new HttpEntity(trainTypeNames, null);
-        String train_service_url=getServiceUrl("ts-train-service");
+        String train_service_url=getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byNames",
                 HttpMethod.POST,
@@ -389,21 +414,24 @@ public class BasicServiceImpl implements BasicService {
     public TrainType queryTrainTypeByName(String trainTypeName, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[queryTrainTypeByName][Query Train Type][Train Type name: {}]", trainTypeName);
         HttpEntity requestEntity = new HttpEntity(null);
-        String train_service_url=getServiceUrl("ts-train-service");
+        String train_service_url=getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byName/" + trainTypeName,
                 HttpMethod.GET,
                 requestEntity,
                 Response.class);
         Response  response = re.getBody();
-
+        if (response == null || response.getStatus() == 0 || response.getData() == null) {
+            BasicServiceImpl.LOGGER.warn("[queryTrainTypeByName][Query Train Type Failed][Train Type name: {}]", trainTypeName);
+            return null;
+        }
         return JsonUtils.conveterObject(response.getData(), TrainType.class);
     }
 
     private List<Route> getRoutesByRouteIds(List<String> routeIds, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[getRoutesByRouteIds][Get Route By Ids][Route IDs：{}]", routeIds);
         HttpEntity requestEntity = new HttpEntity(routeIds, null);
-        String route_service_url=getServiceUrl("ts-route-service");
+        String route_service_url=getServiceUrl(routeServiceHost, routeServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 route_service_url + "/api/v1/routeservice/routes/byIds/",
                 HttpMethod.POST,
@@ -423,7 +451,7 @@ public class BasicServiceImpl implements BasicService {
     private Route getRouteByRouteId(String routeId, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[getRouteByRouteId][Get Route By Id][Route ID：{}]", routeId);
         HttpEntity requestEntity = new HttpEntity(null);
-        String route_service_url=getServiceUrl("ts-route-service");
+        String route_service_url=getServiceUrl(routeServiceHost, routeServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 route_service_url + "/api/v1/routeservice/routes/" + routeId,
                 HttpMethod.GET,
@@ -442,7 +470,7 @@ public class BasicServiceImpl implements BasicService {
     private PriceConfig queryPriceConfigByRouteIdAndTrainType(String routeId, String trainType, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[queryPriceConfigByRouteIdAndTrainType][Query For Price Config][RouteId: {} ,TrainType: {}]", routeId, trainType);
         HttpEntity requestEntity = new HttpEntity(null, null);
-        String price_service_url=getServiceUrl("ts-price-service");
+        String price_service_url=getServiceUrl(priceServiceHost, priceServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 price_service_url + "/api/v1/priceservice/prices/" + routeId + "/" + trainType,
                 HttpMethod.GET,
@@ -457,7 +485,7 @@ public class BasicServiceImpl implements BasicService {
     private Map<String, PriceConfig> queryPriceConfigByRouteIdsAndTrainTypes(List<String> routeIdsTypes, HttpHeaders headers) {
         BasicServiceImpl.LOGGER.info("[queryPriceConfigByRouteIdsAndTrainTypes][Query For Price Config][RouteId and TrainType: {}]", routeIdsTypes);
         HttpEntity requestEntity = new HttpEntity(routeIdsTypes, null);
-        String price_service_url=getServiceUrl("ts-price-service");
+        String price_service_url=getServiceUrl(priceServiceHost, priceServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 price_service_url + "/api/v1/priceservice/prices/byRouteIdsAndTrainTypes",
                 HttpMethod.POST,

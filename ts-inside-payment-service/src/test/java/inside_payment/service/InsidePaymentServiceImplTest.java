@@ -14,8 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -38,12 +40,28 @@ public class InsidePaymentServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    private static final String orderServiceHost = "ts-order-service";
+    private static final int orderServicePort = 12031;
+    private static final String orderOtherServiceHost = "ts-order-other-service";
+    private static final int orderOtherServicePort = 12032;
+    private static final String paymentServiceHost = "ts-payment-service";
+    private static final int paymentServicePort = 19001;
+
     private HttpHeaders headers = new HttpHeaders();
     HttpEntity httpEntity = new HttpEntity(headers);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderServiceHost", orderServiceHost);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderServicePort", orderServicePort);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderOtherServiceHost", orderOtherServiceHost);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderOtherServicePort", orderOtherServicePort);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "paymentServiceHost", paymentServiceHost);
+        ReflectionTestUtils.setField(insidePaymentServiceImpl, "paymentServicePort", paymentServicePort);
     }
 
     @Test
@@ -55,7 +73,7 @@ public class InsidePaymentServiceImplTest {
         Response<Order> response = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/order_id",
                 HttpMethod.GET,
                 httpEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -72,7 +90,7 @@ public class InsidePaymentServiceImplTest {
         Response response2 = new Response(1, "", null);
         ResponseEntity<Response> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/status/" + "order_id" + "/" + 1,
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/status/" + "order_id" + "/" + 1,
                 HttpMethod.GET,
                 httpEntity,
                 Response.class)).thenReturn(re2);
@@ -94,6 +112,7 @@ public class InsidePaymentServiceImplTest {
     @Test
     public void testCreateAccount2() {
         AccountInfo info = new AccountInfo();
+        info.setUserId("test-user-id");
         List<Money> list = new ArrayList<>();
         list.add(new Money());
         Mockito.when(addMoneyRepository.findByUserId(Mockito.anyString())).thenReturn(list);
@@ -191,7 +210,8 @@ public class InsidePaymentServiceImplTest {
     @Test
     public void testInitPayment1() {
         Payment payment = new Payment();
-        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(null);
+        payment.setId("test-id");
+        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.empty());
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenReturn(null);
         insidePaymentServiceImpl.initPayment(payment, headers);
         Mockito.verify(paymentRepository, times(1)).save(Mockito.any(Payment.class));
@@ -200,7 +220,9 @@ public class InsidePaymentServiceImplTest {
     @Test
     public void testInitPayment2() {
         Payment payment = new Payment();
-        Mockito.when(paymentRepository.findById(Mockito.anyString()).get()).thenReturn(payment);
+        payment.setId("test-id");
+        Payment existingPayment = new Payment();
+        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.of(existingPayment));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenReturn(null);
         insidePaymentServiceImpl.initPayment(payment, headers);
         Mockito.verify(paymentRepository, times(0)).save(Mockito.any(Payment.class));

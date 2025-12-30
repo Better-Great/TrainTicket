@@ -13,8 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(JUnit4.class)
@@ -26,12 +28,38 @@ public class CancelServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    // Service hosts and ports from properties/dev.application.ini (matching property names)
+    private static final String orderServiceHost = "ts-order-service";
+    private static final int orderServicePort = 12031;
+    private static final String orderOtherServiceHost = "ts-order-other-service";
+    private static final int orderOtherServicePort = 12032;
+    private static final String notificationServiceHost = "ts-notification-service";
+    private static final int notificationServicePort = 17853;
+    private static final String insidePaymentServiceHost = "ts-inside-payment-service";
+    private static final int insidePaymentServicePort = 18673;
+    private static final String userServiceHost = "ts-user-service";
+    private static final int userServicePort = 12342;
+
     private HttpHeaders headers = new HttpHeaders();
     private HttpEntity requestEntity = new HttpEntity(headers);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // Set host and port values from properties using ReflectionTestUtils
+        ReflectionTestUtils.setField(cancelServiceImpl, "orderServiceHost", orderServiceHost);
+        ReflectionTestUtils.setField(cancelServiceImpl, "orderServicePort", orderServicePort);
+        ReflectionTestUtils.setField(cancelServiceImpl, "orderOtherServiceHost", orderOtherServiceHost);
+        ReflectionTestUtils.setField(cancelServiceImpl, "orderOtherServicePort", orderOtherServicePort);
+        ReflectionTestUtils.setField(cancelServiceImpl, "notificationServiceHost", notificationServiceHost);
+        ReflectionTestUtils.setField(cancelServiceImpl, "notificationServicePort", notificationServicePort);
+        ReflectionTestUtils.setField(cancelServiceImpl, "insidePaymentServiceHost", insidePaymentServiceHost);
+        ReflectionTestUtils.setField(cancelServiceImpl, "insidePaymentServicePort", insidePaymentServicePort);
+        ReflectionTestUtils.setField(cancelServiceImpl, "userServiceHost", userServiceHost);
+        ReflectionTestUtils.setField(cancelServiceImpl, "userServicePort", userServicePort);
     }
 
     @Test
@@ -42,7 +70,7 @@ public class CancelServiceImplTest {
         Response<Order> response = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -57,7 +85,7 @@ public class CancelServiceImplTest {
         Response<Order> response = new Response<>(0, null, null);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -68,7 +96,7 @@ public class CancelServiceImplTest {
         Response<Order> response2 = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/" + "order_id",
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -83,7 +111,7 @@ public class CancelServiceImplTest {
         HttpEntity requestEntity2 = new HttpEntity(notifyInfo, headers);
         ResponseEntity<Boolean> re = new ResponseEntity<>(true, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-notification-service:17853/api/v1/notifyservice/notification/order_cancel_success",
+                "http://" + notificationServiceHost + ":" + notificationServicePort + "/api/v1/notifyservice/notification/order_cancel_success",
                 HttpMethod.POST,
                 requestEntity2,
                 Boolean.class)).thenReturn(re);
@@ -99,7 +127,7 @@ public class CancelServiceImplTest {
         Response<Order> response = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -114,7 +142,7 @@ public class CancelServiceImplTest {
         Response<Order> response = new Response<>(0, null, null);
         ResponseEntity<Response<Order>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-service:12031/api/v1/orderservice/order/" + "order_id",
+                "http://" + orderServiceHost + ":" + orderServicePort + "/api/v1/orderservice/order/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -125,7 +153,7 @@ public class CancelServiceImplTest {
         Response<Order> response2 = new Response<>(1, null, order);
         ResponseEntity<Response<Order>> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-order-other-service:12032/api/v1/orderOtherService/orderOther/" + "order_id",
+                "http://" + orderOtherServiceHost + ":" + orderOtherServicePort + "/api/v1/orderOtherService/orderOther/" + "order_id",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<Order>>() {
@@ -139,7 +167,7 @@ public class CancelServiceImplTest {
         Response response = new Response<>(1, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-inside-payment-service:18673/api/v1/inside_pay_service/inside_payment/drawback/" + "userId" + "/" + "money",
+                "http://" + insidePaymentServiceHost + ":" + insidePaymentServicePort + "/api/v1/inside_pay_service/inside_payment/drawback/" + "userId" + "/" + "money",
                 HttpMethod.GET,
                 requestEntity,
                 Response.class)).thenReturn(re);
@@ -152,7 +180,7 @@ public class CancelServiceImplTest {
         Response<User> response = new Response<>();
         ResponseEntity<Response<User>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-user-service:12342/api/v1/userservice/users/id/" + "orderId",
+                "http://" + userServiceHost + ":" + userServicePort + "/api/v1/userservice/users/id/" + "orderId",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<User>>() {

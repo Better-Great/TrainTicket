@@ -51,8 +51,15 @@ public class TokenServiceImpl implements TokenService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    // Service host and port from properties (matching dev.application.ini pattern)
+    @Value("${VerificationCodeServiceHost:ts-verification-code-service}")
+    private String verificationCodeServiceHost;
+
+    @Value("${VerificationCodeServicePort:15678}")
+    private int verificationCodeServicePort;
+
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -61,7 +68,7 @@ public class TokenServiceImpl implements TokenService {
         String password = dto.getPassword();
         String verifyCode = dto.getVerificationCode();
 //        LOGGER.info("LOGIN USER :" + username + " __ " + password + " __ " + verifyCode);
-        String verification_code_service_url = getServiceUrl("ts-verification-code-service");
+        String verification_code_service_url = getServiceUrl(verificationCodeServiceHost, verificationCodeServicePort);
         if (!StringUtils.isEmpty(verifyCode)) {
             HttpEntity requestEntity = new HttpEntity(headers);
             ResponseEntity<Boolean> re = restTemplate.exchange(

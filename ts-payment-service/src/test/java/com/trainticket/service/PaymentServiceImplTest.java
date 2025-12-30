@@ -58,9 +58,21 @@ public class PaymentServiceImplTest {
     @Test
     public void testAddMoney() {
         Payment info = new Payment();
-        Mockito.when(addMoneyRepository.save(Mockito.any(Money.class))).thenReturn(null);
+        // The implementation creates a new Money object and sets userId and money from the Payment
+        // Since Payment constructor initializes fields to empty strings, Money will have empty strings too
+        Mockito.when(addMoneyRepository.save(Mockito.any(Money.class))).thenAnswer(invocation -> {
+            Money money = invocation.getArgument(0);
+            return money; // Return the same Money object that was passed in
+        });
         Response result = paymentServiceImpl.addMoney(info, headers);
-        Assert.assertEquals(new Response<>(1,"Add Money Success", null), result);
+        Assert.assertEquals(1, result.getStatus().intValue());
+        Assert.assertEquals("Add Money Success", result.getMsg());
+        Assert.assertNotNull(result.getData());
+        Assert.assertTrue(result.getData() instanceof Money);
+        Money returnedMoney = (Money) result.getData();
+        // The Money object will have empty strings for userId and money (from Payment constructor)
+        Assert.assertEquals("", returnedMoney.getUserId());
+        Assert.assertEquals("", returnedMoney.getMoney());
     }
 
     @Test
@@ -82,7 +94,8 @@ public class PaymentServiceImplTest {
     @Test
     public void testInitPayment1() {
         Payment payment = new Payment();
-        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(null);
+        payment.setId("test-id");
+        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.empty());
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenReturn(null);
         paymentServiceImpl.initPayment(payment, headers);
         Mockito.verify(paymentRepository, Mockito.times(1)).save(Mockito.any(Payment.class));
@@ -91,7 +104,9 @@ public class PaymentServiceImplTest {
     @Test
     public void testInitPayment2() {
         Payment payment = new Payment();
-        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.of(payment));
+        payment.setId("test-id");
+        Payment existingPayment = new Payment();
+        Mockito.when(paymentRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.of(existingPayment));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenReturn(null);
         paymentServiceImpl.initPayment(payment, headers);
         Mockito.verify(paymentRepository, Mockito.times(0)).save(Mockito.any(Payment.class));

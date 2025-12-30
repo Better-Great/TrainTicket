@@ -8,6 +8,7 @@ import food_delivery.repository.FoodDeliveryOrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
@@ -36,15 +37,21 @@ public class FoodDeliveryServiceImpl implements FoodDeliveryService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    @Value("${StationFoodServiceHost:ts-station-food-service}")
+    private String stationFoodServiceHost;
+
+    @Value("${StationFoodServicePort:18855}")
+    private int stationFoodServicePort;
+
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
     public Response createFoodDeliveryOrder(FoodDeliveryOrder fd, HttpHeaders headers) {
         String stationFoodStoreId = fd.getStationFoodStoreId();
 
-        String staion_food_service_url = getServiceUrl("ts-station-food-service");
+        String staion_food_service_url = getServiceUrl(stationFoodServiceHost, stationFoodServicePort);
 //        staion_food_service_url = "http://ts-station-food-service"; // 测试
         ResponseEntity<Response<StationFoodStoreInfo>> getStationFoodStore = restTemplate.exchange(
                 staion_food_service_url + "/api/v1/stationfoodservice/stationfoodstores/bystoreid/" + stationFoodStoreId,

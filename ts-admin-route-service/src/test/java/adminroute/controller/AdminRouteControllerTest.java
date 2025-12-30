@@ -53,9 +53,9 @@ public class AdminRouteControllerTest {
 
     @Test
     public void testAddRoute() throws Exception {
-        RouteInfo request = new RouteInfo();
+        // Create JSON manually to avoid issues with computed fields (stations/distances)
+        String requestJson = "{\"startStation\":\"A\",\"endStation\":\"B\",\"stationList\":\"A,B\",\"distanceList\":\"10,20\"}";
         Mockito.when(adminRouteService.createAndModifyRoute(Mockito.any(RouteInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
-        String requestJson = JSONObject.toJSONString(request);
         String result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/adminrouteservice/adminroute").contentType(MediaType.APPLICATION_JSON).content(requestJson))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn().getResponse().getContentAsString();

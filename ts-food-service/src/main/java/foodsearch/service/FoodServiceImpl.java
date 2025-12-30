@@ -12,6 +12,7 @@ import foodsearch.repository.FoodOrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -44,10 +45,28 @@ public class FoodServiceImpl implements FoodService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${TrainFoodServiceHost:ts-train-food-service}")
+    private String trainFoodServiceHost;
+
+    @Value("${TrainFoodServicePort:19999}")
+    private int trainFoodServicePort;
+
+    @Value("${TravelServiceHost:ts-travel-service}")
+    private String travelServiceHost;
+
+    @Value("${TravelServicePort:12346}")
+    private int travelServicePort;
+
+    @Value("${StationFoodServiceHost:ts-station-food-service}")
+    private String stationFoodServiceHost;
+
+    @Value("${StationFoodServicePort:18855}")
+    private int stationFoodServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(FoodServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     String success = "Success.";
@@ -225,7 +244,7 @@ public class FoodServiceImpl implements FoodService {
 
         /**--------------------------------------------------------------------------------------*/
         HttpEntity requestEntityGetTrainFoodListResult = new HttpEntity(null);
-        String train_food_service_url = getServiceUrl("ts-train-food-service");
+        String train_food_service_url = getServiceUrl(trainFoodServiceHost, trainFoodServicePort);
         ResponseEntity<Response<List<Food>>> reGetTrainFoodListResult = restTemplate.exchange(
                 train_food_service_url + "/api/v1/trainfoodservice/trainfoods/" + tripId,
                 HttpMethod.GET,
@@ -247,7 +266,7 @@ public class FoodServiceImpl implements FoodService {
         //车次途经的车站
         /**--------------------------------------------------------------------------------------*/
         HttpEntity requestEntityGetRouteResult = new HttpEntity(null, null);
-        String travel_service_url = getServiceUrl("ts-travel-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
         ResponseEntity<Response<Route>> reGetRouteResult = restTemplate.exchange(
                 travel_service_url + "/api/v1/travelservice/routes/" + tripId,
                 HttpMethod.GET,
@@ -282,7 +301,7 @@ public class FoodServiceImpl implements FoodService {
             }
 
             HttpEntity requestEntityFoodStoresListResult = new HttpEntity(stations, null);
-            String station_food_service_url = getServiceUrl("ts-station-food-service");
+            String station_food_service_url = getServiceUrl(stationFoodServiceHost, stationFoodServicePort);
             ResponseEntity<Response<List<StationFoodStore>>> reFoodStoresListResult = restTemplate.exchange(
                      station_food_service_url + "/api/v1/stationfoodservice/stationfoodstores",
                     HttpMethod.POST,

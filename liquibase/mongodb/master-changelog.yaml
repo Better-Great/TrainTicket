@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - include:
+      file: ts_auth/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: ts_user/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: ts_order/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: ts_train/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: ts_station/changelog.yaml
+      relativeToChangelogFile: true

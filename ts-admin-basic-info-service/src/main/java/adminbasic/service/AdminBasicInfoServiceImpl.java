@@ -9,6 +9,7 @@ import edu.fudan.common.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,17 +31,48 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    // Service hosts and ports from properties (matching dev.application.ini pattern)
+    @Value("${ContactsServiceHost:ts-contacts-service}")
+    private String contactsServiceHost;
+
+    @Value("${ContactsServicePort:12347}")
+    private int contactsServicePort;
+
+    @Value("${StationServiceHost:ts-station-service}")
+    private String stationServiceHost;
+
+    @Value("${StationServicePort:12345}")
+    private int stationServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
+    @Value("${ConfigServiceHost:ts-config-service}")
+    private String configServiceHost;
+
+    @Value("${ConfigServicePort:15679}")
+    private int configServicePort;
+
+    @Value("${PriceServiceHost:ts-price-service}")
+    private String priceServiceHost;
+
+    @Value("${PriceServicePort:16579}")
+    private int priceServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminBasicInfoServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
     public Response getAllContacts(HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String contacts_service_url = getServiceUrl("ts-contacts-service");
+        String contacts_service_url = getServiceUrl(contactsServiceHost, contactsServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 contacts_service_url + "/api/v1/contactservice/contacts",
                 HttpMethod.GET,
@@ -55,7 +87,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response deleteContact(String contactsId, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String contacts_service_url = getServiceUrl("ts-contacts-service");
+        String contacts_service_url = getServiceUrl(contactsServiceHost, contactsServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 contacts_service_url + "/api/v1/contactservice/contacts/" + contactsId,
                 HttpMethod.DELETE,
@@ -70,7 +102,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response modifyContact(Contacts mci, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(mci, headers);
-        String contacts_service_url = getServiceUrl("ts-contacts-service");
+        String contacts_service_url = getServiceUrl(contactsServiceHost, contactsServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 contacts_service_url + "/api/v1/contactservice/contacts",
                 HttpMethod.PUT,
@@ -86,7 +118,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response addContact(Contacts c, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(c, headers);
-        String contacts_service_url = getServiceUrl("ts-contacts-service");
+        String contacts_service_url = getServiceUrl(contactsServiceHost, contactsServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 contacts_service_url + "/api/v1/contactservice/contacts/admin",
                 HttpMethod.POST,
@@ -100,7 +132,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response getAllStations(HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String station_service_url = getServiceUrl("ts-station-service");
+        String station_service_url = getServiceUrl(stationServiceHost, stationServicePort);
         String stations = station_service_url + "/api/v1/stationservice/stations";
         ResponseEntity<Response> re = restTemplate.exchange(
                 stations,
@@ -117,7 +149,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response addStation(Station s, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(s, headers);
-        String station_service_url = getServiceUrl("ts-station-service");
+        String station_service_url = getServiceUrl(stationServiceHost, stationServicePort);
         String stations = station_service_url + "/api/v1/stationservice/stations";
         ResponseEntity<Response> re = restTemplate.exchange(
                 stations,
@@ -132,7 +164,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response deleteStation(String id, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String station_service_url = getServiceUrl("ts-station-service");
+        String station_service_url = getServiceUrl(stationServiceHost, stationServicePort);
         String path = station_service_url + "/api/v1/stationservice/stations/" + id;
         ResponseEntity<Response> re = restTemplate.exchange(
                 path,
@@ -147,7 +179,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response modifyStation(Station s, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(s, headers);
-        String station_service_url = getServiceUrl("ts-station-service");
+        String station_service_url = getServiceUrl(stationServiceHost, stationServicePort);
         String stations = station_service_url + "/api/v1/stationservice/stations";
         ResponseEntity<Response> re = restTemplate.exchange(
                 stations,
@@ -163,7 +195,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response getAllTrains(HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String train_service_url = getServiceUrl("ts-train-service");
+        String train_service_url = getServiceUrl(trainServiceHost, trainServicePort);
         String trains = train_service_url + "/api/v1/trainservice/trains";
         ResponseEntity<Response> re = restTemplate.exchange(
                 trains,
@@ -179,7 +211,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response addTrain(TrainType t, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(t, headers);
-        String train_service_url = getServiceUrl("ts-train-service");
+        String train_service_url = getServiceUrl(trainServiceHost, trainServicePort);
         String trains = train_service_url + "/api/v1/trainservice/trains";
         ResponseEntity<Response> re = restTemplate.exchange(
                 trains,
@@ -195,7 +227,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response deleteTrain(String id, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(headers);
-        String train_service_url = getServiceUrl("ts-train-service");
+        String train_service_url = getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/" + id,
                 HttpMethod.DELETE,
@@ -209,7 +241,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     public Response modifyTrain(TrainType t, HttpHeaders headers) {
         Response result;
         HttpEntity requestEntity = new HttpEntity(t, headers);
-        String train_service_url = getServiceUrl("ts-train-service");
+        String train_service_url = getServiceUrl(trainServiceHost, trainServicePort);
         String trains = train_service_url + "/api/v1/trainservice/trains";
         ResponseEntity<Response> re = restTemplate.exchange(
                 trains,
@@ -223,7 +255,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response getAllConfigs(HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String config_service_url = getServiceUrl("ts-config-service");
+        String config_service_url = getServiceUrl(configServiceHost, configServicePort);
         String configs = config_service_url + "/api/v1/configservice/configs";
         ResponseEntity<Response> re = restTemplate.exchange(
                 configs,
@@ -237,7 +269,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response addConfig(Config c, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(c, headers);
-        String config_service_url = getServiceUrl("ts-config-service");
+        String config_service_url = getServiceUrl(configServiceHost, configServicePort);
         String configs = config_service_url + "/api/v1/configservice/configs";
         ResponseEntity<Response> re = restTemplate.exchange(
                 configs,
@@ -250,7 +282,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response deleteConfig(String name, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String config_service_url = getServiceUrl("ts-config-service");
+        String config_service_url = getServiceUrl(configServiceHost, configServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 config_service_url + "/api/v1/configservice/configs/" + name,
                 HttpMethod.DELETE,
@@ -262,7 +294,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response modifyConfig(Config c, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(c, headers);
-        String config_service_url = getServiceUrl("ts-config-service");
+        String config_service_url = getServiceUrl(configServiceHost, configServicePort);
         String configs = config_service_url + "/api/v1/configservice/configs";
         ResponseEntity<Response> re = restTemplate.exchange(
                 configs,
@@ -275,7 +307,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response getAllPrices(HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String price_service_url = getServiceUrl("ts-price-service");
+        String price_service_url = getServiceUrl(priceServiceHost, priceServicePort);
         String prices = price_service_url + "/api/v1/priceservice/prices";
         ResponseEntity<Response> re = restTemplate.exchange(
                 prices,
@@ -288,7 +320,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response addPrice(PriceInfo pi, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(pi, headers);
-        String price_service_url = getServiceUrl("ts-price-service");
+        String price_service_url = getServiceUrl(priceServiceHost, priceServicePort);
         String prices = price_service_url + "/api/v1/priceservice/prices";
         ResponseEntity<Response> re = restTemplate.exchange(
                 prices,
@@ -302,7 +334,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response deletePrice(String pricesId, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(headers);
-        String price_service_url = getServiceUrl("ts-price-service");
+        String price_service_url = getServiceUrl(priceServiceHost, priceServicePort);
         String path = price_service_url + "/api/v1/priceservice/prices/" + pricesId;
         ResponseEntity<Response> re = restTemplate.exchange(
                 path,
@@ -316,7 +348,7 @@ public class AdminBasicInfoServiceImpl implements AdminBasicInfoService {
     @Override
     public Response modifyPrice(PriceInfo pi, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(pi, headers);
-        String price_service_url = getServiceUrl("ts-price-service");
+        String price_service_url = getServiceUrl(priceServiceHost, priceServicePort);
         String prices = price_service_url + "/api/v1/priceservice/prices";
         ResponseEntity<Response> re = restTemplate.exchange(
                 prices,

@@ -34,4 +34,8 @@ env.bak/
 venv.bak/
 docs/steps/
 *.jar
-logs/
+#logs/
+logs/*
+
+# Ignore all application.properties files
+application.properties

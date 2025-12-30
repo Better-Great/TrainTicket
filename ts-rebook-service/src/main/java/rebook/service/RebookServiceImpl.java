@@ -11,6 +11,7 @@ import org.apache.tomcat.jni.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -38,10 +39,58 @@ public class RebookServiceImpl implements RebookService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${SeatServiceHost:ts-seat-service}")
+    private String seatServiceHost;
+
+    @Value("${SeatServicePort:18898}")
+    private int seatServicePort;
+
+    @Value("${TravelServiceHost:ts-travel-service}")
+    private String travelServiceHost;
+
+    @Value("${TravelServicePort:12346}")
+    private int travelServicePort;
+
+    @Value("${Travel2ServiceHost:ts-travel2-service}")
+    private String travel2ServiceHost;
+
+    @Value("${Travel2ServicePort:16346}")
+    private int travel2ServicePort;
+
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
+    @Value("${TrainServiceHost:ts-train-service}")
+    private String trainServiceHost;
+
+    @Value("${TrainServicePort:14567}")
+    private int trainServicePort;
+
+    @Value("${RouteServiceHost:ts-route-service}")
+    private String routeServiceHost;
+
+    @Value("${RouteServicePort:11178}")
+    private int routeServicePort;
+
+    @Value("${InsidePaymentServiceHost:ts-inside-payment-service}")
+    private String insidePaymentServiceHost;
+
+    @Value("${InsidePaymentServicePort:18673}")
+    private int insidePaymentServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RebookServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -247,7 +296,7 @@ public class RebookServiceImpl implements RebookService {
 
         HttpHeaders newHeaders = getAuthorizationHeadersFrom(httpHeaders);
         HttpEntity requestEntityTicket = new HttpEntity(seatRequest, newHeaders);
-        String seat_service_url = getServiceUrl("ts-seat-service");
+        String seat_service_url = getServiceUrl(seatServiceHost, seatServicePort);
         ResponseEntity<Response<Ticket>> reTicket = restTemplate.exchange(
                 seat_service_url + "/api/v1/seatservice/seats",
                 HttpMethod.POST,
@@ -295,8 +344,8 @@ public class RebookServiceImpl implements RebookService {
     private Response<TripAllDetail> getTripAllDetailInformation(TripAllDetailInfo gtdi, String tripId, HttpHeaders httpHeaders) {
         Response<TripAllDetail> gtdr;
         String requestUrl = "";
-        String travel_service_url = getServiceUrl("ts-travel-service");
-        String travel2_service_url = getServiceUrl("ts-travel2-service");
+        String travel_service_url = getServiceUrl(travelServiceHost, travelServicePort);
+        String travel2_service_url = getServiceUrl(travel2ServiceHost, travel2ServicePort);
         if (tripId.startsWith("G") || tripId.startsWith("D")) {
             requestUrl = travel_service_url + "/api/v1/travelservice/trip_detail";
             // ts-travel-service:12346/travel/getTripAllDetailInfo
@@ -318,8 +367,8 @@ public class RebookServiceImpl implements RebookService {
 
     private Response createOrder(Order order, String tripId, HttpHeaders httpHeaders) {
         String requestUrl = "";
-        String order_service_url = getServiceUrl("ts-order-service");
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         if (tripId.startsWith("G") || tripId.startsWith("D")) {
             // ts-order-service:12031/order/create
             requestUrl = order_service_url + "/api/v1/orderservice/order";
@@ -339,8 +388,8 @@ public class RebookServiceImpl implements RebookService {
 
     private Response updateOrder(Order info, String tripId, HttpHeaders httpHeaders) {
         String requestOrderUtl = "";
-        String order_service_url = getServiceUrl("ts-order-service");
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         if (tripGD(tripId)) {
             requestOrderUtl = order_service_url + "/api/v1/orderservice/order";
         } else {
@@ -359,8 +408,8 @@ public class RebookServiceImpl implements RebookService {
     private Response deleteOrder(String orderId, String tripId, HttpHeaders httpHeaders) {
 
         String requestUrl = "";
-        String order_service_url = getServiceUrl("ts-order-service");
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         if (tripGD(tripId)) {
             requestUrl = order_service_url + "/api/v1/orderservice/order/" + orderId;
         } else {
@@ -381,8 +430,8 @@ public class RebookServiceImpl implements RebookService {
         Response<Order> queryOrderResult;
         //Change can only be changed once, check the status of the order to determine whether it has been changed
         String requestUrl = "";
-        String order_service_url = getServiceUrl("ts-order-service");
-        String order_other_service_url = getServiceUrl("ts-order-other-service");
+        String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
+        String order_other_service_url = getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
         if (info.getOldTripId().startsWith("G") || info.getOldTripId().startsWith("D")) {
             requestUrl = order_service_url + "/api/v1/orderservice/order/" + info.getOrderId();
         } else {
@@ -403,7 +452,7 @@ public class RebookServiceImpl implements RebookService {
 
     public TrainType queryTrainTypeByName(String trainTypeName, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String train_service_url=getServiceUrl("ts-train-service");
+        String train_service_url=getServiceUrl(trainServiceHost, trainServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 train_service_url + "/api/v1/trainservice/trains/byName/" + trainTypeName,
                 HttpMethod.GET,
@@ -416,7 +465,7 @@ public class RebookServiceImpl implements RebookService {
 
     private Route getRouteByRouteId(String routeId, HttpHeaders headers) {
         HttpEntity requestEntity = new HttpEntity(null);
-        String route_service_url=getServiceUrl("ts-route-service");
+        String route_service_url=getServiceUrl(routeServiceHost, routeServicePort);
         ResponseEntity<Response> re = restTemplate.exchange(
                 route_service_url + "/api/v1/routeservice/routes/" + routeId,
                 HttpMethod.GET,
@@ -441,7 +490,7 @@ public class RebookServiceImpl implements RebookService {
 
         HttpHeaders newHeaders = getAuthorizationHeadersFrom(httpHeaders);
         HttpEntity requestEntityPayDifferentMoney = new HttpEntity(info, newHeaders);
-        String inside_payment_service_url = getServiceUrl("ts-inside-payment-service");
+        String inside_payment_service_url = getServiceUrl(insidePaymentServiceHost, insidePaymentServicePort);
         ResponseEntity<Response> rePayDifferentMoney = restTemplate.exchange(
                 inside_payment_service_url + "/api/v1/inside_pay_service/inside_payment/difference",
                 HttpMethod.POST,
@@ -455,7 +504,7 @@ public class RebookServiceImpl implements RebookService {
 
         HttpHeaders newHeaders = getAuthorizationHeadersFrom(httpHeaders);
         HttpEntity requestEntityDrawBackMoney = new HttpEntity(newHeaders);
-        String inside_payment_service_url = getServiceUrl("ts-inside-payment-service");
+        String inside_payment_service_url = getServiceUrl(insidePaymentServiceHost, insidePaymentServicePort);
         ResponseEntity<Response> reDrawBackMoney = restTemplate.exchange(
                 inside_payment_service_url + "/api/v1/inside_pay_service/inside_payment/drawback/" + userId + "/" + money,
                 HttpMethod.GET,

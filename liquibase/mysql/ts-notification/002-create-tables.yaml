@@ -1,0 +1,79 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-notification-service
+  # ============================================================================
+  # Based on notification.entity.NotifyInfo entity:
+  # - Default entity name 'NotifyInfo'
+  # ============================================================================
+
+  - changeSet:
+      id: create-notifyinfo-table
+      author: devops
+      comment: Create NotifyInfo table for ts-notification-service
+      changes:
+        - createTable:
+            tableName: NotifyInfo
+            catalogName: ts-notification-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sendStatus
+                  type: boolean
+                  constraints:
+                    nullable: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: orderNumber
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: startPlace
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: endPlace
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: startTime
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: date
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: seatClass
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: seatNumber
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: price
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+

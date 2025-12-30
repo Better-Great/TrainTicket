@@ -14,8 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import other.entity.*;
 import other.repository.OrderOtherRepository;
@@ -40,11 +42,19 @@ public class OrderOtherServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    private static final String stationServiceHost = "ts-station-service";
+    private static final int stationServicePort = 12345;
+
     private HttpHeaders headers = new HttpHeaders();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(orderOtherServiceImpl, "stationServiceHost", stationServiceHost);
+        ReflectionTestUtils.setField(orderOtherServiceImpl, "stationServicePort", stationServicePort);
     }
 
     @Test
@@ -197,7 +207,7 @@ public class OrderOtherServiceImplTest {
         Response<List<String>> response = new Response<>(1, "Success", ids);
         ResponseEntity<Response<List<String>>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-station-service/api/v1/stationservice/stations/namelist",
+                "http://" + stationServiceHost + ":" + stationServicePort + "/api/v1/stationservice/stations/namelist",
                 HttpMethod.POST,
                 requestEntity,
                 new ParameterizedTypeReference<Response<List<String>>>() {

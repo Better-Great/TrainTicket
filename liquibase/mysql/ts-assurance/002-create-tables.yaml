@@ -1,0 +1,35 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-assurance-service
+  # ============================================================================
+  # Based on assurance.entity.Assurance entity:
+  # - Default table name: "Assurance" -> "assurance" (lowercase)
+  # - @Enumerated(EnumType.STRING) for assurance_type (stores "TRAFFIC_ACCIDENT")
+  # ============================================================================
+  
+  - changeSet:
+      id: create-assurance-table
+      author: devops
+      comment: Create assurance table for ts-assurance-service
+      changes:
+        - createTable:
+            tableName: assurance
+            catalogName: ts-assurance-mysql
+            columns:
+              - column:
+                  name: assurance_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: orderId
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assurance_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+

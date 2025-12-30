@@ -31,10 +31,28 @@ public class SeatServiceImpl implements SeatService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${OrderServiceHost:ts-order-service}")
+    private String orderServiceHost;
+
+    @Value("${OrderServicePort:12031}")
+    private int orderServicePort;
+
+    @Value("${OrderOtherServiceHost:ts-order-other-service}")
+    private String orderOtherServiceHost;
+
+    @Value("${OrderOtherServicePort:12032}")
+    private int orderOtherServicePort;
+
+    @Value("${ConfigServiceHost:ts-config-service}")
+    private String configServiceHost;
+
+    @Value("${ConfigServicePort:15679}")
+    private int configServicePort;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SeatServiceImpl.class);
 
-    private String getServiceUrl(String serviceName) {
-        return "http://" + serviceName;
+    private String getServiceUrl(String serviceHost, int servicePort) {
+        return "http://" + serviceHost + ":" + servicePort;
     }
 
     @Override
@@ -69,7 +87,7 @@ public class SeatServiceImpl implements SeatService {
             SeatServiceImpl.LOGGER.info("[distributeSeat][TrainNumber start][Other Capital Except D and G]");
             //Call the microservice to query for residual Ticket information: the set of the Ticket sold for the specified seat type
             HttpEntity requestEntity = new HttpEntity(seatRequest, null);
-            String order_other_service_url=getServiceUrl("ts-order-other-service");
+            String order_other_service_url=getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             re3 = restTemplate.exchange(
                     order_other_service_url + "/api/v1/orderOtherService/orderOther/tickets",
                     HttpMethod.POST,
@@ -156,7 +174,7 @@ public class SeatServiceImpl implements SeatService {
             HttpEntity requestEntity = new HttpEntity(null);
             //Call the micro service to query for residual Ticket information: the set of the Ticket sold for the specified seat type
             requestEntity = new HttpEntity(seatRequest, null);
-            String order_other_service_url=getServiceUrl("ts-order-other-service");
+            String order_other_service_url=getServiceUrl(orderOtherServiceHost, orderOtherServicePort);
             re3 = restTemplate.exchange(
                     order_other_service_url + "/api/v1/orderOtherService/orderOther/tickets",
                     HttpMethod.POST,
@@ -206,7 +224,7 @@ public class SeatServiceImpl implements SeatService {
 
         String configName = "DirectTicketAllocationProportion";
         HttpEntity requestEntity = new HttpEntity(null);
-        String config_service_url = getServiceUrl("ts-config-service");
+        String config_service_url = getServiceUrl(configServiceHost, configServicePort);
         ResponseEntity<Response<Config>> re = restTemplate.exchange(
                 config_service_url + "/api/v1/configservice/configs/" + configName,
                 HttpMethod.GET,

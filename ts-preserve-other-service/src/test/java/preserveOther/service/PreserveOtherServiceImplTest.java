@@ -11,13 +11,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import preserveOther.mq.RabbitSend;
 import edu.fudan.common.entity.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 @RunWith(JUnit4.class)
@@ -29,12 +35,63 @@ public class PreserveOtherServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    @Mock
+    private RabbitSend sendService;
+
+    private static final String basicServiceHost = "ts-basic-service";
+    private static final int basicServicePort = 15678;
+    private static final String seatServiceHost = "ts-seat-service";
+    private static final int seatServicePort = 18890;
+    private static final String userServiceHost = "ts-user-service";
+    private static final int userServicePort = 12342;
+    private static final String assuranceServiceHost = "ts-assurance-service";
+    private static final int assuranceServicePort = 18888;
+    private static final String stationServiceHost = "ts-station-service";
+    private static final int stationServicePort = 12345;
+    private static final String securityServiceHost = "ts-security-service";
+    private static final int securityServicePort = 18889;
+    private static final String travel2ServiceHost = "ts-travel2-service";
+    private static final int travel2ServicePort = 16346;
+    private static final String contactsServiceHost = "ts-contacts-service";
+    private static final int contactsServicePort = 12003;
+    private static final String orderOtherServiceHost = "ts-order-other-service";
+    private static final int orderOtherServicePort = 12032;
+    private static final String foodServiceHost = "ts-food-service";
+    private static final int foodServicePort = 18856;
+    private static final String consignServiceHost = "ts-consign-service";
+    private static final int consignServicePort = 16111;
+
     private HttpHeaders headers = new HttpHeaders();
     private HttpEntity requestEntity = new HttpEntity(headers);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "basicServiceHost", basicServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "basicServicePort", basicServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "seatServiceHost", seatServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "seatServicePort", seatServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "userServiceHost", userServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "userServicePort", userServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "assuranceServiceHost", assuranceServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "assuranceServicePort", assuranceServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "stationServiceHost", stationServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "stationServicePort", stationServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "securityServiceHost", securityServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "securityServicePort", securityServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "travel2ServiceHost", travel2ServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "travel2ServicePort", travel2ServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "contactsServiceHost", contactsServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "contactsServicePort", contactsServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "orderOtherServiceHost", orderOtherServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "orderOtherServicePort", orderOtherServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "foodServiceHost", foodServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "foodServicePort", foodServicePort);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "consignServiceHost", consignServiceHost);
+        ReflectionTestUtils.setField(preserveOtherServiceImpl, "consignServicePort", consignServicePort);
     }
 
     @Test
@@ -97,7 +154,20 @@ public class PreserveOtherServiceImplTest {
 
         //response for travel result
         TravelResult travelResult = new TravelResult();
-        travelResult.setPrices( new HashMap<String, String>(){{ put("confortClass", "1.0"); }} );
+        travelResult.setPrices( new HashMap<String, String>(){{ put("confortClass", "1.0"); put("economyClass", "0.75"); }} );
+        
+        // Create Route with stations
+        Route route = new Route();
+        route.setStations(Arrays.asList("from_station", "to_station"));
+        route.setDistances(Arrays.asList(0, 100));
+        travelResult.setRoute(route);
+        
+        // Create TrainType
+        TrainType trainType = new TrainType();
+        trainType.setConfortClass(50);
+        trainType.setEconomyClass(100);
+        travelResult.setTrainType(trainType);
+        
         Response<TravelResult> response5 = new Response<>(null, null, travelResult);
         ResponseEntity<Response<TravelResult>> re5 = new ResponseEntity<>(response5, HttpStatus.OK);
 
@@ -147,7 +217,7 @@ public class PreserveOtherServiceImplTest {
         Response<Ticket> response = new Response<>();
         ResponseEntity<Response<Ticket>> reTicket = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-seat-service:18898/api/v1/seatservice/seats",
+                "http://" + seatServiceHost + ":" + seatServicePort + "/api/v1/seatservice/seats",
                 HttpMethod.POST,
                 requestEntityTicket,
                 new ParameterizedTypeReference<Response<Ticket>>() {
@@ -159,15 +229,11 @@ public class PreserveOtherServiceImplTest {
     @Test
     public void testSendEmail() {
         NotifyInfo notifyInfo = new NotifyInfo();
-        HttpEntity requestEntitySendEmail = new HttpEntity<>(notifyInfo, headers);
-        ResponseEntity<Boolean> reSendEmail = new ResponseEntity<>(true, HttpStatus.OK);
-        Mockito.when(restTemplate.exchange(
-                "http://ts-notification-service:17853/api/v1/notifyservice/notification/preserve_success",
-                HttpMethod.POST,
-                requestEntitySendEmail,
-                Boolean.class)).thenReturn(reSendEmail);
+        // sendEmail uses RabbitMQ sendService, not RestTemplate
+        Mockito.doNothing().when(sendService).send(Mockito.anyString());
         boolean result = preserveOtherServiceImpl.sendEmail(notifyInfo, headers);
         Assert.assertTrue(result);
+        Mockito.verify(sendService, Mockito.times(1)).send(Mockito.anyString());
     }
 
     @Test
@@ -175,7 +241,7 @@ public class PreserveOtherServiceImplTest {
         Response<User> response = new Response<>();
         ResponseEntity<Response<User>> re = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-user-service:12342/api/v1/userservice/users/id/1",
+                "http://" + userServiceHost + ":" + userServicePort + "/api/v1/userservice/users/id/1",
                 HttpMethod.GET,
                 requestEntity,
                 new ParameterizedTypeReference<Response<User>>() {
