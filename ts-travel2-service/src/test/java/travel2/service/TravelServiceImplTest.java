@@ -1,8 +1,6 @@
 package travel2.service;
 
-import edu.fudan.common.entity.TripId;
-import edu.fudan.common.entity.TripAllDetailInfo;
-import edu.fudan.common.entity.TripInfo;
+import edu.fudan.common.entity.*;
 import edu.fudan.common.util.Response;
 import edu.fudan.common.util.StringUtils;
 import org.junit.Assert;
@@ -16,12 +14,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import travel2.entity.Trip;
 import travel2.repository.TripRepository;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RunWith(JUnit4.class)
 public class TravelServiceImplTest {
@@ -35,6 +36,15 @@ public class TravelServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    private static final String basicServiceHost = "ts-basic-service";
+    private static final int basicServicePort = 15678;
+    private static final String trainServiceHost = "ts-train-service";
+    private static final int trainServicePort = 14567;
+    private static final String routeServiceHost = "ts-route-service";
+    private static final int routeServicePort = 11178;
+    private static final String seatServiceHost = "ts-seat-service";
+    private static final int seatServicePort = 18898;
+
     private HttpHeaders headers = new HttpHeaders();
     String success = "Success";
     String noCnontent = "No Content";
@@ -42,6 +52,14 @@ public class TravelServiceImplTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "basicServiceHost", basicServiceHost);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "basicServicePort", basicServicePort);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "trainServiceHost", trainServiceHost);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "trainServicePort", trainServicePort);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "routeServiceHost", routeServiceHost);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "routeServicePort", routeServicePort);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "seatServiceHost", seatServiceHost);
+        ReflectionTestUtils.setField(travel2ServiceImpl, "seatServicePort", seatServicePort);
     }
 
     @Test
@@ -215,33 +233,60 @@ public class TravelServiceImplTest {
         gtdi.setTripId("Z1255");
         gtdi.setFrom("from_station");
         gtdi.setTo("to_station");
-        gtdi.setTravelDate(StringUtils.Date2String(new Date(System.currentTimeMillis() - 86400000)));
+        // Use tomorrow's date to pass afterToday check
+        gtdi.setTravelDate(StringUtils.Date2String(new Date(System.currentTimeMillis() + 86400000)));
 
         Trip trip = new Trip();
         trip.setRouteId("route_id");
+        trip.setStartTime(StringUtils.Date2String(new Date())); // Set startTime for the trip
+        trip.setTripId(new TripId("Z1255"));
         Mockito.when(repository.findByTripId(Mockito.any(TripId.class))).thenReturn(trip);
 
-        //mock queryForStationId()
-        Response<String> response1 = new Response<>(null, null, "");
-        ResponseEntity<Response<String>> re1 = new ResponseEntity<>(response1, HttpStatus.OK);
+        //mock getTickets() - basic service call (uses ParameterizedTypeReference)
+        TravelResult travelResult = new TravelResult();
+        travelResult.setStatus(true);
+        Route route = new Route();
+        ArrayList<String> stations = new ArrayList<>();
+        stations.add("from_station");
+        stations.add("to_station");
+        route.setStations(stations);
+        ArrayList<Integer> distances = new ArrayList<>();
+        distances.add(0);
+        distances.add(100);
+        route.setDistances(distances);
+        travelResult.setRoute(route);
+        TrainType trainType = new TrainType();
+        trainType.setConfortClass(100);
+        trainType.setEconomyClass(200);
+        trainType.setAverageSpeed(100);
+        travelResult.setTrainType(trainType);
+        Map<String, String> prices = new HashMap<>();
+        prices.put("confortClass", "100.0");
+        prices.put("economyClass", "50.0");
+        travelResult.setPrices(prices);
+        Response<TravelResult> basicResponse = new Response<>(1, "Success", travelResult);
+        ResponseEntity<Response<TravelResult>> reBasic = new ResponseEntity<>(basicResponse, HttpStatus.OK);
+
+        //mock getRestTicketNumber() - seat service calls (2 calls: first class and second class)
+        Response<Integer> seatResponse = new Response<>(1, "Success", 50);
+        ResponseEntity<Response<Integer>> reSeat = new ResponseEntity<>(seatResponse, HttpStatus.OK);
+
+        // Order of mocks: basic service call (uses ParameterizedTypeReference), then 2 seat service calls
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
-                Mockito.any(HttpMethod.class),
+                Mockito.contains("/api/v1/basicservice/basic/travel"),
+                Mockito.eq(HttpMethod.POST),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re1);
+                .thenReturn(reBasic);
 
-        //mock getRouteByRouteId()
-        edu.fudan.common.entity.Route route = new edu.fudan.common.entity.Route();
-        route.setStations(new ArrayList<>());
-        Response response2 = new Response(1, null, route);
-        ResponseEntity<Response> re2 = new ResponseEntity<>(response2, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                Mockito.anyString(),
-                Mockito.any(HttpMethod.class),
+                Mockito.contains("/api/v1/seatservice/seats/left_tickets"),
+                Mockito.eq(HttpMethod.POST),
                 Mockito.any(HttpEntity.class),
-                Mockito.any(Class.class)))
-                .thenReturn(re2);
+                Mockito.any(ParameterizedTypeReference.class)))
+                .thenReturn(reSeat)
+                .thenReturn(reSeat);
+
         Response result = travel2ServiceImpl.getTripAllDetailInfo(gtdi, headers);
         Assert.assertEquals("Success", result.getMsg());
     }

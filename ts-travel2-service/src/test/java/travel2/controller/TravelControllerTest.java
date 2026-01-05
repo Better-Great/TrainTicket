@@ -131,8 +131,8 @@ public class TravelControllerTest {
 
     @Test
     public void testQueryInfo2() throws Exception {
-        TripInfo info = new TripInfo("startPlace", "endPlace", "");
-        Mockito.when(service.query(Mockito.any(TripInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
+        TripInfo info = new TripInfo("startPlace", "endPlace", "2024-01-01");
+        Mockito.when(service.queryByBatch(Mockito.any(TripInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
         String requestJson = JSONObject.toJSONString(info);
         String result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/travel2service/trips/left").contentType(MediaType.APPLICATION_JSON).content(requestJson))
                 .andExpect(MockMvcResultMatchers.status().isOk())

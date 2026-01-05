@@ -29,12 +29,13 @@ public class TravelPlanControllerTest {
     @Mock
     private TravelPlanService travelPlanService;
     private MockMvc mockMvc;
-    private Response response = new Response();
+    private Response response;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(travelPlanController).build();
+        response = new Response(1, "Success", null);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class TravelPlanControllerTest {
 
     @Test
     public void testGetTransferResult() throws Exception {
-        TransferTravelInfo info = new TransferTravelInfo();
+        TransferTravelInfo info = new TransferTravelInfo("start_station", "via_station", "end_station", "2024-01-01", "G");
         Mockito.when(travelPlanService.getTransferSearch(Mockito.any(TransferTravelInfo.class), Mockito.any(HttpHeaders.class))).thenReturn(response);
         String requestJson = JSONObject.toJSONString(info);
         String result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/travelplanservice/travelPlan/transferResult").contentType(MediaType.APPLICATION_JSON).content(requestJson))
