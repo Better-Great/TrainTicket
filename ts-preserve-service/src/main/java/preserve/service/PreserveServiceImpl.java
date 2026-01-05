@@ -217,6 +217,10 @@ public class PreserveServiceImpl implements PreserveService {
                     dipatchSeat(oti.getDate(),
                             order.getTrainNumber(), fromStationName, toStationName,
                             SeatClass.FIRSTCLASS.getCode(), firstClassTotalNum, stationList, headers);
+            if (ticket == null) {
+                PreserveServiceImpl.LOGGER.error("[preserve][Step 4][Do Order][Dispatch Seat Fail][SeatType: FIRSTCLASS]");
+                return new Response<>(0, "Dispatch Seat Fail", null);
+            }
             order.setSeatNumber("" + ticket.getSeatNo());
             order.setSeatClass(SeatClass.FIRSTCLASS.getCode());
             order.setPrice(resultForTravel.getPrices().get("confortClass"));
@@ -226,6 +230,10 @@ public class PreserveServiceImpl implements PreserveService {
                     dipatchSeat(oti.getDate(),
                             order.getTrainNumber(), fromStationName, toStationName,
                             SeatClass.SECONDCLASS.getCode(), secondClassTotalNum, stationList, headers);
+            if (ticket == null) {
+                PreserveServiceImpl.LOGGER.error("[preserve][Step 4][Do Order][Dispatch Seat Fail][SeatType: SECONDCLASS]");
+                return new Response<>(0, "Dispatch Seat Fail", null);
+            }
             order.setSeatClass(SeatClass.SECONDCLASS.getCode());
             order.setSeatNumber("" + ticket.getSeatNo());
             order.setPrice(resultForTravel.getPrices().get("economyClass"));
@@ -309,6 +317,10 @@ public class PreserveServiceImpl implements PreserveService {
         //8.send notification
 
         User getUser = getAccount(order.getAccountId().toString(), headers);
+        if (getUser == null) {
+            PreserveServiceImpl.LOGGER.error("[preserve][Step 8][Get Account][Get Account Fail][AccountId: {}]", order.getAccountId());
+            return new Response<>(0, "Get Account Fail", null);
+        }
 
         NotifyInfo notifyInfo = new NotifyInfo();
         notifyInfo.setDate(new Date().toString());
@@ -348,6 +360,10 @@ public class PreserveServiceImpl implements PreserveService {
                 new ParameterizedTypeReference<Response<Ticket>>() {
                 });
 
+        if (reTicket.getBody() == null || reTicket.getBody().getData() == null) {
+            PreserveServiceImpl.LOGGER.error("[dipatchSeat][Dispatch Seat Fail][Response is null or data is null]");
+            return null;
+        }
         return reTicket.getBody().getData();
     }
 
@@ -376,6 +392,10 @@ public class PreserveServiceImpl implements PreserveService {
                 new ParameterizedTypeReference<Response<User>>() {
                 });
         Response<User> result = getAccount.getBody();
+        if (result == null || result.getData() == null) {
+            PreserveServiceImpl.LOGGER.error("[getAccount][Get Account Fail][AccountId: {}, Response is null or data is null]", accountId);
+            return null;
+        }
         return result.getData();
     }
 
