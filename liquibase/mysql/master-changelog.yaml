@@ -56,11 +56,6 @@ databaseChangeLog:
       file: ts-notification/changelog.yaml
       relativeToChangelogFile: true
 
-  # Price Service
-  - include:
-      file: ts-price/changelog.yaml
-      relativeToChangelogFile: true
-
   # Food Service
   - include:
       file: ts-food/changelog.yaml
