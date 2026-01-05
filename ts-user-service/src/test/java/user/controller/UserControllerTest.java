@@ -85,9 +85,9 @@ public class UserControllerTest {
 
     @Test
     public void testDeleteUserById() throws Exception {
-        UUID userId = UUID.randomUUID();
-        Mockito.when(userService.deleteUser(Mockito.any(UUID.class).toString(), Mockito.any(HttpHeaders.class))).thenReturn(response);
-        String result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/userservice/users/" + userId.toString()))
+        String userId = UUID.randomUUID().toString();
+        Mockito.when(userService.deleteUser(Mockito.anyString(), Mockito.any(HttpHeaders.class))).thenReturn(response);
+        String result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/userservice/users/" + userId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn().getResponse().getContentAsString();
         Assert.assertEquals(response, JSONObject.parseObject(result, Response.class));
