@@ -303,7 +303,12 @@ public class RebookServiceImpl implements RebookService {
                 requestEntityTicket,
                 new ParameterizedTypeReference<Response<Ticket>>() {
                 });
-        return reTicket.getBody().getData();
+        Response<Ticket> responseBody = reTicket.getBody();
+        if (responseBody == null || responseBody.getData() == null) {
+            RebookServiceImpl.LOGGER.error("[dipatchSeat][Dispatch Seat Fail][TripId: {}]", tripId);
+            return null;
+        }
+        return responseBody.getData();
     }
 
 

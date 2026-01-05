@@ -74,7 +74,7 @@ public class SeatServiceImpl implements SeatService {
             HttpEntity requestEntity = new HttpEntity(null);
             //Call the microservice to query for residual Ticket information: the set of the Ticket sold for the specified seat type
             requestEntity = new HttpEntity(seatRequest, null);
-            String order_service_url=getServiceUrl("ts-order-service");
+            String order_service_url=getServiceUrl(orderServiceHost, orderServicePort);
             re3 = restTemplate.exchange(
                     order_service_url + "/api/v1/orderservice/order/tickets",
                     HttpMethod.POST,
@@ -158,7 +158,7 @@ public class SeatServiceImpl implements SeatService {
 
             //Call the micro service to query all the station information for the trains
             HttpEntity requestEntity = new HttpEntity(seatRequest, null);
-            String order_service_url=getServiceUrl("ts-order-service");
+            String order_service_url=getServiceUrl(orderServiceHost, orderServicePort);
             re3 = restTemplate.exchange(
                     order_service_url + "/api/v1/orderservice/order/tickets",
                     HttpMethod.POST,

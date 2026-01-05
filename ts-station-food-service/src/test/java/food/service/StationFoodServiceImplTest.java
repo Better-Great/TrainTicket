@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,18 +36,22 @@ public class StationFoodServiceImplTest {
 
     @Test
     public void testCreateFoodStore1() {
-        StationFoodStore fss=new StationFoodStore();
-        Optional<StationFoodStore> fs = Optional.ofNullable(fss);
-        Mockito.when(stationFoodRepository.findById(Mockito.any(String.class))).thenReturn(fs);
-        Response result = foodMapServiceImpl.createFoodStore(fs.get(), headers);
+        StationFoodStore fss = new StationFoodStore();
+        String testId = "test-id";
+        fss.setId(testId);
+        Optional<StationFoodStore> fs = Optional.of(fss);
+        Mockito.when(stationFoodRepository.findById(testId)).thenReturn(fs);
+        Response result = foodMapServiceImpl.createFoodStore(fss, headers);
         Assert.assertEquals(new Response<>(0, "Already Exists Id", null), result);
     }
 
     @Test
     public void testCreateFoodStore2() {
         StationFoodStore fs = new StationFoodStore();
-        Mockito.when(stationFoodRepository.findById(Mockito.any(String.class))).thenReturn(null);
-        Mockito.when(stationFoodRepository.save(Mockito.any(StationFoodStore.class))).thenReturn(null);
+        String testId = "test-id";
+        fs.setId(testId);
+        Mockito.when(stationFoodRepository.findById(testId)).thenReturn(Optional.empty());
+        Mockito.when(stationFoodRepository.save(Mockito.any(StationFoodStore.class))).thenReturn(fs);
         Response result = foodMapServiceImpl.createFoodStore(fs, headers);
         Assert.assertEquals(new Response<>(1, "Save Success", fs), result);
     }

@@ -1,7 +1,9 @@
 package admintravel.service;
 
 import edu.fudan.common.entity.AdminTrip;
+import edu.fudan.common.entity.Route;
 import edu.fudan.common.entity.TravelInfo;
+import edu.fudan.common.entity.TrainType;
 import edu.fudan.common.util.Response;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +21,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(JUnit4.class)
 public class AdminTravelServiceImplTest {
@@ -108,7 +113,60 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testAddTravel1() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("G1234");
         request.setTrainTypeName("G");
+        request.setRouteId("route-123");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        TrainType trainType = new TrainType("G", 100, 50);
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "G");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/G"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Route route = new Route("route-123", stations, new ArrayList<>(), "Shanghai", "Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-123");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-123"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock addTravel call
         HttpEntity requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response<>(0, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
@@ -124,7 +182,60 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testAddTravel2() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("G1234");
         request.setTrainTypeName("G");
+        request.setRouteId("route-123");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        TrainType trainType = new TrainType("G", 100, 50);
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "G");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/G"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Route route = new Route("route-123", stations, new ArrayList<>(), "Shanghai", "Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-123");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-123"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock addTravel call
         HttpEntity<TravelInfo> requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response<>(1, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
@@ -140,7 +251,58 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testAddTravel3() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("K1234");
         request.setTrainTypeName("K");
+        request.setRouteId("route-456");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "K");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/K"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-456");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-456"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock addTravel call
         HttpEntity<TravelInfo> requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response<>(0, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
@@ -156,7 +318,58 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testAddTravel4() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("K1234");
         request.setTrainTypeName("K");
+        request.setRouteId("route-456");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "K");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/K"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-456");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-456"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock addTravel call
         HttpEntity<TravelInfo> requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response<>(1, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
@@ -173,7 +386,60 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testUpdateTravel1() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("G1234");
         request.setTrainTypeName("G");
+        request.setRouteId("route-123");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        TrainType trainType = new TrainType("G", 100, 50);
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "G");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/G"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Route route = new Route("route-123", stations, new ArrayList<>(), "Shanghai", "Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-123");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-123"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock updateTravel call
         HttpEntity<TravelInfo> requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response(1, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);
@@ -189,7 +455,58 @@ public class AdminTravelServiceImplTest {
     @Test
     public void testUpdateTravel2() {
         TravelInfo request = new TravelInfo();
+        request.setTripId("K1234");
         request.setTrainTypeName("K");
+        request.setRouteId("route-456");
+        request.setStartStationName("Shanghai");
+        request.setTerminalStationName("Beijing");
+        
+        // Mock checkStationsExists
+        Map<String, String> stationMap = new HashMap<>();
+        stationMap.put("Shanghai", "shanghai-id");
+        stationMap.put("Beijing", "beijing-id");
+        Response<Map<String, String>> stationResponse = new Response<>(1, "check stations Exist succeed", stationMap);
+        ResponseEntity<Response> stationRe = new ResponseEntity<>(stationResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/stationservice/stations/idlist"),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(stationRe);
+        
+        // Mock queryTrainTypeByName
+        Map<String, Object> trainTypeMap = new HashMap<>();
+        trainTypeMap.put("id", null);
+        trainTypeMap.put("name", "K");
+        trainTypeMap.put("economyClass", 100);
+        trainTypeMap.put("confortClass", 50);
+        trainTypeMap.put("averageSpeed", 0);
+        Response trainTypeResponse = new Response<>(1, null, trainTypeMap);
+        ResponseEntity<Response> trainTypeRe = new ResponseEntity<>(trainTypeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/trainservice/trains/byName/K"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(trainTypeRe);
+        
+        // Mock getRouteByRouteId
+        List<String> stations = new ArrayList<>();
+        stations.add("Shanghai");
+        stations.add("Beijing");
+        Map<String, Object> routeMap = new HashMap<>();
+        routeMap.put("id", "route-456");
+        routeMap.put("stations", stations);
+        routeMap.put("distances", new ArrayList<>());
+        routeMap.put("startStation", "Shanghai");
+        routeMap.put("endStation", "Beijing");
+        Response routeResponse = new Response<>(1, null, routeMap);
+        ResponseEntity<Response> routeRe = new ResponseEntity<>(routeResponse, HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(
+                Mockito.contains("/api/v1/routeservice/routes/route-456"),
+                Mockito.eq(HttpMethod.GET),
+                Mockito.any(HttpEntity.class),
+                Mockito.eq(Response.class))).thenReturn(routeRe);
+        
+        // Mock updateTravel call
         HttpEntity<TravelInfo> requestEntity2 = new HttpEntity<>(request, headers);
         Response response = new Response(1, null, null);
         ResponseEntity<Response> re = new ResponseEntity<>(response, HttpStatus.OK);

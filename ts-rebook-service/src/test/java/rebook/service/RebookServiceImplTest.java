@@ -15,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import edu.fudan.common.entity.*;
 import rebook.entity.RebookInfo;
@@ -32,11 +34,19 @@ public class RebookServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    private static final String seatServiceHost = "ts-seat-service";
+    private static final int seatServicePort = 18898;
+
     private HttpHeaders headers = new HttpHeaders();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(rebookServiceImpl, "seatServiceHost", seatServiceHost);
+        ReflectionTestUtils.setField(rebookServiceImpl, "seatServicePort", seatServicePort);
     }
 
     @Test
@@ -129,17 +139,16 @@ public class RebookServiceImplTest {
 
     @Test
     public void testDipatchSeat() {
-        Seat seatRequest = new Seat(StringUtils.Date2String(new Date()), "G1234", "start_station", "dest_station", 2, 100, null);
-        HttpEntity requestEntityTicket = new HttpEntity<>(seatRequest, headers);
         Response<Ticket> response = new Response<>();
+        response.setData(null); // Explicitly set data to null
         ResponseEntity<Response<Ticket>> reTicket = new ResponseEntity<>(response, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
-                "http://ts-seat-service:18898/api/v1/seatservice/seats",
-                HttpMethod.POST,
-                requestEntityTicket,
-                new ParameterizedTypeReference<Response<Ticket>>() {
-                })).thenReturn(reTicket);
-        Ticket result = rebookServiceImpl.dipatchSeat(StringUtils.Date2String(new Date()), "G1234", "start_station", "dest_station", 2, 100, null,headers);
+                Mockito.anyString(),
+                Mockito.eq(HttpMethod.POST),
+                Mockito.any(HttpEntity.class),
+                Mockito.any(ParameterizedTypeReference.class)))
+                .thenReturn(reTicket);
+        Ticket result = rebookServiceImpl.dipatchSeat(StringUtils.Date2String(new Date()), "G1234", "start_station", "dest_station", 2, 100, null, headers);
         Assert.assertNull(result);
     }
 
