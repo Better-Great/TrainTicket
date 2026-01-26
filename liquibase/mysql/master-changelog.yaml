@@ -31,6 +31,21 @@ databaseChangeLog:
       file: ts-consign/changelog.yaml
       relativeToChangelogFile: true
   
+  # Config Service
+  - include:
+      file: ts-config/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Contacts Service
+  - include:
+      file: ts-contacts/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Delivery Service
+  - include:
+      file: ts-delivery/changelog.yaml
+      relativeToChangelogFile: true
+  
   # Food Delivery Service
   - include:
       file: ts-food-delivery/changelog.yaml

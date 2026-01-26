@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-delivery-table
+      author: devops
+      comment: Create delivery table for ts-delivery-service
+      changes:
+        - createTable:
+            tableName: delivery
+            catalogName: ts-delivery-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: food_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: store_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: station_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true

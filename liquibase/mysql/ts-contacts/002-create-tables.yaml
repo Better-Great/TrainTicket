@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-contacts-table
+      author: devops
+      comment: Create contacts table for ts-contacts-service
+      changes:
+        - createTable:
+            tableName: contacts
+            catalogName: ts-contacts-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: account_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: document_type
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: document_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: phone_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: account_document_idx
+                  columns:
+                    - column:
+                        name: account_id
+                    - column:
+                        name: document_number
+                    - column:
+                        name: document_type
+                  unique: true
+

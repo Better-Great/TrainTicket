@@ -1,0 +1,49 @@
+databaseChangeLog:
+  # ============================================================================
+  # Rename columns from camelCase to snake_case to match Hibernate naming
+  # ============================================================================
+  # Hibernate's default naming strategy converts camelCase to snake_case,
+  # so we need to rename the columns to match what Hibernate expects.
+  # ============================================================================
+
+  - changeSet:
+      id: rename-inside-payment-columns
+      author: devops
+      comment: Rename camelCase columns to snake_case in inside_payment table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: inside_payment
+            columnName: orderId
+            catalogName: ts-inside-payment-mysql
+      changes:
+        - renameColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_payment
+            oldColumnName: orderId
+            newColumnName: order_id
+            columnDataType: varchar(36)
+        - renameColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_payment
+            oldColumnName: userId
+            newColumnName: user_id
+            columnDataType: varchar(36)
+
+  - changeSet:
+      id: rename-inside-money-columns
+      author: devops
+      comment: Rename camelCase columns to snake_case in inside_money table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: inside_money
+            columnName: userId
+            catalogName: ts-inside-payment-mysql
+      changes:
+        - renameColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_money
+            oldColumnName: userId
+            newColumnName: user_id
+            columnDataType: varchar(36)
