@@ -1,0 +1,85 @@
+databaseChangeLog:
+  # ============================================================================
+  # Rename columns from camelCase to snake_case to match Hibernate naming
+  # ============================================================================
+  # Hibernate's default naming strategy converts camelCase to snake_case,
+  # so we need to rename the columns to match what Hibernate expects.
+  # ============================================================================
+
+  - changeSet:
+      id: rename-orders-columns
+      author: devops
+      comment: Rename camelCase columns to snake_case in orders table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: orders
+            columnName: documentType
+            catalogName: ts-order-mysql
+      changes:
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: boughtDate
+            newColumnName: bought_date
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: travelDate
+            newColumnName: travel_date
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: travelTime
+            newColumnName: travel_time
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: accountId
+            newColumnName: account_id
+            columnDataType: varchar(36)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: contactsName
+            newColumnName: contacts_name
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: documentType
+            newColumnName: document_type
+            columnDataType: int
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: contactsDocumentNumber
+            newColumnName: contacts_document_number
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: trainNumber
+            newColumnName: train_number
+            columnDataType: varchar(255)
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: coachNumber
+            newColumnName: coach_number
+            columnDataType: int
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: seatClass
+            newColumnName: seat_class
+            columnDataType: int
+        - renameColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            oldColumnName: seatNumber
+            newColumnName: seat_number
+            columnDataType: varchar(255)

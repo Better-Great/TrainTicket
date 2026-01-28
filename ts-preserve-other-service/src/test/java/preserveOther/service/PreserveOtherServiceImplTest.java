@@ -148,10 +148,6 @@ public class PreserveOtherServiceImplTest {
         Response<TripAllDetail> response3 = new Response<>(1, null, tripAllDetail);
         ResponseEntity<Response<TripAllDetail>> re3 = new ResponseEntity<>(response3, HttpStatus.OK);
 
-        //response for queryForStationId()
-        Response<String> response4 = new Response<>(null, null, "");
-        ResponseEntity<Response<String>> re4 = new ResponseEntity<>(response4, HttpStatus.OK);
-
         //response for travel result
         TravelResult travelResult = new TravelResult();
         travelResult.setPrices( new HashMap<String, String>(){{ put("confortClass", "1.0"); put("economyClass", "0.75"); }} );
@@ -168,13 +164,13 @@ public class PreserveOtherServiceImplTest {
         trainType.setEconomyClass(100);
         travelResult.setTrainType(trainType);
         
-        Response<TravelResult> response5 = new Response<>(null, null, travelResult);
+        Response<TravelResult> response5 = new Response<>(1, null, travelResult);
         ResponseEntity<Response<TravelResult>> re5 = new ResponseEntity<>(response5, HttpStatus.OK);
 
         //response for dipatchSeat()
         Ticket ticket = new Ticket();
         ticket.setSeatNo(1);
-        Response<Ticket> response6 = new Response<>(null, null, ticket);
+        Response<Ticket> response6 = new Response<>(1, null, ticket);
         ResponseEntity<Response<Ticket>> re6 = new ResponseEntity<>(response6, HttpStatus.OK);
 
         //response for createOrder()
@@ -203,7 +199,20 @@ public class PreserveOtherServiceImplTest {
                 Mockito.any(HttpMethod.class),
                 Mockito.any(HttpEntity.class),
                 Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(re2).thenReturn(re3).thenReturn(re4).thenReturn(re4).thenReturn(re5).thenReturn(re6).thenReturn(re7).thenReturn(re8).thenReturn(re9);
+                // getContactsById
+                .thenReturn(re2)
+                // getTripAllDetailInformation
+                .thenReturn(re3)
+                // basic service travel query
+                .thenReturn(re5)
+                // dispatchSeat
+                .thenReturn(re6)
+                // createOrder
+                .thenReturn(re7)
+                // addAssuranceForOrder
+                .thenReturn(re8)
+                // getAccount
+                .thenReturn(re9);
 
         Response result = preserveOtherServiceImpl.preserve(oti, headers);
         Assert.assertEquals(new Response<>(1, "Success.", null), result);

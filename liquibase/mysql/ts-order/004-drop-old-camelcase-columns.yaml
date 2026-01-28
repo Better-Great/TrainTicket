@@ -1,0 +1,63 @@
+databaseChangeLog:
+  # ============================================================================
+  # Drop old camelCase columns that were duplicated by the rename changeset
+  # ============================================================================
+  # The rename changeset created new columns instead of renaming, so we need
+  # to drop the old camelCase columns and keep only the snake_case ones.
+  # ============================================================================
+
+  - changeSet:
+      id: drop-old-orders-columns
+      author: devops
+      comment: Drop old camelCase columns from orders table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: orders
+            columnName: documentType
+            catalogName: ts-order-mysql
+      changes:
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: boughtDate
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: travelDate
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: travelTime
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: accountId
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: contactsName
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: documentType
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: contactsDocumentNumber
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: trainNumber
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: coachNumber
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: seatClass
+        - dropColumn:
+            catalogName: ts-order-mysql
+            tableName: orders
+            columnName: seatNumber

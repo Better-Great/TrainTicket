@@ -1,0 +1,43 @@
+databaseChangeLog:
+  # ============================================================================
+  # Drop old camelCase columns that were duplicated by the rename changeset
+  # ============================================================================
+  # The rename changeset created new columns instead of renaming, so we need
+  # to drop the old camelCase columns and keep only the snake_case ones.
+  # ============================================================================
+
+  - changeSet:
+      id: drop-old-inside-payment-columns
+      author: devops
+      comment: Drop old camelCase columns from inside_payment table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: inside_payment
+            columnName: orderId
+            catalogName: ts-inside-payment-mysql
+      changes:
+        - dropColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_payment
+            columnName: orderId
+        - dropColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_payment
+            columnName: userId
+
+  - changeSet:
+      id: drop-old-inside-money-columns
+      author: devops
+      comment: Drop old camelCase columns from inside_money table
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: inside_money
+            columnName: userId
+            catalogName: ts-inside-payment-mysql
+      changes:
+        - dropColumn:
+            catalogName: ts-inside-payment-mysql
+            tableName: inside_money
+            columnName: userId

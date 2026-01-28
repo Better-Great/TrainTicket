@@ -9,10 +9,10 @@ databaseChangeLog:
   - changeSet:
       id: create-payment-table
       author: devops
-      comment: Create Payment table for ts-payment-service
+      comment: Create payment table for ts-payment-service
       changes:
         - createTable:
-            tableName: Payment
+            tableName: payment
             catalogName: ts-payment-mysql
             columns:
               - column:
@@ -22,12 +22,12 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: orderId
+                  name: order_id
                   type: varchar(36)
                   constraints:
                     nullable: false
               - column:
-                  name: userId
+                  name: user_id
                   type: varchar(36)
                   constraints:
                     nullable: false
@@ -40,10 +40,10 @@ databaseChangeLog:
   - changeSet:
       id: create-money-table
       author: devops
-      comment: Create Money table for ts-payment-service
+      comment: Create money table for ts-payment-service
       changes:
         - createTable:
-            tableName: Money
+            tableName: money
             catalogName: ts-payment-mysql
             columns:
               - column:
@@ -53,7 +53,7 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: userId
+                  name: user_id
                   type: varchar(36)
                   constraints:
                     nullable: true

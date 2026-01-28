@@ -40,6 +40,24 @@ services:
       retries: 10
     command: --default-authentication-plugin=mysql_native_password
 
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: trainticket-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASSWORD: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI port
+    networks:
+      - trainticket-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   # Gateway Service
   ts-gateway-service:
     build: ./ts-gateway-service
