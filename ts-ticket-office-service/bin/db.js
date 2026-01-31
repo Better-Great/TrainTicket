@@ -2,16 +2,17 @@
  * Created by dingding on 2017/10/13.
  */
 var HOST=process.env.TICKET_OFFICE_MYSQL_HOST
-var PORT=process.env.TICKET_OFFICE_MYSQL_PORT
+var PORT=process.env.TICKET_OFFICE_MYSQL_PORT || 3307
 var USER=process.env.TICKET_OFFICE_MYSQL_USER
 var PASSWORD=process.env.TICKET_OFFICE_MYSQL_PASSWORD
 var DATABASE=process.env.TICKET_OFFICE_MYSQL_DATABASE
-var DB_CONN_STR = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE;
-var MysqlClient = require('mysql').createConnection({
+var pool = require('mysql').createPool({
     host: HOST,
+    port: parseInt(PORT, 10) || 3307,
     user: USER,
     password: PASSWORD,
-    database: DATABASE
+    database: DATABASE,
+    connectionLimit: 5
 });
 var fs = require('fs');
 var path = require('path');
@@ -19,20 +20,20 @@ var path = require('path');
 
 
 var initData = function(callback){
-    var sql = "CREATE TABLE IF NOT EXISTS office (name VARCHAR(255), city VARCHAR(255), province VARCHAR(255),region VARCHAR(255), address VARCHAR(255), workTime VARCHAR(32), windowNum INT(10))";
-    MysqlClient.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Table created");
-        callback(result);
+    // Database schema managed by Liquibase - see liquibase/mysql/ts-ticket-office/
+    pool.query("SELECT 1", function (err, result) {
+        if (err) {
+            console.error("MySQL connection error:", err);
+            callback({ok: false});
+            return;
+        }
+        console.log("Database connection verified");
+        callback({ok: true});
     });
-
-    // init data
-    insertEntry('Jinqiao Road ticket sales outlets', 'Shanghai', 'Shanghai', 'Pudong New Area', 'Jinqiao Road 1320, Shanghai, Pudong New Area', '08:00-18:00', 1);
-
 };
 
 var getAllOffices = function(db, callback){
-    MysqlClient.query("SELECT * FROM office", function (err, result, fields) {
+    pool.query("SELECT * FROM office", function (err, result, fields) {
         if (err) throw err;
         console.log(result);
         callback(result);
@@ -44,7 +45,7 @@ var getSpecificOffices = function(province, city, region, db, callback){
     var where_sql= "WHERE province = '" + province + "' AND city = '" + city + "' AND region = '" + region + "'";
     var sql = "SELECT * FROM office " + where_sql;
     console.log("getSpecificOffices sql:", sql);
-    MysqlClient.query(sql, function (err, result, fields) {
+    pool.query(sql, function (err, result, fields) {
         if (err) throw err;
         console.log(result);
         callback(result);
@@ -61,7 +62,7 @@ var addOffice = function(province, city, region, office, db, callback){
 var deleteOffice = function(province, city, region, officeName, db, callback){
     var where_sql= "WHERE name = '" + officeName + "' AND province = '" + province + "' AND city = '" + city + "' AND region = '" + region + "'";
     var sql = "DELETE FROM office " + where_sql;
-    MysqlClient.query(sql, function (err, result) {
+    pool.query(sql, function (err, result) {
         if (err) throw err;
         console.log("Number of records deleted: " + result.affectedRows);
         callback(result);
@@ -75,7 +76,7 @@ var updateOffice = function(province, city, region, oldOfficeName, newOffice, db
     var set_sql = "SET name = '" + newOffice.name + "', address = '" + newOffice.address + "', workTime = '" + newOffice.workTime + "', windowNum = " + newOffice.windowNum;
     var sql = "UPDATE office " + set_sql + " " + where_sql;
     console.log("update sql:", sql);
-    MysqlClient.query(sql, function (err, result) {
+    pool.query(sql, function (err, result) {
         if (err) throw err;
         console.log("Number of records updated: " + result.affectedRows);
         callback(result);
@@ -88,64 +89,47 @@ var insertEntry = function(name, city, province, region, address, workTime, wind
     var sql = "INSERT INTO office (name, city, province, region, address, workTime, windowNum)" +
         " VALUES " + values;
     console.log("insert sql", sql);
-    MysqlClient.query(sql, function (err, result) {
+    pool.query(sql, function (err, result) {
         if (err) throw err;
         console.log("1 record inserted, ", result);
     });
 }
 
 exports.initMysql = function(callback){
-    MysqlClient.connect(function(err){
-        console.log("initMysql连接上数据库啦！");
-        initData(function(result){
-            callback(result);
-        });
-    })
+    initData(function(result){
+        if (result.ok) console.log("initMysql连接上数据库啦！");
+        callback(result);
+    });
 };
 
 exports.getAll = function(callback){
-    MysqlClient.connect(DB_CONN_STR, function(err, db){
-        console.log("getAll连接上数据库啦！");
-        getAllOffices(db, function(result){
-            callback(result);
-        });
-    })
+    getAllOffices(null, function(result){
+        callback(result);
+    });
 };
 
 exports.getSpecificOffices = function(province, city, region, callback){
-    MysqlClient.connect(DB_CONN_STR, function(err, db){
-        console.log("getSpecificOffices连接上数据库啦！");
-        getSpecificOffices(province, city, region, db, function(result){
-            callback(result);
-        });
-    })
+    getSpecificOffices(province, city, region, null, function(result){
+        callback(result);
+    });
 };
 
 exports.addOffice = function(province, city, region, office, callback){
-    MysqlClient.connect(DB_CONN_STR, function(err, db){
-        console.log("addOffice连接上数据库啦！");
-        addOffice(province, city, region, office, db, function(result){
-            callback(result);
-        });
-    })
+    addOffice(province, city, region, office, null, function(result){
+        callback(result);
+    });
 };
 
 exports.deleteOffice = function(province, city, region, officeName, callback){
-    MysqlClient.connect(DB_CONN_STR, function(err, db){
-        console.log("deleteOffice连接上数据库啦！");
-        deleteOffice(province, city, region, officeName, db, function(result){
-            callback(result);
-        });
-    })
+    deleteOffice(province, city, region, officeName, null, function(result){
+        callback(result);
+    });
 };
 
 exports.updateOffice = function(province, city, region, oldOfficeName, newOffice, callback){
-    MysqlClient.connect(DB_CONN_STR, function(err, db){
-        console.log("updateOffice连接上数据库啦！");
-        updateOffice(province, city, region, oldOfficeName, newOffice, db, function(result){
-            callback(result);
-        });
-    })
+    updateOffice(province, city, region, oldOfficeName, newOffice, null, function(result){
+        callback(result);
+    });
 };
 
 
