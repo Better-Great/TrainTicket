@@ -1,0 +1,38 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-security-service
+  # ============================================================================
+  # Based on security.entity.SecurityConfig entity:
+  # - id (String/UUID), name, value, description
+  # ============================================================================
+
+  - changeSet:
+      id: create-security-config-table
+      author: devops
+      comment: Create security_config table for ts-security-service
+      changes:
+        - createTable:
+            tableName: security_config
+            catalogName: ts-security-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: value
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: true

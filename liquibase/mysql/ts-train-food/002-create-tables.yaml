@@ -1,0 +1,72 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-train-food-service
+  # ============================================================================
+  # Based on trainFood.entity.TrainFood entity:
+  # - id (String/UUID), tripId (unique)
+  # - @ElementCollection List<Food> with @CollectionTable(name = "train_food_list", joinColumns = @JoinColumn(name = "trip_id"))
+  # - trip_id in collection table references TrainFood.id (PK)
+  # - Food embeddable: foodName, price -> columns foodList_foodName, foodList_price
+  # ============================================================================
+
+  - changeSet:
+      id: create-train-food-table
+      author: devops
+      comment: Create train_food table for ts-train-food-service
+      changes:
+        - createTable:
+            tableName: train_food
+            catalogName: ts-train-food-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: trip_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: create-train-food-list-table
+      author: devops
+      comment: Create train_food_list collection table for foodList (ElementCollection with Food embeddable)
+      changes:
+        - createTable:
+            tableName: train_food_list
+            catalogName: ts-train-food-mysql
+            columns:
+              - column:
+                  name: trip_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: foodList_foodName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: foodList_price
+                  type: double
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_train_food_list_trip_id
+                  columns:
+                    - column:
+                        name: trip_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_train_food_list_trip_id
+                  referencedTableCatalogName: ts-train-food-mysql
+                  referencedTableName: train_food
+                  referencedColumnNames: id
+                  columns:
+                    - column:
+                        name: trip_id
