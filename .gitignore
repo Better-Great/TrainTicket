@@ -39,3 +39,6 @@ logs/*
 
 # Ignore all application.properties files
 application.properties
+
+# Node.js
+node_modules/
