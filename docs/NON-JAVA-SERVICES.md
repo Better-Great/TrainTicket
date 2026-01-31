@@ -15,7 +15,12 @@ This document covers **ts-voucher-service** (Python), **ts-ui-dashboard** (stati
 
 ```bash
 cd ts-voucher-service
-pip install -r requirements.txt
+
+# Activate virtual environment
+source .venv/bin/activate   # Linux/macOS
+# or: .venv\Scripts\activate  # Windows
+
+# Dependencies already installed in .venv (or: pip install -r requirements.txt)
 
 # Set env if MySQL is on different host (e.g. Docker on localhost:3307)
 export VOUCHER_MYSQL_HOST=127.0.0.1
@@ -52,20 +57,15 @@ No automated unit tests (no pytest/test_*.py).
 docker compose -f docker-compose.minimal.yml up -d ts-ui-dashboard
 ```
 
-Or build and run:
+### Run locally
 
 ```bash
-docker build -t ts-ui-dashboard ./ts-ui-dashboard
-docker run -p 8080:8080 ts-ui-dashboard
-```
-
-### Run locally (nginx)
-
-```bash
-# Copy static to nginx html dir or serve with any static server
 cd ts-ui-dashboard
-python -m http.server 8080 --directory static  # minimal test (no /api proxy)
+./run-local.sh
+# or: python3 -m http.server 8080 --directory static
 ```
+
+Serves static files on http://localhost:8080. For `/api/v1/` proxy to gateway, use Docker or nginx.
 
 ### Verify
 
@@ -90,15 +90,13 @@ No unit tests (static frontend).
 cd ts-ticket-office-service
 npm install
 
-# Required env vars for MySQL
-export TICKET_OFFICE_MYSQL_HOST=127.0.0.1
-export TICKET_OFFICE_MYSQL_PORT=3307
-export TICKET_OFFICE_MYSQL_USER=root
-export TICKET_OFFICE_MYSQL_PASSWORD=root
-export TICKET_OFFICE_MYSQL_DATABASE=ts-ticket-office-mysql
+# Copy .env.example and edit, or set env vars (defaults in .env for local dev)
+# TICKET_OFFICE_MYSQL_HOST=127.0.0.1 TICKET_OFFICE_MYSQL_PORT=3307 etc.
 
 npm start
 ```
+
+For local dev, a `.env` file (gitignored) with MySQL config is used if present. In Docker/K8s, env vars are set by the orchestrator.
 
 ### Verify
 
