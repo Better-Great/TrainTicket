@@ -126,6 +126,16 @@ databaseChangeLog:
       file: ts-wait-order/changelog.yaml
       relativeToChangelogFile: true
 
+  # Voucher Service
+  - include:
+      file: ts-voucher/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Ticket Office Service
+  - include:
+      file: ts-ticket-office/changelog.yaml
+      relativeToChangelogFile: true
+
   # Inside Payment Service
   - include:
       file: ts-inside-payment/changelog.yaml

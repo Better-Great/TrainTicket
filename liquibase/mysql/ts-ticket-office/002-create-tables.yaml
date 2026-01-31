@@ -1,0 +1,82 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-ticket-office-service (Node.js/Express)
+  # ============================================================================
+  # Schema from bin/db.js initData()
+  # ============================================================================
+
+  - changeSet:
+      id: create-office-table
+      author: devops
+      comment: Create office table for ts-ticket-office-service
+      changes:
+        - createTable:
+            tableName: office
+            catalogName: ts-ticket-office-mysql
+            columns:
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: province
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: region
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: address
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: workTime
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: windowNum
+                  type: int
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: seed-office-initial
+      author: devops
+      comment: Insert initial office seed data
+      changes:
+        - insert:
+            catalogName: ts-ticket-office-mysql
+            tableName: office
+            columns:
+              - column:
+                  name: name
+                  value: "Jinqiao Road ticket sales outlets"
+              - column:
+                  name: city
+                  value: Shanghai
+              - column:
+                  name: province
+                  value: Shanghai
+              - column:
+                  name: region
+                  value: Pudong New Area
+              - column:
+                  name: address
+                  value: "Jinqiao Road 1320, Shanghai, Pudong New Area"
+              - column:
+                  name: workTime
+                  value: "08:00-18:00"
+              - column:
+                  name: windowNum
+                  valueNumeric: 1

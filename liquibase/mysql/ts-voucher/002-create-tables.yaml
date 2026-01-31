@@ -1,0 +1,73 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-voucher-service (Python/Tornado)
+  # ============================================================================
+  # Schema from server.py initDatabase()
+  # ============================================================================
+
+  - changeSet:
+      id: create-voucher-table
+      author: devops
+      comment: Create voucher table for ts-voucher-service
+      changes:
+        - createTable:
+            tableName: voucher
+            catalogName: ts-voucher-mysql
+            columns:
+              - column:
+                  name: voucher_id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: travelDate
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: travelTime
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contactName
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: trainNumber
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seatClass
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seatNumber
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: startStation
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destStation
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: float
+                  constraints:
+                    nullable: false
