@@ -1,8 +1,12 @@
 #coding:utf-8
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 import tornado.ioloop
 import tornado.web
 import json
-import os
 import pymysql
 import urllib
 import urllib.request
@@ -101,33 +105,6 @@ def make_app():
         (r"/getVoucher", GetVoucherHandler)
     ])
 
-def initDatabase():
-    # Create a connection
-    print(mysql_config)
-    connect = pymysql.connect(**mysql_config)
-    cur = connect.cursor()
-
-    #Create the table
-    sql = """
-    CREATE TABLE if not exists voucher (
-    voucher_id INT NOT NULL AUTO_INCREMENT,
-    order_id VARCHAR(1024) NOT NULL,
-    travelDate VARCHAR(1024) NOT NULL,
-    travelTime VARCHAR(1024) NOT NULL,
-    contactName VARCHAR(1024) NOT NULL,
-    trainNumber VARCHAR(1024) NOT NULL,
-    seatClass INT NOT NULL,
-    seatNumber VARCHAR(1024) NOT NULL,
-    startStation VARCHAR(1024) NOT NULL,
-    destStation VARCHAR(1024) NOT NULL,
-    price FLOAT NOT NULL,
-    PRIMARY KEY (voucher_id));"""
-    try:
-        cur.execute(sql)
-        connect.commit()
-    finally:
-        connect.close()
-
 def initMysqlConfig():
     global mysql_config
     host = "ts-voucher-mysql"
@@ -156,9 +133,9 @@ def initMysqlConfig():
 
 
 if __name__ == "__main__":
-    #Create database and tables
+    # Database schema managed by Liquibase - see liquibase/mysql/ts-voucher/
     initMysqlConfig()
-    initDatabase()
+    print("MySQL config:", {k: v for k, v in mysql_config.items() if k != 'password'})
     app = make_app()
     app.listen(16101)
     tornado.ioloop.IOLoop.current().start()

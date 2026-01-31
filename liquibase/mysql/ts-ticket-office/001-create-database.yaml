@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-ticket-office-database
+      author: devops
+      comment: Create database for ts-ticket-office-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-ticket-office-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-ticket-office-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;

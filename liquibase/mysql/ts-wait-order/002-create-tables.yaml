@@ -1,0 +1,92 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-wait-order-service
+  # ============================================================================
+  # Based on waitorder.entity.WaitListOrder
+  # ============================================================================
+
+  - changeSet:
+      id: create-wait-list-order-table
+      author: devops
+      comment: Create wait_list_order table for ts-wait-order-service
+      changes:
+        - createTable:
+            tableName: wait_list_order
+            catalogName: ts-wait-order-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: travel_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: account_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contacts_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contacts_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contacts_document_type
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contacts_document_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: train_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: seat_type
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: from_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: to_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: price
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: wait_util_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: int
+                  constraints:
+                    nullable: true
