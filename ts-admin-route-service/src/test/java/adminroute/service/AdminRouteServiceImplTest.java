@@ -19,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(JUnit4.class)
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class AdminRouteServiceImplTest {
 
     // Service hosts and ports from properties/dev.application.ini (matching property names)
@@ -82,9 +83,9 @@ public class AdminRouteServiceImplTest {
                 Mockito.eq(HttpMethod.POST),
                 Mockito.any(HttpEntity.class),
                 Mockito.eq(Response.class))).thenReturn(checkRe);
-        
+
         // Mock the route service call
-        ResponseEntity<Response<Route>> re2 = new ResponseEntity<>(response, HttpStatus.OK);
+        ResponseEntity<Response<Route>> re2 = new ResponseEntity<>(new Response<>(), HttpStatus.OK);
         Mockito.when(restTemplate.exchange(
                 Mockito.eq("http://" + routeServiceHost + ":" + routeServicePort + "/api/v1/routeservice/routes"),
                 Mockito.eq(HttpMethod.POST),

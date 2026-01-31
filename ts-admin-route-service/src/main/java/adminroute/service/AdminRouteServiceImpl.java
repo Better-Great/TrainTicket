@@ -21,6 +21,7 @@ import java.util.Map;
  * @author fdse
  */
 @Service
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class AdminRouteServiceImpl implements AdminRouteService {
     @Autowired
     private RestTemplate restTemplate;

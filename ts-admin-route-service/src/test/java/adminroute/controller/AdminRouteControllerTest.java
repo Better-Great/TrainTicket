@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(JUnit4.class)
+@SuppressWarnings("rawtypes")
 public class AdminRouteControllerTest {
 
     @InjectMocks
