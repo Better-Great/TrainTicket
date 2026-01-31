@@ -15,7 +15,7 @@ SUCCESS_COUNT=0
 FAILED_COUNT=0
 TOTAL_COUNT=0
 
-# Function to build a single service
+# Function to build a single service (Java only; skips if no pom.xml)
 build_service() {
     local service_name=$1
     local service_dir="ts-$service_name-service"
@@ -23,6 +23,11 @@ build_service() {
     if [ ! -d "$service_dir" ]; then
         echo -e "${RED}✗ $service_dir: Directory not found${NC}"
         return 1
+    fi
+    
+    if [ ! -f "$service_dir/pom.xml" ]; then
+        echo -e "${YELLOW}⊘ $service_dir: Not a Java service (no pom.xml), skipping${NC}"
+        return 0
     fi
     
     echo -e "${BLUE}[$(date '+%H:%M:%S')] Building $service_dir...${NC}"
@@ -41,33 +46,31 @@ build_service() {
     fi
 }
 
-# Function to build all services
+# Function to build all services (Java only; skips ts-*-service dirs without pom.xml)
 build_all_services() {
     echo -e "${YELLOW}=========================================="
-    echo -e "Building All Train Ticket Microservices"
+    echo -e "Building All Train Ticket Microservices (Java)"
     echo -e "==========================================${NC}"
     
-    # Get all service directories
-    local services=($(ls -d ts-*-service 2>/dev/null))
-    
-    if [ ${#services[@]} -eq 0 ]; then
-        echo -e "${RED}No service directories found!${NC}"
-        exit 1
-    fi
-    
-    TOTAL_COUNT=${#services[@]}
-    
-    for service_dir in "${services[@]}"; do
-        # Extract service name (remove ts- prefix and -service suffix)
+    local count=0
+    for service_dir in ts-*-service; do
+        [ -d "$service_dir" ] || continue
+        [ -f "$service_dir/pom.xml" ] || continue
         local service_name=${service_dir#ts-}
         service_name=${service_name%-service}
-        
+        count=$((count + 1))
+        TOTAL_COUNT=$count
         if build_service "$service_name"; then
             ((SUCCESS_COUNT++))
         else
             ((FAILED_COUNT++))
         fi
     done
+    
+    if [ $count -eq 0 ]; then
+        echo -e "${RED}No Java service directories (ts-*-service with pom.xml) found.${NC}"
+        exit 1
+    fi
 }
 
 # Function to show build summary
