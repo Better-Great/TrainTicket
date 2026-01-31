@@ -101,6 +101,11 @@ databaseChangeLog:
       file: ts-station-food/changelog.yaml
       relativeToChangelogFile: true
 
+  # Train Service
+  - include:
+      file: ts-train/changelog.yaml
+      relativeToChangelogFile: true
+
   # Train Food Service
   - include:
       file: ts-train-food/changelog.yaml

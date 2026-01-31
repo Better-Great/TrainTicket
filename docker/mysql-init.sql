@@ -19,6 +19,7 @@ CREATE DATABASE IF NOT EXISTS `ts-security-mysql` CHARACTER SET utf8mb4 COLLATE 
 CREATE DATABASE IF NOT EXISTS `ts-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-station-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-station-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-train-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-train-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-inside-payment-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -39,6 +40,7 @@ GRANT ALL PRIVILEGES ON `ts-security-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-food-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-station-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-station-food-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-train-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-train-food-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-inside-payment-mysql`.* TO 'beta'@'%';
 FLUSH PRIVILEGES;

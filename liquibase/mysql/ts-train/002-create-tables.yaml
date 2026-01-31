@@ -1,0 +1,44 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-train-service
+  # ============================================================================
+  # Based on train.entity.TrainType:
+  # - id (String/UUID), name (unique), economy_class, confort_class, average_speed
+  # ============================================================================
+
+  - changeSet:
+      id: create-train-type-table
+      author: devops
+      comment: Create train_type table for ts-train-service
+      changes:
+        - createTable:
+            tableName: train_type
+            catalogName: ts-train-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: economy_class
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: confort_class
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: average_speed
+                  type: int
+                  constraints:
+                    nullable: true
