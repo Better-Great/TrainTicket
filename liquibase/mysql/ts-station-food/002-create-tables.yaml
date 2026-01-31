@@ -1,0 +1,99 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-station-food-service
+  # ============================================================================
+  # Based on food.entity.StationFoodStore entity:
+  # - store_id, station_name, store_name, telephone, business_time, delivery_fee
+  # - @ElementCollection List<Food> with @CollectionTable(name = "station_food_list", joinColumns = @JoinColumn(name = "store_id"))
+  # - Food embeddable: foodName, price -> columns foodList_foodName, foodList_price
+  # ============================================================================
+
+  - changeSet:
+      id: create-station-food-store-table
+      author: devops
+      comment: Create station_food_store table for ts-station-food-service
+      changes:
+        - createTable:
+            tableName: station_food_store
+            catalogName: ts-station-food-mysql
+            columns:
+              - column:
+                  name: store_id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: station_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: store_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: telephone
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: business_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: delivery_fee
+                  type: double
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: station_store_idx
+                  columns:
+                    - column:
+                        name: station_name
+                    - column:
+                        name: store_name
+                  unique: true
+
+  - changeSet:
+      id: create-station-food-list-table
+      author: devops
+      comment: Create station_food_list collection table for foodList (ElementCollection with Food embeddable)
+      changes:
+        - createTable:
+            tableName: station_food_list
+            catalogName: ts-station-food-mysql
+            columns:
+              - column:
+                  name: store_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: foodList_foodName
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: foodList_price
+                  type: double
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_station_food_list_store_id
+                  columns:
+                    - column:
+                        name: store_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_station_food_list_store_id
+                  referencedTableCatalogName: ts-station-food-mysql
+                  referencedTableName: station_food_store
+                  referencedColumnNames: store_id
+                  columns:
+                    - column:
+                        name: store_id

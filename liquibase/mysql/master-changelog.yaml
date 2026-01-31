@@ -31,6 +31,21 @@ databaseChangeLog:
       file: ts-consign/changelog.yaml
       relativeToChangelogFile: true
   
+  # Config Service
+  - include:
+      file: ts-config/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Contacts Service
+  - include:
+      file: ts-contacts/changelog.yaml
+      relativeToChangelogFile: true
+  
+  # Delivery Service
+  - include:
+      file: ts-delivery/changelog.yaml
+      relativeToChangelogFile: true
+  
   # Food Delivery Service
   - include:
       file: ts-food-delivery/changelog.yaml
@@ -51,6 +66,21 @@ databaseChangeLog:
       file: ts-payment/changelog.yaml
       relativeToChangelogFile: true
 
+  # Price Service
+  - include:
+      file: ts-price/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Route Service
+  - include:
+      file: ts-route/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Security Service
+  - include:
+      file: ts-security/changelog.yaml
+      relativeToChangelogFile: true
+
   # Notification Service
   - include:
       file: ts-notification/changelog.yaml
@@ -59,6 +89,21 @@ databaseChangeLog:
   # Food Service
   - include:
       file: ts-food/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Station Service
+  - include:
+      file: ts-station/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Station Food Service
+  - include:
+      file: ts-station-food/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Train Food Service
+  - include:
+      file: ts-train-food/changelog.yaml
       relativeToChangelogFile: true
 
   # Inside Payment Service

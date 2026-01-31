@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-delivery-database
+      author: devops
+      comment: Create database for ts-delivery-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-delivery-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-delivery-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;

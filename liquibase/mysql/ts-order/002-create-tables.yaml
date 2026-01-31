@@ -22,57 +22,57 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: boughtDate
+                  name: bought_date
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: travelDate
+                  name: travel_date
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: travelTime
+                  name: travel_time
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: accountId
+                  name: account_id
                   type: varchar(36)
                   constraints:
                     nullable: true
               - column:
-                  name: contactsName
+                  name: contacts_name
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: documentType
+                  name: document_type
                   type: int
                   constraints:
                     nullable: false
               - column:
-                  name: contactsDocumentNumber
+                  name: contacts_document_number
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: trainNumber
+                  name: train_number
                   type: varchar(255)
                   constraints:
                     nullable: true
               - column:
-                  name: coachNumber
+                  name: coach_number
                   type: int
                   constraints:
                     nullable: false
               - column:
-                  name: seatClass
+                  name: seat_class
                   type: int
                   constraints:
                     nullable: false
               - column:
-                  name: seatNumber
+                  name: seat_number
                   type: varchar(255)
                   constraints:
                     nullable: true

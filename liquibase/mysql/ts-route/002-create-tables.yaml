@@ -1,0 +1,117 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-route-service
+  # ============================================================================
+  # Based on route.entity.Route entity:
+  # - id (String/UUID), startStation, endStation
+  # - @ElementCollection List<String> stations -> route_stations
+  # - @ElementCollection List<Integer> distances -> route_distances
+  # Hibernate default: Route_stations/route_stations, Route_distances/route_distances
+  # Join column: Route_id/route_id, Order column: stations_ORDER/distances_ORDER
+  # ============================================================================
+
+  - changeSet:
+      id: create-route-table
+      author: devops
+      comment: Create route table for ts-route-service
+      changes:
+        - createTable:
+            tableName: route
+            catalogName: ts-route-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: start_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: end_station
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+
+  - changeSet:
+      id: create-route-stations-table
+      author: devops
+      comment: Create route_stations collection table for @ElementCollection stations
+      changes:
+        - createTable:
+            tableName: route_stations
+            catalogName: ts-route-mysql
+            columns:
+              - column:
+                  name: route_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stations_order
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: stations
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_route_stations_route_id
+                  columns:
+                    - column:
+                        name: route_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_route_stations_route_id
+                  referencedTableCatalogName: ts-route-mysql
+                  referencedTableName: route
+                  referencedColumnNames: id
+                  columns:
+                    - column:
+                        name: route_id
+
+  - changeSet:
+      id: create-route-distances-table
+      author: devops
+      comment: Create route_distances collection table for @ElementCollection distances
+      changes:
+        - createTable:
+            tableName: route_distances
+            catalogName: ts-route-mysql
+            columns:
+              - column:
+                  name: route_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: distances_order
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: distances
+                  type: int
+                  constraints:
+                    nullable: true
+            indexes:
+              - index:
+                  name: idx_route_distances_route_id
+                  columns:
+                    - column:
+                        name: route_id
+            foreignKeys:
+              - foreignKey:
+                  name: fk_route_distances_route_id
+                  referencedTableCatalogName: ts-route-mysql
+                  referencedTableName: route
+                  referencedColumnNames: id
+                  columns:
+                    - column:
+                        name: route_id

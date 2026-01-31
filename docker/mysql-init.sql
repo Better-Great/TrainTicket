@@ -14,7 +14,12 @@ CREATE DATABASE IF NOT EXISTS `ts-order-other-mysql` CHARACTER SET utf8mb4 COLLA
 CREATE DATABASE IF NOT EXISTS `ts-payment-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-notification-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-price-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-route-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-security-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-station-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-station-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-train-food-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-inside-payment-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Grant privileges on specific databases
@@ -29,7 +34,12 @@ GRANT ALL PRIVILEGES ON `ts-order-other-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-payment-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-notification-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-price-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-route-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-security-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-food-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-station-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-station-food-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-train-food-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-inside-payment-mysql`.* TO 'beta'@'%';
 FLUSH PRIVILEGES;
 

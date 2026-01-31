@@ -1,18 +1,12 @@
 databaseChangeLog:
   # ============================================================================
-  # ts-inside-payment-service Database Migrations
+  # ts-config-service Database Migrations
   # ============================================================================
-
+  
   - include:
       file: 001-create-database.yaml
       relativeToChangelogFile: true
   - include:
       file: 002-create-tables.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: 003-rename-columns-to-snake-case.yaml
-      relativeToChangelogFile: true
-  - include:
-      file: 004-drop-old-camelcase-columns.yaml
       relativeToChangelogFile: true
 

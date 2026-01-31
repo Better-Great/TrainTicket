@@ -71,7 +71,7 @@ public class PaymentServiceImpl implements PaymentService{
         Optional<Payment> paymentTemp = paymentRepository.findById(payment.getId());
         if(!paymentTemp.isPresent()){
             paymentRepository.save(payment);
-            PaymentServiceImpl.LOGGER.error("[initPayment][Init payment error][Payment not found][PaymentId: {}]",payment.getId());
+            PaymentServiceImpl.LOGGER.info("[initPayment][Init payment success][Payment created][PaymentId: {}]",payment.getId());
         }else{
             PaymentServiceImpl.LOGGER.info("[initPayment][Init Payment Already Exists][PaymentId: {}]", payment.getId());
         }

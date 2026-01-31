@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-contacts-database
+      author: devops
+      comment: Create database for ts-contacts-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-contacts-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-contacts-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;
+
