@@ -1,0 +1,69 @@
+databaseChangeLog:
+  # ============================================================================
+  # Create tables for ts-travel-service
+  # ============================================================================
+  # Based on travel.entity.Trip with @Embedded TripId (type, number):
+  # - id, trip_id_type, trip_id_number, train_type_name, route_id,
+  #   start_station_name, stations_name, terminal_station_name, start_time, end_time
+  # ============================================================================
+
+  - changeSet:
+      id: create-trip-table
+      author: devops
+      comment: Create trip table for ts-travel-service
+      changes:
+        - createTable:
+            tableName: trip
+            catalogName: ts-travel-mysql
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: trip_id_type
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: trip_id_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: train_type_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: route_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: start_station_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stations_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: terminal_station_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

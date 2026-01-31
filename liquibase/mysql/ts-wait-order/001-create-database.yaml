@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ts-wait-order-database
+      author: devops
+      comment: Create database for ts-wait-order-service
+      changes:
+        - sql:
+            sql: CREATE DATABASE IF NOT EXISTS `ts-wait-order-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        - sql:
+            sql: GRANT ALL PRIVILEGES ON `ts-wait-order-mysql`.* TO 'beta'@'%';
+        - sql:
+            sql: FLUSH PRIVILEGES;

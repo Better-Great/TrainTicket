@@ -111,6 +111,21 @@ databaseChangeLog:
       file: ts-train-food/changelog.yaml
       relativeToChangelogFile: true
 
+  # Travel Service
+  - include:
+      file: ts-travel/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Travel2 Service
+  - include:
+      file: ts-travel2/changelog.yaml
+      relativeToChangelogFile: true
+
+  # Wait Order Service
+  - include:
+      file: ts-wait-order/changelog.yaml
+      relativeToChangelogFile: true
+
   # Inside Payment Service
   - include:
       file: ts-inside-payment/changelog.yaml
