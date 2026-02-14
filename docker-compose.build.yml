@@ -1,0 +1,37 @@
+# Build and run ts-auth-service (and optionally other services built from dockerfile/).
+# From repo root:
+#   docker compose -f docker-compose.build.yml build
+#   docker compose -f docker-compose.build.yml up -d
+#
+# The properties/ dir is mounted at /app/external-config so the container reads
+# properties/${ENVIRONMENT}.application.ini (e.g. dev.application.ini when ENVIRONMENT=dev).
+
+services:
+  ts-auth-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Auth.Service
+    image: ts-auth-service:latest
+    container_name: ts-auth-service
+    env_file: .env
+    volumes:
+      # Mount repo properties/ so token replacement finds ${ENVIRONMENT}.application.ini
+      - ./properties:/app/external-config:ro
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-dev}
+      TZ: ${TZ:-UTC}
+      PORT: ${AUTH_SERVICE_PORT:-12349}
+    ports:
+      - "${AUTH_SERVICE_PORT:-12349}:12349"
+    networks:
+      - trainticket-net
+    # Uncomment to run with minimal deps (mysql, nacos); ensure properties use hostnames mysql/nacos
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
+    #   nacos:
+    #     condition: service_healthy
+
+networks:
+  trainticket-net:
+    driver: bridge

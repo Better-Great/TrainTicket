@@ -1,0 +1,12 @@
+# Build artifacts
+**/target/
+**/node_modules/
+**/.git/
+**/*.iml
+**/.idea/
+**/.vscode/
+*.log
+
+# Docker files (avoid recursive context)
+docker-compose*.yml
+Dockerfile*

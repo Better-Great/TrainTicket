@@ -1,5 +1,3 @@
-# Minimal compose: dependency services only (mysql, nacos, rabbitmq, kafka, zipkin, redis).
-# Application services run separately (local or full compose).
 # All values from .env - nothing hardcoded.
 
 services:

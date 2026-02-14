@@ -1,0 +1,60 @@
+FROM eclipse-temurin:17-jre-alpine
+
+ENV JAR_NAME="ts-auth-service.jar" \
+    TOKEN_JAR_NAME="ts-token-replacement-service.jar" \
+    APP_HOME="/app" \
+    CONFIG_DIR="/app/config" \
+    TEMPLATE_DIR="/app/templates" \
+    JAR_DIR="/app/jar" \
+    EXTERNAL_CONFIG_DIR="/app/external-config" \
+    PROPERTIES_DIR="/app/properties" \
+    ENVIRONMENT="${ENVIRONMENT}" \
+    TZ="${TZ}" \
+    PORT="${AUTH_SERVICE_PORT}"
+
+RUN adduser -D -h "${APP_HOME}" train-ticket && \
+    mkdir -p "${JAR_DIR}" "${CONFIG_DIR}" "${TEMPLATE_DIR}" "${EXTERNAL_CONFIG_DIR}" "${PROPERTIES_DIR}" && \
+    chown -R train-ticket:train-ticket "${APP_HOME}"
+
+# Copy JAR files from jar/ directory in build context
+COPY --chown=train-ticket:train-ticket jar/${JAR_NAME} ${JAR_DIR}/
+COPY --chown=train-ticket:train-ticket jar/${TOKEN_JAR_NAME} ${JAR_DIR}/
+
+# Copy application template from dockerfile/templates/ts-auth-service/
+COPY --chown=train-ticket:train-ticket dockerfile/templates/ts-auth-service/application.properties.ini ${TEMPLATE_DIR}/
+
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Set timezone if provided' >> /entrypoint.sh && \
+    echo '[ -n "$TZ" ] && [ -f "/usr/share/zoneinfo/$TZ" ] && cp "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Validate environment config exists' >> /entrypoint.sh && \
+    echo 'PROP_FILE="${EXTERNAL_CONFIG_DIR}/${ENVIRONMENT}.application.ini"' >> /entrypoint.sh && \
+    echo 'if [ ! -f "$PROP_FILE" ]; then echo "Error: No env config at $PROP_FILE"; exit 1; fi' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Setup working directories for token replacement' >> /entrypoint.sh && \
+    echo 'mkdir -p "${APP_HOME}/ts-auth-service/src/main/resources"' >> /entrypoint.sh && \
+    echo 'cp "$PROP_FILE" "${PROPERTIES_DIR}/${ENVIRONMENT}.application.ini"' >> /entrypoint.sh && \
+    echo 'cp "${TEMPLATE_DIR}/application.properties.ini" "${APP_HOME}/ts-auth-service/"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Run token replacement service to generate final properties' >> /entrypoint.sh && \
+    echo 'echo "Running token replacement service..."' >> /entrypoint.sh && \
+    echo 'cd "${APP_HOME}"' >> /entrypoint.sh && \
+    echo 'java -jar "${JAR_DIR}/${TOKEN_JAR_NAME}" "${ENVIRONMENT}" "${APP_HOME}"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Copy generated properties to config directory' >> /entrypoint.sh && \
+    echo 'if [ ! -f "${APP_HOME}/ts-auth-service/src/main/resources/application.properties" ]; then' >> /entrypoint.sh && \
+    echo '  echo "Error: Token replacement failed - application.properties not generated"; exit 1' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo 'cp "${APP_HOME}/ts-auth-service/src/main/resources/application.properties" "${CONFIG_DIR}/application-external.properties"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start auth service' >> /entrypoint.sh && \
+    echo 'echo "Starting auth service on port ${PORT}..."' >> /entrypoint.sh && \
+    echo 'exec java ${JAVA_OPTS} -jar "${JAR_DIR}/${JAR_NAME}" --spring.config.location=file:${CONFIG_DIR}/application-external.properties --server.port="${PORT}"' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+WORKDIR ${CONFIG_DIR}
+USER train-ticket
+EXPOSE 12349
+ENTRYPOINT ["/entrypoint.sh"]
