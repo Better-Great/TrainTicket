@@ -1,10 +1,10 @@
-# Build and run ts-auth-service (and optionally other services built from dockerfile/).
+
+# Build and run ts-auth-service on the same network as minimal deps.
 # From repo root:
-#   docker compose -f docker-compose.build.yml build
-#   docker compose -f docker-compose.build.yml up -d
+#   docker compose -f docker-compose.minimal.yml -f docker-compose.build.yml build
+#   docker compose -f docker-compose.minimal.yml -f docker-compose.build.yml up -d
 #
-# The properties/ dir is mounted at /app/external-config so the container reads
-# properties/${ENVIRONMENT}.application.ini (e.g. dev.application.ini when ENVIRONMENT=dev).
+# Uses properties/${ENVIRONMENT}.application.ini (default: docker.application.ini for Docker network).
 
 services:
   ts-auth-service:
@@ -15,23 +15,75 @@ services:
     container_name: ts-auth-service
     env_file: .env
     volumes:
-      # Mount repo properties/ so token replacement finds ${ENVIRONMENT}.application.ini
       - ./properties:/app/external-config:ro
+      - ts-auth-service-logs:/app/logs
     environment:
-      ENVIRONMENT: ${ENVIRONMENT:-dev}
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
       TZ: ${TZ:-UTC}
       PORT: ${AUTH_SERVICE_PORT:-12349}
     ports:
       - "${AUTH_SERVICE_PORT:-12349}:12349"
     networks:
       - trainticket-net
-    # Uncomment to run with minimal deps (mysql, nacos); ensure properties use hostnames mysql/nacos
-    # depends_on:
-    #   mysql:
-    #     condition: service_healthy
-    #   nacos:
-    #     condition: service_healthy
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-basic-info-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service
+    image: ts-admin-basic-info-service:latest
+    container_name: ts-admin-basic-info-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ts-admin-basic-info-service-logs:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_BASIC_INFO_SERVICE_PORT:-18767}
+    ports:
+      - "${ADMIN_BASIC_INFO_SERVICE_PORT:-18767}:18767"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-order-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Order.Service
+    image: ts-admin-order-service:latest
+    container_name: ts-admin-order-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ts-admin-order-service-logs:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_ORDER_SERVICE_PORT:-16112}
+    ports:
+      - "${ADMIN_ORDER_SERVICE_PORT:-16112}:16112"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
 
 networks:
   trainticket-net:
     driver: bridge
+
+volumes:
+  ts-auth-service-logs:
+  ts-admin-basic-info-service-logs:
+  ts-admin-order-service-logs:

@@ -37,8 +37,8 @@ docs/steps/
 #logs/
 logs/*
 
-# Ignore all application.properties files
-application.properties
+# Ignore generated application.properties (template generates application-external.properties at runtime)
+**/application.properties
 
 # Node.js
 node_modules/
