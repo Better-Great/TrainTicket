@@ -1,0 +1,21 @@
+# ts-avatar-service: Python/Flask face-detection service.
+# Build from repo root: docker build -f dockerfile/Dockerfile.Ts.Avatar.Service .
+# Expects: ts-avatar-service/ with app.py, requirements.txt, face_detect.py, etc.
+
+FROM python:3.11-slim
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+COPY ts-avatar-service/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+COPY ts-avatar-service/ ./
+RUN mkdir -p received images
+
+EXPOSE 17001
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:17001", "app:app"]

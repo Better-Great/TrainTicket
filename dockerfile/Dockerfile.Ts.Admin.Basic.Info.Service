@@ -46,7 +46,7 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
 
 WORKDIR ${CONFIG_DIR}
 USER train-ticket
-EXPOSE 18767
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD wget -q -O /dev/null "http://127.0.0.1:${PORT:-18767}/actuator/health/liveness" || exit 1

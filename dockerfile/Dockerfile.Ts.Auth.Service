@@ -14,7 +14,7 @@ ENV JAR_NAME="ts-auth-service.jar" \
     TZ="${TZ:-UTC}" \
     PORT="${PORT:-12349}"
 
-RUN apk add --no-cache tzdata && \
+RUN apk add --no-cache tzdata wget && \
     adduser -D -h "${APP_HOME}" -s /bin/sh train-ticket && \
     mkdir -p "${JAR_DIR}" "${CONFIG_DIR}" "${TEMPLATE_DIR}" "${LOGS_DIR}" "${EXTERNAL_CONFIG_DIR}" && \
     chown -R train-ticket:train-ticket "${APP_HOME}"

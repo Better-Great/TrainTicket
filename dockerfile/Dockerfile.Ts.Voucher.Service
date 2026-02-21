@@ -1,0 +1,20 @@
+# ts-voucher-service: Python/Tornado voucher service.
+# Build from repo root: docker build -f dockerfile/Dockerfile.Ts.Voucher.Service .
+# Expects: ts-voucher-service/server.py, requirements.txt. Configure DB via env (e.g. .env).
+
+FROM python:3.11-slim
+
+# PyMySQL is pure Python; no MySQL client dev packages needed
+RUN groupadd -r app && useradd -r -g app app
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+COPY ts-voucher-service/requirements.txt ./
+RUN pip install --no-cache-dir cryptography && pip install --no-cache-dir -r requirements.txt
+
+COPY ts-voucher-service/server.py ./
+RUN chown -R app:app /app
+USER app
+
+EXPOSE 16101
+CMD ["python", "server.py"]
