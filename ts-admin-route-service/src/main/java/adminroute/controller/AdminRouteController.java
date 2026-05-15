@@ -16,6 +16,7 @@ import static org.springframework.http.ResponseEntity.ok;
  */
 @RestController
 @RequestMapping("/api/v1/adminrouteservice")
+@SuppressWarnings("rawtypes")
 public class AdminRouteController {
 
     @Autowired

@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 /**
  * @author fdse
  */
+@SuppressWarnings("rawtypes")
 public interface AdminRouteService {
 
     /**

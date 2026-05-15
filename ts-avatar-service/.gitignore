@@ -3,6 +3,9 @@ venv/
 env/
 ENV/
 .venv/
+# Local secrets — never commit; Docker loads via mount or compose env_file (.env at repo root or here)
+
+.env
 
 # Python cache
 __pycache__/

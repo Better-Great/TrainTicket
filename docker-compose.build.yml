@@ -1,0 +1,1110 @@
+
+# Build and run app images on the same network as minimal deps (nacos, mysql, …).
+# From repo root:
+#   docker compose -f docker-compose.build.yml build
+#   docker compose -f docker-compose.build.yml up -d
+#
+# docker-compose.minimal.yml is included so services that depend_on nacos/mysql validate.
+# You can still merge explicitly: -f docker-compose.minimal.yml -f docker-compose.build.yml
+#
+# Uses properties/${ENVIRONMENT}.application.ini (default: docker.application.ini for Docker network).
+
+include:
+  - docker-compose.minimal.yml
+
+services:
+  ts-auth-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Auth.Service
+    image: ts-auth-service:latest
+    container_name: ts-auth-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-auth-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${AUTH_SERVICE_PORT:-12349}
+    ports:
+      - "${AUTH_SERVICE_PORT:-12349}:12349"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-basic-info-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service
+    image: ts-admin-basic-info-service:latest
+    container_name: ts-admin-basic-info-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-admin-basic-info-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_BASIC_INFO_SERVICE_PORT:-18767}
+    ports:
+      - "${ADMIN_BASIC_INFO_SERVICE_PORT:-18767}:18767"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-order-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Order.Service
+    image: ts-admin-order-service:latest
+    container_name: ts-admin-order-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-admin-order-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_ORDER_SERVICE_PORT:-16112}
+    ports:
+      - "${ADMIN_ORDER_SERVICE_PORT:-16112}:16112"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-verification-code-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Verification.Code.Service
+    image: ts-verification-code-service:latest
+    container_name: ts-verification-code-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-verification-code-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${VERIFICATION_CODE_SERVICE_PORT:-15678}
+    ports:
+      - "${VERIFICATION_CODE_SERVICE_PORT:-15678}:15678"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-contacts-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Contacts.Service
+    image: ts-contacts-service:latest
+    container_name: ts-contacts-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-contacts-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${CONTACTS_SERVICE_PORT:-12347}
+    ports:
+      - "${CONTACTS_SERVICE_PORT:-12347}:12347"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-order-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Order.Service
+    image: ts-order-service:latest
+    container_name: ts-order-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-order-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ORDER_SERVICE_PORT:-12031}
+    ports:
+      - "${ORDER_SERVICE_PORT:-12031}:12031"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-order-other-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Order.Other.Service
+    image: ts-order-other-service:latest
+    container_name: ts-order-other-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-order-other-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ORDER_OTHER_SERVICE_PORT:-12032}
+    ports:
+      - "${ORDER_OTHER_SERVICE_PORT:-12032}:12032"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-config-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Config.Service
+    image: ts-config-service:latest
+    container_name: ts-config-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-config-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${CONFIG_SERVICE_PORT:-15679}
+    ports:
+      - "${CONFIG_SERVICE_PORT:-15679}:15679"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-station-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Station.Service
+    image: ts-station-service:latest
+    container_name: ts-station-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-station-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${STATION_SERVICE_PORT:-12345}
+    ports:
+      - "${STATION_SERVICE_PORT:-12345}:12345"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-train-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Train.Service
+    image: ts-train-service:latest
+    container_name: ts-train-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-train-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${TRAIN_SERVICE_PORT:-14567}
+    ports:
+      - "${TRAIN_SERVICE_PORT:-14567}:14567"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-travel-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Travel.Service
+    image: ts-travel-service:latest
+    container_name: ts-travel-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-travel-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${TRAVEL_SERVICE_PORT:-12346}
+    ports:
+      - "${TRAVEL_SERVICE_PORT:-12346}:12346"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-travel2-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Travel2.Service
+    image: ts-travel2-service:latest
+    container_name: ts-travel2-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-travel2-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${TRAVEL2_SERVICE_PORT:-16346}
+    ports:
+      - "${TRAVEL2_SERVICE_PORT:-16346}:16346"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-preserve-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Preserve.Service
+    image: ts-preserve-service:latest
+    container_name: ts-preserve-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-preserve-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${PRESERVE_SERVICE_PORT:-14568}
+    ports:
+      - "${PRESERVE_SERVICE_PORT:-14568}:14568"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-preserve-other-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Preserve.Other.Service
+    image: ts-preserve-other-service:latest
+    container_name: ts-preserve-other-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-preserve-other-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${PRESERVE_OTHER_SERVICE_PORT:-14569}
+    ports:
+      - "${PRESERVE_OTHER_SERVICE_PORT:-14569}:14569"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-basic-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Basic.Service
+    image: ts-basic-service:latest
+    container_name: ts-basic-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-basic-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${BASIC_SERVICE_PORT:-15680}
+    ports:
+      - "${BASIC_SERVICE_PORT:-15680}:15680"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-price-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Price.Service
+    image: ts-price-service:latest
+    container_name: ts-price-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-price-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${PRICE_SERVICE_PORT:-16579}
+    ports:
+      - "${PRICE_SERVICE_PORT:-16579}:16579"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-notification-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Notification.Service
+    image: ts-notification-service:latest
+    container_name: ts-notification-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-notification-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${NOTIFICATION_SERVICE_PORT:-17853}
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-17853}:17853"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-security-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Security.Service
+    image: ts-security-service:latest
+    container_name: ts-security-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-security-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${SECURITY_SERVICE_PORT:-11188}
+    ports:
+      - "${SECURITY_SERVICE_PORT:-11188}:11188"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-inside-payment-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Inside.Payment.Service
+    image: ts-inside-payment-service:latest
+    container_name: ts-inside-payment-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-inside-payment-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${INSIDE_PAYMENT_SERVICE_PORT:-18673}
+    ports:
+      - "${INSIDE_PAYMENT_SERVICE_PORT:-18673}:18673"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-execute-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Execute.Service
+    image: ts-execute-service:latest
+    container_name: ts-execute-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-execute-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${EXECUTE_SERVICE_PORT:-12386}
+    ports:
+      - "${EXECUTE_SERVICE_PORT:-12386}:12386"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-payment-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Payment.Service
+    image: ts-payment-service:latest
+    container_name: ts-payment-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-payment-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${PAYMENT_SERVICE_PORT:-19001}
+    ports:
+      - "${PAYMENT_SERVICE_PORT:-19001}:19001"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-rebook-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Rebook.Service
+    image: ts-rebook-service:latest
+    container_name: ts-rebook-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-rebook-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${REBOOK_SERVICE_PORT:-18886}
+    ports:
+      - "${REBOOK_SERVICE_PORT:-18886}:18886"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-cancel-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Cancel.Service
+    image: ts-cancel-service:latest
+    container_name: ts-cancel-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-cancel-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${CANCEL_SERVICE_PORT:-18885}
+    ports:
+      - "${CANCEL_SERVICE_PORT:-18885}:18885"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-route-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Route.Service
+    image: ts-route-service:latest
+    container_name: ts-route-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-route-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ROUTE_SERVICE_PORT:-11178}
+    ports:
+      - "${ROUTE_SERVICE_PORT:-11178}:11178"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-assurance-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Assurance.Service
+    image: ts-assurance-service:latest
+    container_name: ts-assurance-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-assurance-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ASSURANCE_SERVICE_PORT:-18888}
+    ports:
+      - "${ASSURANCE_SERVICE_PORT:-18888}:18888"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-seat-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Seat.Service
+    image: ts-seat-service:latest
+    container_name: ts-seat-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-seat-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${SEAT_SERVICE_PORT:-18898}
+    ports:
+      - "${SEAT_SERVICE_PORT:-18898}:18898"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-travel-plan-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Travel.Plan.Service
+    image: ts-travel-plan-service:latest
+    container_name: ts-travel-plan-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-travel-plan-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${TRAVEL_PLAN_SERVICE_PORT:-14322}
+    ports:
+      - "${TRAVEL_PLAN_SERVICE_PORT:-14322}:14322"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-route-plan-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Route.Plan.Service
+    image: ts-route-plan-service:latest
+    container_name: ts-route-plan-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-route-plan-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ROUTE_PLAN_SERVICE_PORT:-14578}
+    ports:
+      - "${ROUTE_PLAN_SERVICE_PORT:-14578}:14578"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-food-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Food.Service
+    image: ts-food-service:latest
+    container_name: ts-food-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-food-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${FOOD_SERVICE_PORT:-18856}
+    ports:
+      - "${FOOD_SERVICE_PORT:-18856}:18856"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-station-food-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Station.Food.Service
+    image: ts-station-food-service:latest
+    container_name: ts-station-food-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-station-food-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${STATION_FOOD_SERVICE_PORT:-18857}
+    ports:
+      - "${STATION_FOOD_SERVICE_PORT:-18857}:18857"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-consign-price-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Consign.Price.Service
+    image: ts-consign-price-service:latest
+    container_name: ts-consign-price-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-consign-price-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${CONSIGN_PRICE_SERVICE_PORT:-16110}
+    ports:
+      - "${CONSIGN_PRICE_SERVICE_PORT:-16110}:16110"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-consign-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Consign.Service
+    image: ts-consign-service:latest
+    container_name: ts-consign-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-consign-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${CONSIGN_SERVICE_PORT:-16111}
+    ports:
+      - "${CONSIGN_SERVICE_PORT:-16111}:16111"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-route-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Route.Service
+    image: ts-admin-route-service:latest
+    container_name: ts-admin-route-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-admin-route-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_ROUTE_SERVICE_PORT:-16113}
+    ports:
+      - "${ADMIN_ROUTE_SERVICE_PORT:-16113}:16113"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-travel-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.Travel.Service
+    image: ts-admin-travel-service:latest
+    container_name: ts-admin-travel-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-admin-travel-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_TRAVEL_SERVICE_PORT:-16114}
+    ports:
+      - "${ADMIN_TRAVEL_SERVICE_PORT:-16114}:16114"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-admin-user-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Admin.User.Service
+    image: ts-admin-user-service:latest
+    container_name: ts-admin-user-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-admin-user-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${ADMIN_USER_SERVICE_PORT:-16115}
+    ports:
+      - "${ADMIN_USER_SERVICE_PORT:-16115}:16115"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-user-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.User.Service
+    image: ts-user-service:latest
+    container_name: ts-user-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-user-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${USER_SERVICE_PORT:-12342}
+    ports:
+      - "${USER_SERVICE_PORT:-12342}:12342"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-delivery-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Delivery.Service
+    image: ts-delivery-service:latest
+    container_name: ts-delivery-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-delivery-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${DELIVERY_SERVICE_PORT:-16800}
+    ports:
+      - "${DELIVERY_SERVICE_PORT:-16800}:16800"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-train-food-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Train.Food.Service
+    image: ts-train-food-service:latest
+    container_name: ts-train-food-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-train-food-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${TRAIN_FOOD_SERVICE_PORT:-16801}
+    ports:
+      - "${TRAIN_FOOD_SERVICE_PORT:-16801}:16801"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-gateway-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Gateway.Service
+    image: ts-gateway-service:latest
+    container_name: ts-gateway-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-gateway-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${GATEWAY_SERVICE_PORT:-16802}
+    ports:
+      - "${GATEWAY_SERVICE_PORT:-16802}:16802"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-food-delivery-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Food.Delivery.Service
+    image: ts-food-delivery-service:latest
+    container_name: ts-food-delivery-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-food-delivery-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${FOOD_DELIVERY_SERVICE_PORT:-16803}
+    ports:
+      - "${FOOD_DELIVERY_SERVICE_PORT:-16803}:16803"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  ts-wait-order-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Wait.Order.Service
+    image: ts-wait-order-service:latest
+    container_name: ts-wait-order-service
+    env_file: .env
+    volumes:
+      - ./properties:/app/external-config:ro
+      - ./log/ts-wait-order-service:/app/logs
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+      TZ: ${TZ:-UTC}
+      PORT: ${WAIT_ORDER_SERVICE_PORT:-16804}
+    ports:
+      - "${WAIT_ORDER_SERVICE_PORT:-16804}:16804"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_healthy
+
+  # Non-Java services (commented out; uncomment to build/run)
+  # ts-ui-dashboard:
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfile/Dockerfile.Ts.Ui.Dashboard
+  #   image: ts-ui-dashboard:latest
+  #   container_name: ts-ui-dashboard
+  #   ports:
+  #     - "${UI_DASHBOARD_PORT:-8080}:8080"
+  #   networks:
+  #     - trainticket-net
+
+  ts-avatar-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Avatar.Service
+    image: ts-avatar-service:latest
+    container_name: ts-avatar-service
+    env_file: .env
+    environment:
+      AVATAR_SERVICE_PORT: ${AVATAR_SERVICE_PORT:-17001}
+    ports:
+      - "${AVATAR_SERVICE_PORT:-17001}:${AVATAR_SERVICE_PORT:-17001}"
+    networks:
+      - trainticket-net
+
+  # ts-voucher-service:
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfile/Dockerfile.Ts.Voucher.Service
+  #   image: ts-voucher-service:latest
+  #   container_name: ts-voucher-service
+  #   env_file: .env
+  #   ports:
+  #     - "${VOUCHER_SERVICE_PORT:-16101}:16101"
+  #   networks:
+  #     - trainticket-net
+
+  # ts-ticket-office-service:
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfile/Dockerfile.Ts.Ticket.Office.Service
+  #   image: ts-ticket-office-service:latest
+  #   container_name: ts-ticket-office-service
+  #   env_file: .env
+  #   ports:
+  #     - "${TICKET_OFFICE_SERVICE_PORT:-16108}:16108"
+  #   networks:
+  #     - trainticket-net
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+
+  # ts-news-service:
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfile/Dockerfile.Ts.News.Service
+  #   image: ts-news-service:latest
+  #   container_name: ts-news-service
+  #   ports:
+  #     - "${NEWS_SERVICE_PORT:-12862}:12862"
+  #   networks:
+  #     - trainticket-net
+
+networks:
+  trainticket-net:
+    driver: bridge
+
+# Logs use bind mounts ./log/<service-name>; no named volumes needed
+# volumes:
+#   ts-auth-service-logs:
+#   ts-admin-basic-info-service-logs:
+#   ts-admin-order-service-logs:
+#   ts-verification-code-service-logs:
+#   ts-contacts-service-logs:
+#   ts-order-service-logs:
+#   ts-order-other-service-logs:
+#   ts-config-service-logs:
+#   ts-station-service-logs:
+#   ts-train-service-logs:
+#   ts-travel-service-logs:
+#   ts-travel2-service-logs:
+#   ts-preserve-service-logs:
+#   ts-preserve-other-service-logs:
+#   ts-basic-service-logs:
+#   ts-price-service-logs:
+#   ts-notification-service-logs:
+#   ts-security-service-logs:
+#   ts-inside-payment-service-logs:
+#   ts-execute-service-logs:
+#   ts-payment-service-logs:
+#   ts-rebook-service-logs:
+#   ts-cancel-service-logs:
+#   ts-route-service-logs:
+#   ts-assurance-service-logs:
+#   ts-seat-service-logs:
+#   ts-travel-plan-service-logs:
+#   ts-route-plan-service-logs:
+#   ts-food-service-logs:
+#   ts-station-food-service-logs:
+#   ts-consign-price-service-logs:
+#   ts-consign-service-logs:
+#   ts-admin-route-service-logs:
+#   ts-admin-travel-service-logs:
+#   ts-admin-user-service-logs:
+#   ts-user-service-logs:
+#   ts-delivery-service-logs:
+#   ts-train-food-service-logs:
+#   ts-gateway-service-logs:
+#   ts-food-delivery-service-logs:
+#   ts-wait-order-service-logs:

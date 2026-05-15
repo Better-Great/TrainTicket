@@ -1,49 +1,51 @@
-import cv2
-import dlib
 import base64
+import logging
+import os
+
+import cv2
 import numpy as np
 
-path_save = "./images/"
+log = logging.getLogger(__name__)
+
+_path_save = os.environ.get("AVATAR_FACE_IMAGE_DIR", "./images/")
+_save_debug = os.environ.get("AVATAR_SAVE_DEBUG_IMAGES", "false").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+
+_cascade = None
 
 
-detector = dlib.get_frontal_face_detector()
+def _get_cascade():
+    global _cascade
+    if _cascade is None:
+        path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        log.info("loading OpenCV Haar cascade face detector")
+        _cascade = cv2.CascadeClassifier(path)
+        if _cascade.empty():
+            raise RuntimeError(f"cascade load failed: {path}")
+    return _cascade
+
 
 def check(img):
-    # Dlib 检测器
-    faces = detector(img, 1)
-    print("人脸数：", len(faces), "\n")
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = _get_cascade().detectMultiScale(
+        gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
+    )
+    log.debug("face count: %s", len(faces))
 
     if len(faces) < 1:
-        return {"msg":"no human face found"}
+        return {"msg": "no human face found"}
 
+    x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
+    crop = np.ascontiguousarray(img[y : y + h, x : x + w])
 
-    # 记录人脸矩阵大小
-    height_max = 0
-    width_sum = 0
+    if _save_debug:
+        os.makedirs(_path_save, exist_ok=True)
+        out_path = os.path.join(_path_save, "img_face_1.jpg")
+        log.debug("Save to: %s", out_path)
+        cv2.imwrite(out_path, crop)
 
-    # 计算要生成的图像 img_blank 大小
-    for k, d in enumerate(faces):
-
-        # 计算矩形大小
-        # (x,y), (宽度width, 高度height)
-        pos_start = tuple([d.left(), d.top()])
-        pos_end = tuple([d.right(), d.bottom()])
-
-        # 计算矩形框大小
-        height = d.bottom() - d.top()
-        width = d.right() - d.left()
-
-        # 根据人脸大小生成空的图像
-        img_blank = np.zeros((height, width, 3), np.uint8)
-
-        for i in range(height):
-            for j in range(width):
-                img_blank[i][j] = img[d.top() + i][d.left() + j]
-
-        print("Save to:", path_save + "img_face_" + str(k + 1) + ".jpg")
-        cv2.imwrite(path_save + "img_face_" + str(k + 1) + ".jpg", img_blank)
-
-        base64_str = cv2.imencode('.jpg',img_blank)[1].tostring()
-        base64_str = base64.b64encode(base64_str)
-        return base64_str
-
+    encoded = cv2.imencode(".jpg", crop)[1].tobytes()
+    return base64.b64encode(encoded)

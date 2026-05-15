@@ -1,55 +1,58 @@
+# All values from .env - nothing hardcoded.
+
 services:
-  # Service Discovery
   nacos:
     image: nacos/nacos-server:v2.1.0
     container_name: nacos-standalone
     environment:
-      - MODE=standalone
-      - SPRING_DATASOURCE_PLATFORM=embedded
+      MODE: ${NACOS_MODE}
+      SPRING_DATASOURCE_PLATFORM: ${SPRING_DATASOURCE_PLATFORM}
+      NACOS_HTTP_PORT: ${NACOS_HTTP_PORT}
+      NACOS_GRPC_PORT: ${NACOS_GRPC_PORT}
+      NACOS_P2P_PORT: ${NACOS_P2P_PORT}
     ports:
-      - "8848:8848"   # HTTP API port
-      - "9848:9848"   # gRPC client request port
-      - "9849:9849"   # gRPC server-to-server port
+      - "${NACOS_HTTP_PORT}:${NACOS_HTTP_PORT}"
+      - "${NACOS_GRPC_PORT}:${NACOS_GRPC_PORT}"
+      - "${NACOS_P2P_PORT}:${NACOS_P2P_PORT}"
     networks:
       - trainticket-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos"]
+      test: ["CMD", "curl", "-f", "http://localhost:${NACOS_HTTP_PORT}/nacos"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # MySQL Database
   mysql:
     image: mysql:8.0
     container_name: trainticket-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: beta
-      MYSQL_PASSWORD: beta123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./docker/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${MYSQL_INIT_SCRIPT}:/docker-entrypoint-initdb.d/init.sql
     networks:
       - trainticket-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --port=${MYSQL_PORT}
 
-  # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
     container_name: trainticket-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASSWORD: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_NODE_PORT: ${RABBITMQ_AMQP_PORT}
     ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI port
+      - "${RABBITMQ_AMQP_PORT}:${RABBITMQ_AMQP_PORT}"
+      - "${RABBITMQ_HTTP_PORT}:15672"
     networks:
       - trainticket-net
     healthcheck:
@@ -58,113 +61,31 @@ services:
       timeout: 5s
       retries: 10
 
-  # Gateway Service
-  ts-gateway-service:
-    build: ./ts-gateway-service
-    container_name: ts-gateway-service
+  redis:
+    image: redis:latest
+    container_name: trainticket-redis
+    command: redis-server --port ${REDIS_PORT}
     ports:
-      - "18888:18888"
-    environment:
-      NACOS_ADDRS: "nacos:8848"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     networks:
       - trainticket-net
-    depends_on:
-      nacos:
-        condition: service_healthy
-    restart: on-failure
 
-  # Auth Service
-  ts-auth-service:
-    build: ./ts-auth-service
-    container_name: ts-auth-service
+  kafka:
+    image: spotify/kafka:latest
+    container_name: trainticket-kafka
     ports:
-      - "12340:12340"
-    environment:
-      NACOS_ADDRS: "nacos:8848"
-      AUTH_MYSQL_HOST: "mysql"
-      AUTH_MYSQL_PORT: "3306"
-      AUTH_MYSQL_DATABASE: "ts_auth_mysql"
-      AUTH_MYSQL_USER: "beta"
-      AUTH_MYSQL_PASSWORD: "beta123"
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
     networks:
       - trainticket-net
-    depends_on:
-      mysql:
-        condition: service_healthy
-      nacos:
-        condition: service_healthy
-    restart: on-failure
 
-  # User Service
-  ts-user-service:
-    build: ./ts-user-service
-    container_name: ts-user-service
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: trainticket-zipkin
     ports:
-      - "12342:12342"
-    environment:
-      NACOS_ADDRS: "nacos:8848"
-      USER_MYSQL_HOST: "mysql"
-      USER_MYSQL_PORT: "3306"
-      USER_MYSQL_DATABASE: "ts_user_mysql"
-      USER_MYSQL_USER: "beta"
-      USER_MYSQL_PASSWORD: "beta123"
+      - "${ZIPKIN_PORT}:${ZIPKIN_PORT}"
     networks:
       - trainticket-net
-    depends_on:
-      mysql:
-        condition: service_healthy
-      nacos:
-        condition: service_healthy
-    restart: on-failure
-
-  # Assurance Service
-  ts-assurance-service:
-    build: ./ts-assurance-service
-    container_name: ts-assurance-service
-    ports:
-      - "18888:18888"
-    environment:
-      NACOS_ADDRS: "nacos:8848"
-      ASSURANCE_MYSQL_HOST: "mysql"
-      ASSURANCE_MYSQL_PORT: "3306"
-      ASSURANCE_MYSQL_DATABASE: "ts_assurance_mysql"
-      ASSURANCE_MYSQL_USER: "beta"
-      ASSURANCE_MYSQL_PASSWORD: "beta123"
-    networks:
-      - trainticket-net
-    depends_on:
-      mysql:
-        condition: service_healthy
-      nacos:
-        condition: service_healthy
-    restart: on-failure
-
-  # Verification Code Service
-  ts-verification-code-service:
-    build: ./ts-verification-code-service
-    container_name: ts-verification-code-service
-    ports:
-      - "15678:15678"
-    environment:
-      NACOS_ADDRS: "nacos:8848"
-    networks:
-      - trainticket-net
-    depends_on:
-      nacos:
-        condition: service_healthy
-    restart: on-failure
-
-  # UI Dashboard
-  ts-ui-dashboard:
-    build: ./ts-ui-dashboard
-    container_name: ts-ui-dashboard
-    ports:
-      - "8080:8080"
-    networks:
-      - trainticket-net
-    depends_on:
-      - ts-gateway-service
-    restart: on-failure
 
 networks:
   trainticket-net:
@@ -172,4 +93,3 @@ networks:
 
 volumes:
   mysql-data:
-

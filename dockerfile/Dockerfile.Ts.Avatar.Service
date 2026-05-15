@@ -1,0 +1,35 @@
+# ts-avatar-service — OpenCV Haar, wheels only (no dlib build).
+# Build from repo root:
+#   docker build -f dockerfile/Dockerfile.Ts.Avatar.Service .
+#
+# Runtime: `env_file` in compose and/or `--env-file`; optional bind-mount `.env` to
+# `/home/app/app/.env` (file is gitignored and not copied into the image).
+
+FROM python:3.11-slim
+
+LABEL com.trainticket.avatar.endpoints='{"service":"ts-avatar-service","health":"/health","avatar_post":"/api/v1/avatar"}'
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/home/app \
+    APP_HOME=/home/app/app
+
+ENV AVATAR_SERVICE_PORT=${AVATAR_SERVICE_PORT}
+
+RUN groupadd --system --gid 1000 app \
+    && useradd --system --uid 1000 --gid app --create-home --home-dir /home/app app
+
+WORKDIR ${APP_HOME}
+
+COPY ts-avatar-service/requirements.txt ./
+RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
+
+COPY ts-avatar-service/ .
+RUN mkdir -p received images \
+    && chown -R app:app "${APP_HOME}"
+
+USER app
+
+EXPOSE ${AVATAR_SERVICE_PORT}
+
+CMD ["sh", "-c", "exec gunicorn -w 2 -b 0.0.0.0:${AVATAR_SERVICE_PORT} --timeout 120 --chdir \"${APP_HOME}\" app:app"]
