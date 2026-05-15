@@ -1,21 +1,19 @@
-# ts-news-service: Go HTTP service.
+# ts-news-service: Go HTTP service (net/http only).
 # Build from repo root: docker build -f dockerfile/Dockerfile.Ts.News.Service .
-# Expects: ts-news-service/src/main/main.go, ts-news-service/src/main/lib.go
+# Runtime: Alpine with shell; static binary.
 
-FROM golang:1.23-alpine AS builder
-RUN apk add --no-cache ca-certificates
-WORKDIR /app
-COPY ts-news-service/src/main/main.go ts-news-service/src/main/lib.go ./
-RUN go mod init ts-news-service 2>/dev/null || true && \
-    go get github.com/hoisie/web && \
-    go build -o /news-service .
+FROM golang:1.22-alpine AS build
+WORKDIR /src
+COPY ts-news-service/go.mod ./
+COPY ts-news-service/src/main/*.go ./
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /news .
 
-FROM alpine:3.18
-RUN apk add --no-cache ca-certificates tzdata
-RUN addgroup -S app && adduser -S -G app app
-WORKDIR /app
-COPY --from=builder /news-service .
-RUN chown app:app /news-service
-USER app
-EXPOSE 12862
-CMD ["./news-service"]
+FROM alpine:3.20
+RUN addgroup -S train-ticket && adduser -S -G train-ticket -u 1000 train-ticket
+WORKDIR /
+COPY --from=build /news /news
+RUN chown train-ticket:train-ticket /news && chmod 0555 /news
+USER train-ticket:train-ticket
+ENV NEWS_SERVICE_PORT=${NEWS_SERVICE_PORT}
+EXPOSE ${NEWS_SERVICE_PORT}
+ENTRYPOINT ["/news"]

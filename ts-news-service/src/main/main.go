@@ -1,53 +1,48 @@
 package main
 
 import (
-	"github.com/hoisie/web"
-	//"labix.org/v2/mgo"
-	//"labix.org/v2/mgo/bson"
-	//"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
 )
 
-//const (
-//	MONGODB_URL = "ts-news-mongo:27017"
-//)
-
-//func getNews(val string) string {
-//
-
-//	session, err := mgo.Dial(MONGODB_URL)
-//	if err != nil {
-//		panic(err)
-//	}
-//	defer session.Close()
-//
-//	session.SetMode(mgo.Monotonic, true)
-//	// db := session.DB("xtest")
-//	// collection := db.C("xtest")
-//	c := session.DB("xtest").C("xtest")
-//
-
-//	 var personAll []News
-//	 err = c.Find(nil).All(&personAll)
-//	 for i := 0; i < len(personAll); i++ {
-//	 	fmt.Println("Person ", personAll[i].Name, personAll[i].Phone)
-//	 }
-//
-//}
-
 type News struct {
-	Title   string `bson:"Title"`
-	Content string `bson:"Content"`
+	Title   string `json:"Title"`
+	Content string `json:"Content"`
 }
 
-func hello(val string) string {
-	var str = []byte(`[
+func hello() string {
+	return `[
                        {"Title": "News Service Complete", "Content": "Congratulations:Your News Service Complete"},
                        {"Title": "Total Ticket System Complete", "Content": "Just a total test"}
-                    ]`)
-	return string(str)
+                    ]`
 }
 
 func main() {
-	web.Get("/(.*)", hello)
-	web.Run("0.0.0.0:12862")
+	addr := "0.0.0.0:" + port()
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		_, _ = w.Write([]byte(hello()))
+	})
+	log.Printf("ts-news-service listening on %s", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+func port() string {
+	if p := os.Getenv("NEWS_SERVICE_PORT"); p != "" {
+		if _, err := strconv.Atoi(p); err == nil {
+			return p
+		}
+	}
+	if p := os.Getenv("PORT"); p != "" {
+		if _, err := strconv.Atoi(p); err == nil {
+			return p
+		}
+	}
+	return "12862"
 }
