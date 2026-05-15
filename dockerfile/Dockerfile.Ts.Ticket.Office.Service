@@ -1,23 +1,33 @@
-# ts-ticket-office-service: Node.js/Express service.
-# Build from repo root: docker build -f dockerfile/Dockerfile.Ts.Ticket.Office.Service .
-# Expects: ts-ticket-office-service/ with package.json, app.js, bin/, public/
+# ts-ticket-office-service: Node.js/Express.
+# Build from repo root:
+#   docker build -f dockerfile/Dockerfile.Ts.Ticket.Office.Service .
+# Optional at build: export TICKET_OFFICE_SERVICE_PORT so EXPOSE matches your -p mapping.
+# Runtime (required): TICKET_OFFICE_MYSQL_HOST, TICKET_OFFICE_MYSQL_PORT, TICKET_OFFICE_MYSQL_USER,
+#   TICKET_OFFICE_MYSQL_PASSWORD, TICKET_OFFICE_MYSQL_DATABASE
+# HTTP port: set PORT at runtime, or TICKET_OFFICE_SERVICE_PORT (this image sets PORT from it).
 
 FROM node:18-alpine
 
-RUN apk add --no-cache tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime 2>/dev/null || true
+ENV NODE_ENV=production
 
-RUN addgroup -S app && adduser -S -G app app
+RUN addgroup -S train-ticket && adduser -S -G train-ticket -u 10001 train-ticket
+
 WORKDIR /app
 
-COPY ts-ticket-office-service/package.json ts-ticket-office-service/package-lock.json* ./
-RUN npm install --omit=dev && npm cache clean --force
+COPY ts-ticket-office-service/package.json ts-ticket-office-service/package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
 COPY ts-ticket-office-service/app.js ./
 COPY ts-ticket-office-service/bin ./bin
 COPY ts-ticket-office-service/public ./public
-RUN chown -R app:app /app
-USER app
 
-EXPOSE 16108
-CMD ["npm", "start"]
+RUN chown -R train-ticket:train-ticket /app
+USER train-ticket:train-ticket
+
+ARG TICKET_OFFICE_SERVICE_PORT
+ENV TICKET_OFFICE_SERVICE_PORT=${TICKET_OFFICE_SERVICE_PORT}
+ENV PORT=${TICKET_OFFICE_SERVICE_PORT}
+
+EXPOSE ${TICKET_OFFICE_SERVICE_PORT}
+
+CMD ["node", "bin/www"]
