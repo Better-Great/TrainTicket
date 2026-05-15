@@ -1,10 +1,16 @@
 
-# Build and run ts-auth-service on the same network as minimal deps.
+# Build and run app images on the same network as minimal deps (nacos, mysql, …).
 # From repo root:
-#   docker compose -f docker-compose.minimal.yml -f docker-compose.build.yml build
-#   docker compose -f docker-compose.minimal.yml -f docker-compose.build.yml up -d
+#   docker compose -f docker-compose.build.yml build
+#   docker compose -f docker-compose.build.yml up -d
+#
+# docker-compose.minimal.yml is included so services that depend_on nacos/mysql validate.
+# You can still merge explicitly: -f docker-compose.minimal.yml -f docker-compose.build.yml
 #
 # Uses properties/${ENVIRONMENT}.application.ini (default: docker.application.ini for Docker network).
+
+include:
+  - docker-compose.minimal.yml
 
 services:
   ts-auth-service:
@@ -1003,16 +1009,19 @@ services:
   #   networks:
   #     - trainticket-net
 
-  # ts-avatar-service:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile/Dockerfile.Ts.Avatar.Service
-  #   image: ts-avatar-service:latest
-  #   container_name: ts-avatar-service
-  #   ports:
-  #     - "${AVATAR_SERVICE_PORT:-17001}:17001"
-  #   networks:
-  #     - trainticket-net
+  ts-avatar-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Avatar.Service
+    image: ts-avatar-service:latest
+    container_name: ts-avatar-service
+    env_file: .env
+    environment:
+      AVATAR_SERVICE_PORT: ${AVATAR_SERVICE_PORT:-17001}
+    ports:
+      - "${AVATAR_SERVICE_PORT:-17001}:${AVATAR_SERVICE_PORT:-17001}"
+    networks:
+      - trainticket-net
 
   # ts-voucher-service:
   #   build:

@@ -1,21 +1,35 @@
-# ts-avatar-service: Python/Flask face-detection service.
-# Build from repo root: docker build -f dockerfile/Dockerfile.Ts.Avatar.Service .
-# Expects: ts-avatar-service/ with app.py, requirements.txt, face_detect.py, etc.
+# ts-avatar-service — OpenCV Haar, wheels only (no dlib build).
+# Build from repo root:
+#   docker build -f dockerfile/Dockerfile.Ts.Avatar.Service .
+#
+# Runtime: `env_file` in compose and/or `--env-file`; optional bind-mount `.env` to
+# `/home/app/app/.env` (file is gitignored and not copied into the image).
 
 FROM python:3.11-slim
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    libgl1 libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+LABEL com.trainticket.avatar.endpoints='{"service":"ts-avatar-service","health":"/health","avatar_post":"/api/v1/avatar"}'
 
-ENV PYTHONUNBUFFERED=1
-WORKDIR /app
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/home/app \
+    APP_HOME=/home/app/app
+
+ENV AVATAR_SERVICE_PORT=${AVATAR_SERVICE_PORT}
+
+RUN groupadd --system --gid 1000 app \
+    && useradd --system --uid 1000 --gid app --create-home --home-dir /home/app app
+
+WORKDIR ${APP_HOME}
 
 COPY ts-avatar-service/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
-COPY ts-avatar-service/ ./
-RUN mkdir -p received images
+COPY ts-avatar-service/ .
+RUN mkdir -p received images \
+    && chown -R app:app "${APP_HOME}"
 
-EXPOSE 17001
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:17001", "app:app"]
+USER app
+
+EXPOSE ${AVATAR_SERVICE_PORT}
+
+CMD ["sh", "-c", "exec gunicorn -w 2 -b 0.0.0.0:${AVATAR_SERVICE_PORT} --timeout 120 --chdir \"${APP_HOME}\" app:app"]

@@ -550,8 +550,11 @@ services:
   ts-avatar-service:
     image: ${NAMESPACE}/ts-avatar-service:${TAG}
     restart: always
+    env_file: .env
+    environment:
+      AVATAR_SERVICE_PORT: ${AVATAR_SERVICE_PORT:-17001}
     ports:
-      - 17001:17001
+      - "${AVATAR_SERVICE_PORT:-17001}:${AVATAR_SERVICE_PORT:-17001}"
     networks:
       - my-network
 

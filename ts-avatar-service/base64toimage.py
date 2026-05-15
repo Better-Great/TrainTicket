@@ -7,7 +7,7 @@ path_save = "./images/"
 
 def base64_cv2(base64_str):
     imgString = base64.b64decode(base64_str)
-    nparr = np.fromstring(imgString,np.uint8)
+    nparr = np.frombuffer(imgString, dtype=np.uint8)
     image = cv2.imdecode(nparr,cv2.IMREAD_COLOR)
 
     a = cv2.imwrite(path_save + "img_face_1" + ".jpg", image)
