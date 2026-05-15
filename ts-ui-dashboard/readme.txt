@@ -1,3 +1,14 @@
+# =============================================================================
+# NOTE: This is NOT end-user documentation.
+# It is a scratch list of nginx location / proxy_pass fragments for backend
+# services. Active nginx config for Docker is nginx.conf in this directory.
+#
+# WHERE IS THE UI?
+#   - Admin dashboard home: static/index.html  (title: "TrainTicket Admin")
+#   - Client flows: static/client_login.html, client_ticket_book.html, etc.
+#   - Run locally: ./run-local.sh  → http://127.0.0.1:8080/
+# =============================================================================
+
 # For account and verification
 
         location /register {
