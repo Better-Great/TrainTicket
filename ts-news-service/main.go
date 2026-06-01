@@ -7,11 +7,6 @@ import (
 	"strconv"
 )
 
-type News struct {
-	Title   string `json:"Title"`
-	Content string `json:"Content"`
-}
-
 func hello() string {
 	return `[
                        {"Title": "News Service Complete", "Content": "Congratulations:Your News Service Complete"},

@@ -6,8 +6,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import user.entity.User;
 import user.repository.UserRepository;
-import user.service.UserService;
-
 
 import java.util.UUID;
 
@@ -22,9 +20,6 @@ public class InitUser implements CommandLineRunner {
 
     @Autowired
     protected PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserService userService;
 
     @Override
     public void run(String... strings) throws Exception {

@@ -1,6 +1,8 @@
 # Non-Java Services – Run & Verify Guide
 
-This document covers **ts-voucher-service** (Python), **ts-ui-dashboard** (static/nginx), and **ts-ticket-office-service** (Node.js).
+Non-Java services: **ts-ui-dashboard** (nginx), **ts-news-service** (Go), **ts-avatar-service** (Python), **ts-voucher-service** (Python), **ts-ticket-office-service** (Node.js).
+
+All are included in **`docker-compose.build.yml`** (image `bettergreat/ts-*` when `IMG_REPO=bettergreat`).
 
 ---
 
@@ -45,27 +47,45 @@ No automated unit tests (no pytest/test_*.py).
 
 ---
 
-## 2. ts-ui-dashboard (Static + Nginx)
+## 2. ts-news-service (Go)
 
-**Type:** Static HTML/CSS/JS served by OpenResty/nginx  
+**Port:** 12862 (env `NEWS_SERVICE_PORT` or `PORT`)
+
+```bash
+cd ts-news-service && ./run-local.sh
+curl http://localhost:12862/
+```
+
+---
+
+## 3. ts-avatar-service (Python/Flask)
+
+**Port:** 17001 — see `ts-avatar-service/.env.example` and `run-local.sh`.
+
+---
+
+## 4. ts-ui-dashboard (Static + Nginx)
+
+**Type:** Static HTML/CSS/JS served by **nginx** (Alpine)  
 **Port:** 8080  
-**Dependencies:** None (static files)  
+**Homepage:** `static/index.html` → http://localhost:8080/  
+**Client UI:** e.g. `static/client_login.html`  
 
-### Run via Docker
-
-```bash
-docker compose -f docker-compose.minimal.yml up -d ts-ui-dashboard
-```
-
-### Run locally
+### Run via Docker (with gateway proxy for `/api/v1/`)
 
 ```bash
-cd ts-ui-dashboard
-./run-local.sh
-# or: python3 -m http.server 8080 --directory static
+./scripts/up-docker.sh
+# or only UI + gateway:
+docker compose -f docker-compose.build.yml up -d ts-gateway-service ts-ui-dashboard
 ```
 
-Serves static files on http://localhost:8080. For `/api/v1/` proxy to gateway, use Docker or nginx.
+### Run locally (static only)
+
+```bash
+cd ts-ui-dashboard && ./run-local.sh
+```
+
+`/api/v1/` needs the gateway; use the Docker UI image or nginx with `nginx.conf`.
 
 ### Verify
 
@@ -78,7 +98,7 @@ No unit tests (static frontend).
 
 ---
 
-## 3. ts-ticket-office-service (Node.js/Express)
+## 5. ts-ticket-office-service (Node.js/Express)
 
 **Type:** Node.js with Express  
 **Port:** 16108  
@@ -88,12 +108,8 @@ No unit tests (static frontend).
 
 ```bash
 cd ts-ticket-office-service
-npm install
-
-# Copy .env.example and edit, or set env vars (defaults in .env for local dev)
-# TICKET_OFFICE_MYSQL_HOST=127.0.0.1 TICKET_OFFICE_MYSQL_PORT=3307 etc.
-
-npm start
+cp .env.example .env   # set TICKET_OFFICE_MYSQL_* for your MySQL
+./run-local.sh
 ```
 
 For local dev, a `.env` file (gitignored) with MySQL config is used if present. In Docker/K8s, env vars are set by the orchestrator.

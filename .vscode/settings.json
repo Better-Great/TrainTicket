@@ -1,0 +1,7 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.import.maven.enabled": true,
+  "java.compile.nullAnalysis.mode": "disabled",
+  "java.configuration.maven.notCoveredPluginExecutionSeverity": "ignore",
+  "gopls.build.directoryFilters": ["-target", "-node_modules"]
+}

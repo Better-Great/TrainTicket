@@ -10,7 +10,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.util.UUID;
 
 /**
  * @author fdse
@@ -18,6 +17,7 @@ import java.util.UUID;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class User {
 
@@ -36,9 +36,5 @@ public class User {
     private String documentNum;
 
     private String email;
-
-    public User() {
-        this.userId = UUID.randomUUID().toString();
-    }
 
 }

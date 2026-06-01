@@ -36,6 +36,11 @@ docs/steps/
 *.jar
 #logs/
 logs/*
+log/
+*.pid
+.services.pid
+.minimal-services.pid
+admin-order/
 
 # Ignore generated application.properties (template generates application-external.properties at runtime)
 **/application.properties
