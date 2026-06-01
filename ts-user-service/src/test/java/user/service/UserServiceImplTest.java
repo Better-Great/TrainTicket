@@ -5,11 +5,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
 
     @InjectMocks
@@ -45,7 +44,6 @@ public class UserServiceImplTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         org.springframework.test.util.ReflectionTestUtils.setField(userServiceImpl, "authServiceHost", authServiceHost);
         org.springframework.test.util.ReflectionTestUtils.setField(userServiceImpl, "authServicePort", authServicePort);
     }
@@ -125,7 +123,7 @@ public class UserServiceImplTest {
         User user = new User();
         Mockito.when(userRepository.findByUserId(Mockito.anyString())).thenReturn(user);
         HttpEntity<Response> httpEntity = new HttpEntity<>(headers);
-        Response mockResponse = new Response(1, "Success", null);
+        Response mockResponse = new Response<>(1, "Success", null);
         ResponseEntity<Response> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(Mockito.anyString(),
                 Mockito.eq(HttpMethod.DELETE),
@@ -133,7 +131,7 @@ public class UserServiceImplTest {
                 Mockito.eq(Response.class))).thenReturn(responseEntity);
         Mockito.doNothing().when(userRepository).deleteByUserId(Mockito.anyString());
         Response result = userServiceImpl.deleteUser(userId, headers);
-        Assert.assertEquals(new Response(1, "DELETE SUCCESS", null), result);
+        Assert.assertEquals(new Response<>(1, "DELETE SUCCESS", null), result);
     }
 
     @Test
@@ -166,14 +164,14 @@ public class UserServiceImplTest {
         userDto.setUserId(UUID.randomUUID().toString());
         Mockito.when(userRepository.findByUserId(Mockito.anyString())).thenReturn(null);
         Response result = userServiceImpl.updateUser(userDto, headers);
-        Assert.assertEquals(new Response(0, "USER NOT EXISTS", null), result);
+        Assert.assertEquals(new Response<>(0, "USER NOT EXISTS", null), result);
     }
 
     @Test
     public void testDeleteUserAuth() {
         String userId = UUID.randomUUID().toString();
         HttpEntity<Response> httpEntity = new HttpEntity<>(headers);
-        Response mockResponse = new Response(1, "Success", null);
+        Response mockResponse = new Response<>(1, "Success", null);
         ResponseEntity<Response> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
         Mockito.when(restTemplate.exchange(Mockito.anyString(),
                 Mockito.eq(HttpMethod.DELETE),

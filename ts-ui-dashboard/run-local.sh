@@ -1,7 +1,8 @@
-#!/bin/bash
-# Serve ts-ui-dashboard static files locally on port 8080
-# For /api/v1/ proxy to gateway, run via Docker or use nginx
+#!/usr/bin/env bash
+set -euo pipefail
 cd "$(dirname "$0")"
-echo "Starting ts-ui-dashboard at http://localhost:8080"
-echo "Static files only - /api/v1/ requires gateway (use Docker for full stack)"
-python3 -m http.server 8080 --directory static
+PORT="${UI_DASHBOARD_PORT:-8080}"
+echo "TrainTicket UI (static files only — /api/v1/ needs nginx + gateway in Docker):"
+echo "  http://127.0.0.1:${PORT}/           ← admin home (index.html)"
+echo "  http://127.0.0.1:${PORT}/client_login.html  ← client entry"
+exec python3 -m http.server "$PORT" --directory static

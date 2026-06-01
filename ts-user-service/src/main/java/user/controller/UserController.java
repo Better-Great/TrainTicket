@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import user.dto.UserDto;
 import user.service.UserService;
 
-import java.util.UUID;
-
 import static org.springframework.http.ResponseEntity.ok;
 
 /**

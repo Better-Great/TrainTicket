@@ -1,7 +1,8 @@
 
 # Build and run app images on the same network as minimal deps (nacos, mysql, …).
-# From repo root:
+# From repo root (set IMG_REPO=bettergreat and IMG_TAG in .env for Docker Hub):
 #   docker compose -f docker-compose.build.yml build
+#   docker compose -f docker-compose.build.yml push    # after: docker login
 #   docker compose -f docker-compose.build.yml up -d
 #
 # docker-compose.minimal.yml is included so services that depend_on nacos/mysql validate.
@@ -17,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Auth.Service
-    image: ts-auth-service:latest
+    image: ${IMG_REPO}/ts-auth-service:${IMG_TAG}
     container_name: ts-auth-service
     env_file: .env
     volumes:
@@ -41,7 +42,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service
-    image: ts-admin-basic-info-service:latest
+    image: ${IMG_REPO}/ts-admin-basic-info-service:${IMG_TAG}
     container_name: ts-admin-basic-info-service
     env_file: .env
     volumes:
@@ -65,7 +66,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Order.Service
-    image: ts-admin-order-service:latest
+    image: ${IMG_REPO}/ts-admin-order-service:${IMG_TAG}
     container_name: ts-admin-order-service
     env_file: .env
     volumes:
@@ -89,7 +90,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Verification.Code.Service
-    image: ts-verification-code-service:latest
+    image: ${IMG_REPO}/ts-verification-code-service:${IMG_TAG}
     container_name: ts-verification-code-service
     env_file: .env
     volumes:
@@ -113,7 +114,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Contacts.Service
-    image: ts-contacts-service:latest
+    image: ${IMG_REPO}/ts-contacts-service:${IMG_TAG}
     container_name: ts-contacts-service
     env_file: .env
     volumes:
@@ -137,7 +138,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Order.Service
-    image: ts-order-service:latest
+    image: ${IMG_REPO}/ts-order-service:${IMG_TAG}
     container_name: ts-order-service
     env_file: .env
     volumes:
@@ -161,7 +162,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Order.Other.Service
-    image: ts-order-other-service:latest
+    image: ${IMG_REPO}/ts-order-other-service:${IMG_TAG}
     container_name: ts-order-other-service
     env_file: .env
     volumes:
@@ -185,7 +186,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Config.Service
-    image: ts-config-service:latest
+    image: ${IMG_REPO}/ts-config-service:${IMG_TAG}
     container_name: ts-config-service
     env_file: .env
     volumes:
@@ -209,7 +210,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Station.Service
-    image: ts-station-service:latest
+    image: ${IMG_REPO}/ts-station-service:${IMG_TAG}
     container_name: ts-station-service
     env_file: .env
     volumes:
@@ -233,7 +234,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Train.Service
-    image: ts-train-service:latest
+    image: ${IMG_REPO}/ts-train-service:${IMG_TAG}
     container_name: ts-train-service
     env_file: .env
     volumes:
@@ -257,7 +258,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Travel.Service
-    image: ts-travel-service:latest
+    image: ${IMG_REPO}/ts-travel-service:${IMG_TAG}
     container_name: ts-travel-service
     env_file: .env
     volumes:
@@ -281,7 +282,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Travel2.Service
-    image: ts-travel2-service:latest
+    image: ${IMG_REPO}/ts-travel2-service:${IMG_TAG}
     container_name: ts-travel2-service
     env_file: .env
     volumes:
@@ -305,7 +306,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Preserve.Service
-    image: ts-preserve-service:latest
+    image: ${IMG_REPO}/ts-preserve-service:${IMG_TAG}
     container_name: ts-preserve-service
     env_file: .env
     volumes:
@@ -329,7 +330,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Preserve.Other.Service
-    image: ts-preserve-other-service:latest
+    image: ${IMG_REPO}/ts-preserve-other-service:${IMG_TAG}
     container_name: ts-preserve-other-service
     env_file: .env
     volumes:
@@ -353,7 +354,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Basic.Service
-    image: ts-basic-service:latest
+    image: ${IMG_REPO}/ts-basic-service:${IMG_TAG}
     container_name: ts-basic-service
     env_file: .env
     volumes:
@@ -377,7 +378,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Price.Service
-    image: ts-price-service:latest
+    image: ${IMG_REPO}/ts-price-service:${IMG_TAG}
     container_name: ts-price-service
     env_file: .env
     volumes:
@@ -401,7 +402,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Notification.Service
-    image: ts-notification-service:latest
+    image: ${IMG_REPO}/ts-notification-service:${IMG_TAG}
     container_name: ts-notification-service
     env_file: .env
     volumes:
@@ -425,7 +426,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Security.Service
-    image: ts-security-service:latest
+    image: ${IMG_REPO}/ts-security-service:${IMG_TAG}
     container_name: ts-security-service
     env_file: .env
     volumes:
@@ -449,7 +450,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Inside.Payment.Service
-    image: ts-inside-payment-service:latest
+    image: ${IMG_REPO}/ts-inside-payment-service:${IMG_TAG}
     container_name: ts-inside-payment-service
     env_file: .env
     volumes:
@@ -473,7 +474,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Execute.Service
-    image: ts-execute-service:latest
+    image: ${IMG_REPO}/ts-execute-service:${IMG_TAG}
     container_name: ts-execute-service
     env_file: .env
     volumes:
@@ -497,7 +498,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Payment.Service
-    image: ts-payment-service:latest
+    image: ${IMG_REPO}/ts-payment-service:${IMG_TAG}
     container_name: ts-payment-service
     env_file: .env
     volumes:
@@ -521,7 +522,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Rebook.Service
-    image: ts-rebook-service:latest
+    image: ${IMG_REPO}/ts-rebook-service:${IMG_TAG}
     container_name: ts-rebook-service
     env_file: .env
     volumes:
@@ -545,7 +546,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Cancel.Service
-    image: ts-cancel-service:latest
+    image: ${IMG_REPO}/ts-cancel-service:${IMG_TAG}
     container_name: ts-cancel-service
     env_file: .env
     volumes:
@@ -569,7 +570,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Route.Service
-    image: ts-route-service:latest
+    image: ${IMG_REPO}/ts-route-service:${IMG_TAG}
     container_name: ts-route-service
     env_file: .env
     volumes:
@@ -593,7 +594,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Assurance.Service
-    image: ts-assurance-service:latest
+    image: ${IMG_REPO}/ts-assurance-service:${IMG_TAG}
     container_name: ts-assurance-service
     env_file: .env
     volumes:
@@ -617,7 +618,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Seat.Service
-    image: ts-seat-service:latest
+    image: ${IMG_REPO}/ts-seat-service:${IMG_TAG}
     container_name: ts-seat-service
     env_file: .env
     volumes:
@@ -641,7 +642,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Travel.Plan.Service
-    image: ts-travel-plan-service:latest
+    image: ${IMG_REPO}/ts-travel-plan-service:${IMG_TAG}
     container_name: ts-travel-plan-service
     env_file: .env
     volumes:
@@ -665,7 +666,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Route.Plan.Service
-    image: ts-route-plan-service:latest
+    image: ${IMG_REPO}/ts-route-plan-service:${IMG_TAG}
     container_name: ts-route-plan-service
     env_file: .env
     volumes:
@@ -689,7 +690,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Food.Service
-    image: ts-food-service:latest
+    image: ${IMG_REPO}/ts-food-service:${IMG_TAG}
     container_name: ts-food-service
     env_file: .env
     volumes:
@@ -713,7 +714,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Station.Food.Service
-    image: ts-station-food-service:latest
+    image: ${IMG_REPO}/ts-station-food-service:${IMG_TAG}
     container_name: ts-station-food-service
     env_file: .env
     volumes:
@@ -737,7 +738,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Consign.Price.Service
-    image: ts-consign-price-service:latest
+    image: ${IMG_REPO}/ts-consign-price-service:${IMG_TAG}
     container_name: ts-consign-price-service
     env_file: .env
     volumes:
@@ -761,7 +762,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Consign.Service
-    image: ts-consign-service:latest
+    image: ${IMG_REPO}/ts-consign-service:${IMG_TAG}
     container_name: ts-consign-service
     env_file: .env
     volumes:
@@ -785,7 +786,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Route.Service
-    image: ts-admin-route-service:latest
+    image: ${IMG_REPO}/ts-admin-route-service:${IMG_TAG}
     container_name: ts-admin-route-service
     env_file: .env
     volumes:
@@ -809,7 +810,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Travel.Service
-    image: ts-admin-travel-service:latest
+    image: ${IMG_REPO}/ts-admin-travel-service:${IMG_TAG}
     container_name: ts-admin-travel-service
     env_file: .env
     volumes:
@@ -833,7 +834,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Admin.User.Service
-    image: ts-admin-user-service:latest
+    image: ${IMG_REPO}/ts-admin-user-service:${IMG_TAG}
     container_name: ts-admin-user-service
     env_file: .env
     volumes:
@@ -857,7 +858,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.User.Service
-    image: ts-user-service:latest
+    image: ${IMG_REPO}/ts-user-service:${IMG_TAG}
     container_name: ts-user-service
     env_file: .env
     volumes:
@@ -881,7 +882,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Delivery.Service
-    image: ts-delivery-service:latest
+    image: ${IMG_REPO}/ts-delivery-service:${IMG_TAG}
     container_name: ts-delivery-service
     env_file: .env
     volumes:
@@ -905,7 +906,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Train.Food.Service
-    image: ts-train-food-service:latest
+    image: ${IMG_REPO}/ts-train-food-service:${IMG_TAG}
     container_name: ts-train-food-service
     env_file: .env
     volumes:
@@ -929,7 +930,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Gateway.Service
-    image: ts-gateway-service:latest
+    image: ${IMG_REPO}/ts-gateway-service:${IMG_TAG}
     container_name: ts-gateway-service
     env_file: .env
     volumes:
@@ -938,9 +939,9 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-docker}
       TZ: ${TZ:-UTC}
-      PORT: ${GATEWAY_SERVICE_PORT:-16802}
+      PORT: ${GATEWAY_SERVICE_PORT:-18888}
     ports:
-      - "${GATEWAY_SERVICE_PORT:-16802}:16802"
+      - "${GATEWAY_SERVICE_PORT:-18888}:18888"
     networks:
       - trainticket-net
     depends_on:
@@ -953,7 +954,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Food.Delivery.Service
-    image: ts-food-delivery-service:latest
+    image: ${IMG_REPO}/ts-food-delivery-service:${IMG_TAG}
     container_name: ts-food-delivery-service
     env_file: .env
     volumes:
@@ -977,7 +978,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Wait.Order.Service
-    image: ts-wait-order-service:latest
+    image: ${IMG_REPO}/ts-wait-order-service:${IMG_TAG}
     container_name: ts-wait-order-service
     env_file: .env
     volumes:
@@ -997,23 +998,24 @@ services:
       nacos:
         condition: service_healthy
 
-  # Non-Java services (commented out; uncomment to build/run)
-  # ts-ui-dashboard:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile/Dockerfile.Ts.Ui.Dashboard
-  #   image: ts-ui-dashboard:latest
-  #   container_name: ts-ui-dashboard
-  #   ports:
-  #     - "${UI_DASHBOARD_PORT:-8080}:8080"
-  #   networks:
-  #     - trainticket-net
+  ts-ui-dashboard:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Ui.Dashboard
+    image: ${IMG_REPO}/ts-ui-dashboard:${IMG_TAG}
+    container_name: ts-ui-dashboard
+    ports:
+      - "${UI_DASHBOARD_PORT:-8080}:8080"
+    networks:
+      - trainticket-net
+    depends_on:
+      - ts-gateway-service
 
   ts-avatar-service:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile.Ts.Avatar.Service
-    image: ts-avatar-service:latest
+    image: ${IMG_REPO}/ts-avatar-service:${IMG_TAG}
     container_name: ts-avatar-service
     env_file: .env
     environment:
@@ -1023,43 +1025,63 @@ services:
     networks:
       - trainticket-net
 
-  # ts-voucher-service:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile/Dockerfile.Ts.Voucher.Service
-  #   image: ts-voucher-service:latest
-  #   container_name: ts-voucher-service
-  #   env_file: .env
-  #   ports:
-  #     - "${VOUCHER_SERVICE_PORT:-16101}:16101"
-  #   networks:
-  #     - trainticket-net
+  ts-voucher-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Voucher.Service
+    image: ${IMG_REPO}/ts-voucher-service:${IMG_TAG}
+    container_name: ts-voucher-service
+    env_file: .env
+    environment:
+      VOUCHER_MYSQL_HOST: ${VOUCHER_MYSQL_HOST:-mysql}
+      VOUCHER_MYSQL_PORT: ${VOUCHER_MYSQL_PORT:-3307}
+      VOUCHER_MYSQL_USER: ${VOUCHER_MYSQL_USER:-beta}
+      VOUCHER_MYSQL_PASSWORD: ${VOUCHER_MYSQL_PASSWORD:-beta123}
+      VOUCHER_MYSQL_DATABASE: ${VOUCHER_MYSQL_DATABASE:-ts-voucher-mysql}
+    ports:
+      - "${VOUCHER_SERVICE_PORT:-16101}:16101"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
 
-  # ts-ticket-office-service:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile/Dockerfile.Ts.Ticket.Office.Service
-  #   image: ts-ticket-office-service:latest
-  #   container_name: ts-ticket-office-service
-  #   env_file: .env
-  #   ports:
-  #     - "${TICKET_OFFICE_SERVICE_PORT:-16108}:16108"
-  #   networks:
-  #     - trainticket-net
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
+  ts-ticket-office-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.Ticket.Office.Service
+    image: ${IMG_REPO}/ts-ticket-office-service:${IMG_TAG}
+    container_name: ts-ticket-office-service
+    env_file: .env
+    environment:
+      TICKET_OFFICE_MYSQL_HOST: ${TICKET_OFFICE_MYSQL_HOST:-mysql}
+      TICKET_OFFICE_MYSQL_PORT: ${TICKET_OFFICE_MYSQL_PORT:-3307}
+      TICKET_OFFICE_MYSQL_USER: ${TICKET_OFFICE_MYSQL_USER:-beta}
+      TICKET_OFFICE_MYSQL_PASSWORD: ${TICKET_OFFICE_MYSQL_PASSWORD:-beta123}
+      TICKET_OFFICE_MYSQL_DATABASE: ${TICKET_OFFICE_MYSQL_DATABASE:-ts-ticket-office-mysql}
+      PORT: ${TICKET_OFFICE_SERVICE_PORT:-16108}
+      TICKET_OFFICE_SERVICE_PORT: ${TICKET_OFFICE_SERVICE_PORT:-16108}
+    ports:
+      - "${TICKET_OFFICE_SERVICE_PORT:-16108}:${TICKET_OFFICE_SERVICE_PORT:-16108}"
+    networks:
+      - trainticket-net
+    depends_on:
+      mysql:
+        condition: service_healthy
 
-  # ts-news-service:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile/Dockerfile.Ts.News.Service
-  #   image: ts-news-service:latest
-  #   container_name: ts-news-service
-  #   ports:
-  #     - "${NEWS_SERVICE_PORT:-12862}:12862"
-  #   networks:
-  #     - trainticket-net
+  ts-news-service:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile.Ts.News.Service
+    image: ${IMG_REPO}/ts-news-service:${IMG_TAG}
+    container_name: ts-news-service
+    environment:
+      NEWS_SERVICE_PORT: ${NEWS_SERVICE_PORT:-12862}
+      PORT: ${NEWS_SERVICE_PORT:-12862}
+    ports:
+      - "${NEWS_SERVICE_PORT:-12862}:${NEWS_SERVICE_PORT:-12862}"
+    networks:
+      - trainticket-net
 
 networks:
   trainticket-net:

@@ -1,29 +1,59 @@
 /**
- * Created by dingding on 2017/10/13.
+ * MySQL pool for ts-ticket-office-service.
+ * All connection settings come from the environment (e.g. .env); no defaults in code.
  */
-var HOST=process.env.TICKET_OFFICE_MYSQL_HOST
-var PORT=process.env.TICKET_OFFICE_MYSQL_PORT || 3307
-var USER=process.env.TICKET_OFFICE_MYSQL_USER
-var PASSWORD=process.env.TICKET_OFFICE_MYSQL_PASSWORD
-var DATABASE=process.env.TICKET_OFFICE_MYSQL_DATABASE
+
+var REQUIRED_MYSQL = [
+  'TICKET_OFFICE_MYSQL_HOST',
+  'TICKET_OFFICE_MYSQL_PORT',
+  'TICKET_OFFICE_MYSQL_USER',
+  'TICKET_OFFICE_MYSQL_PASSWORD',
+  'TICKET_OFFICE_MYSQL_DATABASE'
+];
+
+(function requireMysqlEnv() {
+  var missing = REQUIRED_MYSQL.filter(function (name) {
+    var v = process.env[name];
+    return v === undefined || String(v).trim() === '';
+  });
+  if (missing.length) {
+    console.error('[ts-ticket-office-service] Missing required environment variables:');
+    missing.forEach(function (m) {
+      console.error('  - ' + m);
+    });
+    console.error('Copy .env.example to .env and fill in values.');
+    process.exit(1);
+  }
+})();
+
+var HOST = process.env.TICKET_OFFICE_MYSQL_HOST;
+var PORT = parseInt(process.env.TICKET_OFFICE_MYSQL_PORT, 10);
+if (isNaN(PORT)) {
+  console.error('TICKET_OFFICE_MYSQL_PORT must be a number.');
+  process.exit(1);
+}
+var USER = process.env.TICKET_OFFICE_MYSQL_USER;
+var PASSWORD = process.env.TICKET_OFFICE_MYSQL_PASSWORD;
+var DATABASE = process.env.TICKET_OFFICE_MYSQL_DATABASE;
+
+console.log(
+  '[ts-ticket-office-service] MySQL:',
+  USER + '@' + HOST + ':' + PORT + '/' + DATABASE
+);
+
 var pool = require('mysql').createPool({
     host: HOST,
-    port: parseInt(PORT, 10) || 3307,
+    port: PORT,
     user: USER,
     password: PASSWORD,
     database: DATABASE,
     connectionLimit: 5
 });
-var fs = require('fs');
-var path = require('path');
-
-
 
 var initData = function(callback){
-    // Database schema managed by Liquibase - see liquibase/mysql/ts-ticket-office/
     pool.query("SELECT 1", function (err, result) {
         if (err) {
-            console.error("MySQL connection error:", err);
+            console.error("MySQL connection error:", err.message || err);
             callback({ok: false});
             return;
         }
@@ -97,7 +127,7 @@ var insertEntry = function(name, city, province, region, address, workTime, wind
 
 exports.initMysql = function(callback){
     initData(function(result){
-        if (result.ok) console.log("initMysql连接上数据库啦！");
+        if (result.ok) console.log("initMysql connected.");
         callback(result);
     });
 };
@@ -131,6 +161,3 @@ exports.updateOffice = function(province, city, region, oldOfficeName, newOffice
         callback(result);
     });
 };
-
-
-

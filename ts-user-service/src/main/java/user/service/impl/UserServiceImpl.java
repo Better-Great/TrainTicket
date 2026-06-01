@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService {
             return new Response<>(1, "SAVE USER SUCCESS", newUser);
         } else {
             UserServiceImpl.LOGGER.error("[updateUser][Update user error][User not found][UserId: {}]",userDto.getUserId());
-            return new Response(0, "USER NOT EXISTS", null);
+            return new Response<>(0, "USER NOT EXISTS", null);
         }
     }
 
