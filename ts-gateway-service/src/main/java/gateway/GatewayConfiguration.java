@@ -73,11 +73,12 @@ public class GatewayConfiguration {
      */
     @PostConstruct
     public void doInit() {
-        initGatewayRules();
-//        initBlockHandlers();
-
-        System.out.println("===== begin to do flow control");
-        System.out.println("only 20 requests per second can pass");
+        try {
+            initGatewayRules();
+        } catch (Throwable e) {
+            System.err.println("Warning: Sentinel gateway rules init failed, continuing without rate limits: " + e.getMessage());
+        }
+        System.out.println("===== gateway initialized");
     }
 
     /**

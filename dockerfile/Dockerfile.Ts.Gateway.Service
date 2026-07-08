@@ -37,7 +37,7 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'if [ ! -f "${PROJECT_ROOT}/ts-gateway-service/src/main/resources/application.properties" ]; then echo "Error: Token replacement failed"; exit 1; fi' >> /entrypoint.sh && \
     echo 'cp "${PROJECT_ROOT}/ts-gateway-service/src/main/resources/application.properties" "${CONFIG_DIR}/application-external.properties"' >> /entrypoint.sh && \
     echo 'chmod 600 "${CONFIG_DIR}/application-external.properties"' >> /entrypoint.sh && \
-    echo 'exec java ${JAVA_OPTS:--Xmx256m -Xms128m} -jar "${JAR_DIR}/${JAR_NAME}" \' >> /entrypoint.sh && \
+    echo 'exec java ${JAVA_OPTS:--Xmx256m -Xms128m -Dcsp.sentinel.log.dir=/tmp/sentinel} -jar "${JAR_DIR}/${JAR_NAME}" \' >> /entrypoint.sh && \
     echo '  --spring.config.location=file:${CONFIG_DIR}/application-external.properties \' >> /entrypoint.sh && \
     echo '  --server.port="${PORT:-16802}" \' >> /entrypoint.sh && \
     echo '  --logging.file.name=${LOGS_DIR}/ts-gateway-service.log \' >> /entrypoint.sh && \

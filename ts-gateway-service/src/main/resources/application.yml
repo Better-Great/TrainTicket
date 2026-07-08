@@ -207,3 +207,51 @@ spring:
           uri: lb://${VERIFICATION_CODE_SERVICE_HOST:ts-verification-code-service}
           predicates:
             - Path=/api/v1/verifycode/**
+
+        - id: wait-order
+          uri: lb://${WAIT_ORDER_SERVICE_HOST:ts-wait-order-service}
+          predicates:
+            - Path=/api/v1/waitorderservice/**
+
+        - id: food-delivery
+          uri: lb://${FOOD_DELIVERY_SERVICE_HOST:ts-food-delivery-service}
+          predicates:
+            - Path=/api/v1/fooddeliveryservice/**
+
+        - id: voucher-api
+          uri: http://${VOUCHER_SERVICE_HOST:ts-voucher-service}:${VOUCHER_SERVICE_PORT:16101}
+          predicates:
+            - Path=/api/v1/voucherservice/**
+          filters:
+            - RewritePath=/api/v1/voucherservice/voucher, /getVoucher
+
+        - id: voucher-legacy
+          uri: http://${VOUCHER_SERVICE_HOST:ts-voucher-service}:${VOUCHER_SERVICE_PORT:16101}
+          predicates:
+            - Path=/getVoucher
+
+        - id: ticket-office-api
+          uri: http://${TICKET_OFFICE_SERVICE_HOST:ts-ticket-office-service}:${TICKET_OFFICE_SERVICE_PORT:16108}
+          predicates:
+            - Path=/api/v1/ticketofficeservice/**
+          filters:
+            - RewritePath=/api/v1/ticketofficeservice/?(?<segment>.*), /office/$\{segment}
+
+        - id: ticket-office-legacy
+          uri: http://${TICKET_OFFICE_SERVICE_HOST:ts-ticket-office-service}:${TICKET_OFFICE_SERVICE_PORT:16108}
+          predicates:
+            - Path=/office/**
+
+        - id: news-api
+          uri: http://${NEWS_SERVICE_HOST:ts-news-service}:${NEWS_SERVICE_PORT:12862}
+          predicates:
+            - Path=/api/v1/newsservice/**
+          filters:
+            - RewritePath=/api/v1/newsservice/?(?<segment>.*), /
+
+        - id: news-legacy
+          uri: http://${NEWS_SERVICE_HOST:ts-news-service}:${NEWS_SERVICE_PORT:12862}
+          predicates:
+            - Path=/news-service/**
+          filters:
+            - RewritePath=/news-service/?(?<segment>.*), /
