@@ -76,8 +76,8 @@ Check off in SPA + E2E as each item ships.
 - [x] Config CRUD — SPA `/admin/config`
 - [x] Contacts admin CRUD — SPA `/admin/contacts`
 - [x] Users CRUD — SPA `/admin/users`
-- [ ] Security config (anti-scalping) — TT-306
-- [ ] Admin dashboard metrics
+- [x] Security config (anti-scalping) — TT-306 SPA `/admin/security`
+- [x] Admin dashboard metrics — SPA `/admin`
 
 ---
 
