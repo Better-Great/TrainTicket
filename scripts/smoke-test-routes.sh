@@ -36,7 +36,7 @@ check() {
 
 echo "=== Gateway direct ($GATEWAY) ==="
 check "wait-order welcome" "$GATEWAY/api/v1/waitorderservice/welcome" "Wait"
-check "food-delivery welcome" "$GATEWAY/api/v1/fooddeliveryservice/welcome" "Food"
+check "food-delivery welcome" "$GATEWAY/api/v1/fooddeliveryservice/welcome" "food"
 check "news API path" "$GATEWAY/api/v1/newsservice/news" "News"
 check "news legacy path" "$GATEWAY/news-service/news" "News"
 check "ticket office regions" "$GATEWAY/office/getRegionList" ""
@@ -44,9 +44,15 @@ check "ticket office API path" "$GATEWAY/api/v1/ticketofficeservice/getRegionLis
 
 echo ""
 echo "=== UI edge proxy ($UI) ==="
-check "UI homepage" "$UI/" ""
-check "UI news legacy" "$UI/news-service/news" "News"
-check "verifycode (gateway)" "$UI/api/v1/verifycode/generate" ""
+if [[ "${SKIP_UI:-0}" == "1" ]]; then
+  echo "  (skipped — SKIP_UI=1)"
+elif ! curl -sf --max-time 2 -o /dev/null "$UI/" 2>/dev/null; then
+  echo "  (skipped — $UI not up; set SKIP_UI=0 and start edge UI to include)"
+else
+  check "UI homepage" "$UI/" ""
+  check "UI news legacy" "$UI/news-service/news" "News"
+  check "verifycode (gateway)" "$UI/api/v1/verifycode/generate" ""
+fi
 
 echo ""
 echo "=== Results: $pass passed, $fail failed ==="

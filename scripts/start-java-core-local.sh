@@ -22,12 +22,17 @@ SERVICES=(
   "ts-route-service|ts-route-service|11178|ts-route-mysql|ROUTE"
   "ts-train-service|ts-train-service|14567|ts-train-mysql|TRAIN"
   "ts-config-service|ts-config-service|15679|ts-config-mysql|CONFIG"
+  "ts-wait-order-service|ts-wait-order-service|17525|ts-wait-order-mysql|WAIT_ORDER"
+  "ts-food-delivery-service|ts-food-delivery-service|18957|ts-food-delivery-mysql|FOOD_DELIVERY"
 )
 
-# config service may use different db name — check
-ensure_config_db() {
-  docker exec trainticket-mysql mysql -uroot -proot -e \
-    "CREATE DATABASE IF NOT EXISTS \`ts-config-mysql\` CHARACTER SET utf8mb4;" 2>/dev/null || true
+ensure_dbs() {
+  docker exec trainticket-mysql mysql -uroot -proot -e "
+    CREATE DATABASE IF NOT EXISTS \`ts-config-mysql\` CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS \`ts-wait-order-mysql\` CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS \`ts-food-delivery-mysql\` CHARACTER SET utf8mb4;
+    DROP TABLE IF EXISTS \`ts-config-mysql\`.\`config\`;
+  " 2>/dev/null || true
 }
 
 build_modules() {
@@ -68,24 +73,33 @@ start_one() {
   echo "Starting $name on :$port → mysql $db"
   (
     export NACOS_ADDRS
+    export SPRING_CLOUD_NACOS_DISCOVERY_IP
     export "$host_var=$MYSQL_HOST"
     export "$port_var=$MYSQL_PORT"
     export "$db_var=$db"
     export "$user_var=$MYSQL_USER"
     export "$pass_var=$MYSQL_PASSWORD"
-    java -Xms64m -Xmx256m -jar "$jar" >"$LOG/${name}.log" 2>&1
+    java -Xms48m -Xmx192m -jar "$jar" >"$LOG/${name}.log" 2>&1
   ) &
   echo $! >"$LOG/${name}.pid"
 }
 
-ensure_config_db
+ensure_dbs
 
 if [[ "${1:-}" == "--build" ]] || [[ ! -f "$ROOT/ts-auth-service/target/ts-auth-service-1.0.jar" ]]; then
   build_modules
 fi
 
+# Only start missing services unless --all
+ONLY_MISSING=1
+[[ "${1:-}" == "--all" || "${2:-}" == "--all" ]] && ONLY_MISSING=0
+
 for entry in "${SERVICES[@]}"; do
   IFS='|' read -r name mod port db pfx <<<"$entry"
+  if [[ "$ONLY_MISSING" == "1" ]] && ss -tln | grep -q ":${port} "; then
+    echo "$name already up on :$port"
+    continue
+  fi
   start_one "$name" "$mod" "$port" "$db" "$pfx" || true
 done
 
@@ -97,7 +111,7 @@ for i in $(seq 1 90); do
     IFS='|' read -r _name _mod port _db _pfx <<<"$entry"
     ss -tln | grep -q ":${port} " && ((up++)) || true
   done
-  [[ "$up" -ge 4 ]] && break
+  [[ "$up" -ge 6 ]] && break
   sleep 1
 done
 for entry in "${SERVICES[@]}"; do
@@ -114,4 +128,4 @@ done
 echo ""
 echo "Nacos: http://127.0.0.1:8848/nacos  (nacos/nacos)"
 echo "Gateway+discovery: ./scripts/start-gateway-local.sh --with-nacos"
-echo "Smoke: ./scripts/smoke-java-core.sh"
+echo "Smoke: ./scripts/smoke-java-core.sh && ./scripts/smoke-test-routes.sh"

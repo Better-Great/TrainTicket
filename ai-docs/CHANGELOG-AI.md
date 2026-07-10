@@ -4,6 +4,19 @@ Newest first.
 
 ---
 
+## 2026-07-10 — Track B: config DDL + wait/food via gateway
+
+**Agent:** Cursor  
+
+### Summary
+
+- Fixed `ts-config-service` MySQL 8 PK (`@Column(length=64)`) + local JDBC/Nacos defaults
+- Fixed wait-order SecurityConfig (was guarding order-service paths); welcome public
+- Started config / wait-order / food-delivery; SPA→GW→services **19/19**
+- `SKIP_UI=1 ./scripts/smoke-test-routes.sh` gateway portion green
+
+---
+
 ## 2026-07-10 — Track B local: polyglot + core Java ↔ SPA
 
 **Agent:** Cursor  
