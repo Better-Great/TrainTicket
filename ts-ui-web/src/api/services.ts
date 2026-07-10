@@ -1,4 +1,4 @@
-import { apiGet, apiPost, isMockMode } from './client'
+import { apiDelete, apiGet, apiPost, apiPut, isMockMode } from './client'
 import { mockApi } from './mock'
 import type {
   Contact,
@@ -11,6 +11,10 @@ import type {
   Trip,
   WaitListCreateRequest,
   WaitListOrder,
+  OfficeProvince,
+  SpecificOfficesQuery,
+  TicketOffice,
+  Station,
 } from './types'
 
 export function captchaUrl(): string {
@@ -181,4 +185,53 @@ export async function cancelWaitOrder(id: string, accountId: string) {
   if (isMockMode()) return mockApi.cancelWaitList(id, accountId)
   // Backend has no dedicated cancel route yet — keep client API ready
   return apiPost<WaitListOrder>(`/api/v1/waitorderservice/order/${id}/cancel`, { accountId })
+}
+
+/** Ticket-office service returns raw JSON (not ApiResponse wrapper). */
+async function rawJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    ...init,
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return (await res.json()) as T
+}
+
+export async function getOfficeRegions(): Promise<OfficeProvince[]> {
+  if (isMockMode()) return mockApi.regionList()
+  return rawJson<OfficeProvince[]>('/office/getRegionList')
+}
+
+export async function getSpecificOffices(query: SpecificOfficesQuery): Promise<TicketOffice[]> {
+  if (isMockMode()) return mockApi.specificOffices(query)
+  const raw = await rawJson<Array<{ offices?: TicketOffice[] }>>('/office/getSpecificOffices', {
+    method: 'POST',
+    body: JSON.stringify(query),
+  })
+  if (Array.isArray(raw) && raw[0]?.offices) return raw[0].offices
+  if (Array.isArray(raw) && raw.length && 'officeName' in (raw[0] as object)) {
+    return raw as unknown as TicketOffice[]
+  }
+  return []
+}
+
+export async function listStations() {
+  if (isMockMode()) return mockApi.listStations()
+  return apiGet<Station[]>('/api/v1/adminbasicservice/adminbasic/stations', 'admin')
+}
+
+export async function createStation(body: { name: string; stayTime: number }) {
+  if (isMockMode()) return mockApi.createStation(body)
+  return apiPost<Station>('/api/v1/adminbasicservice/adminbasic/stations', body, 'admin')
+}
+
+export async function updateStation(body: Station) {
+  if (isMockMode()) return mockApi.updateStation(body)
+  return apiPut<Station>('/api/v1/adminbasicservice/adminbasic/stations', body, 'admin')
+}
+
+export async function deleteStation(id: string) {
+  if (isMockMode()) return mockApi.deleteStation(id)
+  return apiDelete(`/api/v1/adminbasicservice/adminbasic/stations/${id}`, 'admin')
 }

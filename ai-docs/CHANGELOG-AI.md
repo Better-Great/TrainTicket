@@ -4,6 +4,44 @@ Newest first.
 
 ---
 
+## 2026-07-10 — unify UI under ts-ui-web (ADR-008)
+
+**Agent:** Cursor  
+
+### Summary
+
+- Moved `ts-ui-dashboard/static` → `ts-ui-web/legacy/`
+- Moved nginx → `ts-ui-web/edge/nginx.conf` (SPA `/` + legacy `/legacy/` + gateway proxy)
+- Removed `ts-ui-dashboard/`; compose builds from `ts-ui-web`
+- Multi-stage Dockerfile (Bun SPA build → nginx)
+
+---
+
+## 2026-07-10 — admin shell + stations CRUD
+
+**Agent:** Cursor  
+
+### Summary
+
+- `/admin/login` (separate `admin_token` session) + `/admin/stations` full CRUD
+- Client API supports admin role headers (`apiPut`/`apiDelete`)
+- Ticket offices + admin covered in unit tests — **46** total
+- Still uncommitted on top of `40c8985` (not pushed)
+
+---
+
+## 2026-07-10 — ticket office finder (TT-212)
+
+**Agent:** Cursor  
+
+### Summary
+
+- `/offices` cascading province → city → district search
+- Mock + `/office/*` live paths; unit tests (40 total)
+- Prior commit `40c8985` wait-list/tests remains local (not pushed)
+
+---
+
 ## 2026-07-10 — wait-list polish + full service unit tests
 
 **Agent:** Cursor  

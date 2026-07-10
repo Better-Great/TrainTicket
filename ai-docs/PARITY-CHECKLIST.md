@@ -58,7 +58,7 @@ Check off in SPA + E2E as each item ships.
 
 - [x] Contacts CRUD (client page) — SPA list/create (TT-214 partial)
 - [ ] News feed — TT-219
-- [ ] Ticket office finder — TT-212
+- [x] Ticket office finder — TT-212 SPA mock
 - [ ] Food delivery tracking — TT-220
 - [ ] Email: preserve, create, change, cancel notifications
 
@@ -66,11 +66,11 @@ Check off in SPA + E2E as each item ships.
 
 ## Admin
 
-- [ ] Admin login
+- [x] Admin login — SPA `/admin/login`
 - [ ] Orders admin (aggregated BFF)
 - [ ] Routes CRUD
 - [ ] Travels/trips CRUD
-- [ ] Stations CRUD
+- [x] Stations CRUD — SPA `/admin/stations` (TT-301 partial)
 - [ ] Trains CRUD
 - [ ] Prices CRUD
 - [ ] Config CRUD

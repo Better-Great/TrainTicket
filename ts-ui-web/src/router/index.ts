@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAdminStore } from '@/stores/admin'
 import { applySeo, defaultSeo } from '@/composables/useSeo'
 import { routeSeo } from '@/seo/routes'
 
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
+    requiresAdmin?: boolean
     guest?: boolean
     seoKey?: keyof typeof routeSeo
   }
@@ -78,6 +80,24 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/WaitListView.vue'),
     meta: { requiresAuth: true, seoKey: 'waitlist' },
   },
+  {
+    path: '/offices',
+    name: 'offices',
+    component: () => import('@/views/TicketOfficeView.vue'),
+    meta: { seoKey: 'offices' },
+  },
+  {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: () => import('@/views/AdminLoginView.vue'),
+    meta: { seoKey: 'adminLogin' },
+  },
+  {
+    path: '/admin/stations',
+    name: 'admin-stations',
+    component: () => import('@/views/AdminStationsView.vue'),
+    meta: { requiresAdmin: true, seoKey: 'adminStations' },
+  },
 ]
 
 const router = createRouter({
@@ -90,8 +110,12 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
+  const admin = useAdminStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.requiresAdmin && !admin.isAdmin) {
+    return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
   return true
 })

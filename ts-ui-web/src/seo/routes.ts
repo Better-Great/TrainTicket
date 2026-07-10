@@ -64,4 +64,21 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/waitlist',
     noindex: true,
   },
+  offices: {
+    title: 'Ticket offices',
+    description: 'Find train ticket offices by province, city, and district.',
+    path: '/offices',
+  },
+  adminLogin: {
+    title: 'Admin sign in',
+    description: 'Administrator access for TrainTicket operations.',
+    path: '/admin/login',
+    noindex: true,
+  },
+  adminStations: {
+    title: 'Admin stations',
+    description: 'Create, update, and delete stations.',
+    path: '/admin/stations',
+    noindex: true,
+  },
 }

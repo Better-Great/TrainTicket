@@ -14,11 +14,11 @@
 
 | P | Item |
 |---|------|
-| P0 | Ticket office finder (TT-212) |
-| P1 | Admin login + one admin CRUD shell |
-| P2 | Gateway live mode + smoke |
+| P0 | News feed (TT-219) or more admin CRUDs |
+| P1 | Gateway live mode + smoke |
+| P2 | Commit/push accumulated SPA work |
 
-Wait-list (TT-211) and wallet (TT-215) are in the SPA (wait-list may be uncommitted after `f1119ae`).
+Admin stations CRUD + ticket offices are in the working tree.
 
 
 ## Verify

@@ -13,7 +13,8 @@ description: >-
 - **Edit:** `TrainTicket/` only
 - **Reference:** `train-ticket/` read-only
 - **Frontend runtime:** Bun (not Node)
-- **UI path:** `ts-ui-web/` — not legacy `ts-ui-dashboard` polish
+- **UI path:** `ts-ui-web/` only (`src/` SPA + `legacy/` + `edge/`)
+- **Do not** recreate `ts-ui-dashboard/`
 
 ## Session protocol
 

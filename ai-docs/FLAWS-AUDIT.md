@@ -51,7 +51,7 @@
 | Every service port on host | compose file | TT-510 | Open |
 | No CI/CD, E2E, contract tests | repo root | TT-601, TT-606, TT-525 | Open |
 | K8s docs, no `k8s/` dir | `docs/DEPLOYMENT.md` | TT-604 | Open |
-| Three UI frameworks | `ts-ui-dashboard/static/` | TT-101–407 | Open |
+| Three UI frameworks | `ts-ui-web/legacy/` (was ts-ui-dashboard) | TT-101–407 | In Progress |
 | G/D split leaks to client | `index.js` | TT-532 | Open |
 | No OpenAPI → TS client | manual JS | TT-527 | Open |
 | `Response<T>` no error codes | `ts-common` | TT-528 | Open |

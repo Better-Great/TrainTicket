@@ -145,7 +145,23 @@ start_ui_service() {
         return 1
     fi
     
-    # For UI dashboard, check if we can start a simple HTTP server
+    # Unified UI: legacy/ under ts-ui-web (prefer: bun run dev for SPA)
+    if [ -d "legacy" ]; then
+        cd legacy
+        nohup python3 -m http.server $port > "$LOG_DIR/$service_name.log" 2>&1 &
+        local pid=$!
+        
+        # Save PID
+        echo "$pid:$service_name:$port" >> "$PID_FILE"
+        
+        sleep 0.5
+        if ps -p $pid > /dev/null 2>&1; then
+            echo -e "${GREEN}✓ $service_name${NC} ${CYAN}(UI legacy)${NC} ${BLUE}→${NC} Port $port ${BLUE}(PID: $pid)${NC}"
+            ((STARTED_COUNT++))
+            return 0
+        fi
+    fi
+
     if [ -d "static" ]; then
         cd static
         nohup python3 -m http.server $port > "$LOG_DIR/$service_name.log" 2>&1 &
@@ -241,7 +257,7 @@ main() {
     start_java_service "ts-admin-user-service" 16115
     
     print_header "🌐 Starting UI Dashboard"
-    start_ui_service "ts-ui-dashboard" 8080
+    start_ui_service "ts-ui-web" 8080
     
     print_header "📊 Startup Summary"
     

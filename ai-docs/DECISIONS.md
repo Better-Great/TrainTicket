@@ -48,3 +48,10 @@ Replace static Vue2 + jQuery + AngularJS with new `ts-ui-web/` (Bun + Vite + Vue
 **Status:** Accepted
 
 All implementation work in `TrainTicket/` only. Use `train-ticket/` for feature parity and API contract reference; never modify it.
+
+## ADR-008 — Single UI package (`ts-ui-web`)
+
+**Date:** 2026-07-10  
+**Status:** Accepted
+
+All frontend assets live under `ts-ui-web/`: modern SPA in `src/`, legacy dashboard in `legacy/`, nginx edge in `edge/`. The old `ts-ui-dashboard/` directory is removed. Docker Compose may keep the historical service name `ts-ui-dashboard` while building from `ts-ui-web`.

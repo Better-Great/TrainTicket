@@ -33,7 +33,7 @@ services:
   #     - my-network
 
   ts-ui-dashboard:
-    build: ts-ui-dashboard
+    build: ts-ui-web
     image: ${IMG_REPO}/ts-ui-dashboard:${IMG_TAG}
     restart: always
     ports:

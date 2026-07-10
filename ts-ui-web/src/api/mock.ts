@@ -10,6 +10,10 @@ import type {
   Trip,
   WaitListCreateRequest,
   WaitListOrder,
+  OfficeProvince,
+  SpecificOfficesQuery,
+  TicketOffice,
+  Station,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -62,15 +66,23 @@ const seedWaitList: WaitListOrder[] = [
   },
 ]
 
+const seedStations: Station[] = [
+  { id: 'st-1', name: 'Shang Hai', stayTime: 10 },
+  { id: 'st-2', name: 'Su Zhou', stayTime: 5 },
+  { id: 'st-3', name: 'Nan Jing', stayTime: 8 },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
+let mockStations = structuredClone(seedStations)
 let walletBalance = 2000
 
 export function resetMockState() {
   mockContacts = structuredClone(seedContacts)
   mockOrders = structuredClone(seedOrders)
   mockWaitList = structuredClone(seedWaitList)
+  mockStations = structuredClone(seedStations)
   walletBalance = 2000
 }
 
@@ -310,5 +322,124 @@ export const mockApi = {
     return { status: 1, msg: 'Cancelled', data: updated }
   },
 
+  async regionList(): Promise<OfficeProvince[]> {
+    await delay()
+    return structuredClone(seedRegions)
+  },
+
+  async specificOffices(query: SpecificOfficesQuery): Promise<TicketOffice[]> {
+    await delay()
+    if (!query.province || !query.city || !query.region) return []
+    const key = `${query.province}|${query.city}|${query.region}`
+    return structuredClone(seedOffices[key] ?? [])
+  },
+
+  async listStations(): Promise<ApiResponse<Station[]>> {
+    await delay()
+    return { status: 1, data: [...mockStations] }
+  },
+
+  async createStation(body: { name: string; stayTime: number }): Promise<ApiResponse<Station>> {
+    await delay()
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Station name is required', data: null as unknown as Station }
+    }
+    if (!Number.isInteger(body.stayTime) || body.stayTime <= 0) {
+      return { status: 0, msg: 'Stay time must be a positive integer', data: null as unknown as Station }
+    }
+    if (mockStations.some((s) => s.name.toLowerCase() === body.name.trim().toLowerCase())) {
+      return { status: 0, msg: 'Station already exists', data: null as unknown as Station }
+    }
+    const created = {
+      id: `st-${Date.now()}`,
+      name: body.name.trim(),
+      stayTime: body.stayTime,
+    }
+    mockStations = [...mockStations, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateStation(body: Station): Promise<ApiResponse<Station>> {
+    await delay()
+    const idx = mockStations.findIndex((s) => s.id === body.id)
+    if (idx < 0) return { status: 0, msg: 'Station not found', data: null as unknown as Station }
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Station name is required', data: null as unknown as Station }
+    }
+    if (!Number.isInteger(body.stayTime) || body.stayTime <= 0) {
+      return { status: 0, msg: 'Stay time must be a positive integer', data: null as unknown as Station }
+    }
+    const updated = { ...body, name: body.name.trim() }
+    mockStations = mockStations.map((s) => (s.id === body.id ? updated : s))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteStation(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockStations.some((s) => s.id === id)) {
+      return { status: 0, msg: 'Station not found', data: null }
+    }
+    mockStations = mockStations.filter((s) => s.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
   tripIdString,
+}
+
+const seedRegions: OfficeProvince[] = [
+  {
+    province: 'Shanghai',
+    cities: [
+      {
+        city: 'Shanghai',
+        regions: [{ region: 'Pudong New Area' }, { region: 'Huangpu District' }],
+      },
+    ],
+  },
+  {
+    province: 'Anhui',
+    cities: [
+      {
+        city: 'Hefei',
+        regions: [{ region: 'Hefei Downtown Area' }, { region: 'Feixi County' }],
+      },
+      {
+        city: 'Anqing',
+        regions: [{ region: 'Anqing Downtown Area' }],
+      },
+    ],
+  },
+]
+
+const seedOffices: Record<string, TicketOffice[]> = {
+  'Shanghai|Shanghai|Pudong New Area': [
+    {
+      officeName: 'Century Avenue Ticket Office',
+      address: '100 Century Ave',
+      workTime: '08:00-20:00',
+      windowNum: 6,
+    },
+    {
+      officeName: 'Lujiazui Counter',
+      address: '1 Lujiazui Ring Rd',
+      workTime: '09:00-18:00',
+      windowNum: 3,
+    },
+  ],
+  'Shanghai|Shanghai|Huangpu District': [
+    {
+      officeName: 'People Square Office',
+      address: '200 Nanjing Rd E',
+      workTime: '08:30-19:30',
+      windowNum: 8,
+    },
+  ],
+  'Anhui|Hefei|Hefei Downtown Area': [
+    {
+      officeName: 'Hefei Station Plaza',
+      address: '1 Zhanqian Rd',
+      workTime: '07:30-21:00',
+      windowNum: 10,
+    },
+  ],
 }

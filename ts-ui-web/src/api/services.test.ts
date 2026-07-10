@@ -18,6 +18,12 @@ import {
   topUpWallet,
   collectTicket,
   enterStation,
+  getOfficeRegions,
+  getSpecificOffices,
+  listStations,
+  createStation,
+  updateStation,
+  deleteStation,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -120,5 +126,30 @@ describe('services (mock mode)', () => {
     expect(listed.data.some((w) => w.id === created.data.id)).toBe(true)
     const cancelled = await cancelWaitOrder(created.data.id, accountId)
     expect(cancelled.data.status).toBe(3)
+  })
+
+  it('ticket office services', async () => {
+    const regions = await getOfficeRegions()
+    expect(regions.length).toBeGreaterThan(0)
+    const offices = await getSpecificOffices({
+      province: 'Shanghai',
+      city: 'Shanghai',
+      region: 'Pudong New Area',
+    })
+    expect(offices.length).toBe(2)
+  })
+
+  it('admin station services CRUD', async () => {
+    const listed = await listStations()
+    expect(listed.data.length).toBeGreaterThan(0)
+    const created = await createStation({ name: 'Zhen Jiang', stayTime: 4 })
+    expect(created.status).toBe(1)
+    const updated = await updateStation({
+      id: created.data.id,
+      name: 'Zhenjiang',
+      stayTime: 6,
+    })
+    expect(updated.data.name).toBe('Zhenjiang')
+    expect((await deleteStation(created.data.id)).status).toBe(1)
   })
 })

@@ -7,5 +7,6 @@ Disallow: /collect
 Disallow: /contacts
 Disallow: /wallet
 Disallow: /waitlist
+Disallow: /admin/
 
 Sitemap: /sitemap.xml

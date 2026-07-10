@@ -67,7 +67,7 @@ Dev: bun run dev :5173 → Vite proxy /api → gateway :18888
 |----------|-------|----------|
 | Java microservices | 41 | preserve, order, travel, admin BFFs |
 | Gateway | 1 | ts-gateway-service |
-| UI | 1 | ts-ui-dashboard → ts-ui-web (planned) |
+| UI | 1 | `ts-ui-web` (SPA `src/` + `legacy/` + `edge/`) |
 | Polyglot | 4 | news (Go), voucher (Python), ticket-office (Node→Bun), avatar (Python) |
 | Shared lib | 1 | ts-common (not deployed) |
 | Config tooling | 1 | ts-token-replacement-service |
@@ -98,7 +98,7 @@ Standard envelope from `ts-common`:
 | File | Role |
 |------|------|
 | `ts-gateway-service/src/main/resources/application.yml` | Route table |
-| `ts-ui-dashboard/nginx.conf` | Edge proxy (transitional) |
+| `ts-ui-web/edge/nginx.conf` | Edge proxy — SPA `/`, legacy `/legacy/`, APIs via gateway |
 | `properties/docker.application.ini` | Docker network config |
 | `docker-compose.build.yml` | Full stack compose |
 | `docker-compose.minimal.yml` | Infra only |

@@ -38,7 +38,7 @@ Single north-south API entry via `ts-gateway-service`. UI nginx proxies to gatew
 
 ## nginx (transitional)
 
-File: `ts-ui-dashboard/nginx.conf`
+File: `ts-ui-web/edge/nginx.conf`
 
 - `/api/` → gateway
 - `/getVoucher`, `/office/`, `/news-service/` → gateway

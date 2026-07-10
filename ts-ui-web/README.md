@@ -1,6 +1,15 @@
-# TrainTicket SPA (`ts-ui-web`)
+# TrainTicket UI (`ts-ui-web`)
 
-Modern client UI: **Bun + Vite + Vue 3 + TypeScript**.
+**Single UI package** for the whole frontend:
+
+| Path | Role |
+|------|------|
+| `src/` | Modern SPA — Bun + Vite + Vue 3 + TypeScript |
+| `legacy/` | Former `ts-ui-dashboard/static` (Vue2/jQuery/AngularJS) |
+| `edge/` | nginx config for Docker (SPA + `/legacy/` + gateway proxy) |
+| `Dockerfile` | Multi-stage Bun build → nginx image |
+
+`ts-ui-dashboard/` has been **removed**; compose still uses service name `ts-ui-dashboard` with `build: ts-ui-web`.
 
 ## Local-first (no Docker)
 
@@ -9,29 +18,32 @@ cd ts-ui-web
 bun install
 bun run check          # typecheck + unit tests + production build
 bun run dev            # http://localhost:5173  (mock API by default)
+bun run legacy         # optional: legacy static on :8080
 ```
 
-SEO assets live in `public/`: `robots.txt`, `sitemap.xml`, `site.webmanifest`, `og-default.svg`, `ld-website.json`.
+SEO assets live in `public/`. `.env` defaults to `VITE_USE_MOCK=true`.
 
-`.env` defaults to `VITE_USE_MOCK=true` so you can exercise login → search → advanced → book → pay → collect → passengers without containers.
+## Against a real gateway
 
-## Against a real gateway (later)
+1. Set `VITE_USE_MOCK=false` in `.env`.
+2. `bun run dev` — Vite proxies `/api` (and `/office`, etc.) to `VITE_GATEWAY_URL`.
 
-1. Start gateway (and deps) however you prefer.
-2. Set `VITE_USE_MOCK=false` in `.env`.
-3. `bun run dev` — Vite proxies `/api` to `VITE_GATEWAY_URL` (default `http://localhost:18888`).
+## Docker
 
-Do **not** containerize this UI until `bun run check` is green and the mock flow is verified in the browser.
+```bash
+# From repo root (compose)
+docker compose -f docker-compose.build.yml build ts-ui-dashboard
+
+# Or package context
+docker build -t ts-ui-web -f ts-ui-web/Dockerfile ts-ui-web
+```
+
+Image serves SPA at `/` and legacy at `/legacy/`.
 
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `dev` / `dev:mock` | Local Vite server |
-| `test` | Vitest unit tests (API services, stores, utils, components) |
-| `typecheck` | `vue-tsc` |
-| `build` | Production bundle |
-| `check` | typecheck + test + build |
-
-Every mock-backed service path (auth, travel, contacts, preserve/pay/collect/enter, wallet, wait-list) has unit coverage via `src/api/mock.test.ts` and `src/api/services.test.ts`.
-
+| `dev` / `dev:mock` | Vite SPA |
+| `legacy` | Python static server for `legacy/` |
+| `test` / `typecheck` / `build` / `check` | Quality gate |

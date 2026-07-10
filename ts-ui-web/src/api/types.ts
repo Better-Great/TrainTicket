@@ -108,6 +108,39 @@ export interface WaitListCreateRequest {
   price: string
 }
 
+export interface OfficeRegion {
+  region: string
+}
+
+export interface OfficeCity {
+  city: string
+  regions: OfficeRegion[]
+}
+
+export interface OfficeProvince {
+  province: string
+  cities: OfficeCity[]
+}
+
+export interface TicketOffice {
+  officeName: string
+  address: string
+  workTime: string
+  windowNum: string | number
+}
+
+export interface SpecificOfficesQuery {
+  province: string
+  city: string
+  region: string
+}
+
+export interface Station {
+  id: string
+  name: string
+  stayTime: number
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

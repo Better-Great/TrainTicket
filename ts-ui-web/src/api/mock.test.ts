@@ -224,4 +224,57 @@ describe('mockApi — full service coverage', () => {
       expect(cancelled.data.status).toBe(3)
     })
   })
+
+  describe('ticket offices', () => {
+    it('loads cascading regions', async () => {
+      const list = await mockApi.regionList()
+      expect(list[0]?.province).toBe('Shanghai')
+      expect(list[0]?.cities[0]?.regions.length).toBeGreaterThan(0)
+    })
+
+    it('returns offices for a district and empty for unknown', async () => {
+      const found = await mockApi.specificOffices({
+        province: 'Shanghai',
+        city: 'Shanghai',
+        region: 'Pudong New Area',
+      })
+      expect(found.length).toBe(2)
+      expect(found[0]?.officeName).toContain('Century')
+      const missing = await mockApi.specificOffices({
+        province: 'Shanghai',
+        city: 'Shanghai',
+        region: 'Nowhere',
+      })
+      expect(missing).toEqual([])
+    })
+  })
+
+  describe('admin stations CRUD', () => {
+    it('lists seed stations', async () => {
+      const res = await mockApi.listStations()
+      expect(res.data.length).toBe(3)
+    })
+
+    it('creates, updates, and deletes a station', async () => {
+      const created = await mockApi.createStation({ name: 'Wu Xi', stayTime: 7 })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateStation({
+        id: created.data.id,
+        name: 'Wuxi',
+        stayTime: 9,
+      })
+      expect(updated.data.name).toBe('Wuxi')
+      expect(updated.data.stayTime).toBe(9)
+      const deleted = await mockApi.deleteStation(created.data.id)
+      expect(deleted.status).toBe(1)
+      const listed = await mockApi.listStations()
+      expect(listed.data.some((s) => s.id === created.data.id)).toBe(false)
+    })
+
+    it('rejects invalid create', async () => {
+      expect((await mockApi.createStation({ name: '', stayTime: 5 })).status).toBe(0)
+      expect((await mockApi.createStation({ name: 'X', stayTime: 0 })).status).toBe(0)
+      expect((await mockApi.createStation({ name: 'Shang Hai', stayTime: 3 })).status).toBe(0)
+    })
+  })
 })
