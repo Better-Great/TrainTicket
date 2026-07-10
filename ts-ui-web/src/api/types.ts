@@ -82,6 +82,29 @@ export interface Order {
   contactsName?: string
 }
 
+/** Full order shape used by adminorderservice BFF. */
+export interface AdminOrder {
+  id: string
+  boughtDate: string
+  travelDate: string
+  travelTime: string
+  accountId: string
+  contactsName: string
+  documentType: number | string
+  contactsDocumentNumber: string
+  trainNumber: string
+  coachNumber: number | string
+  seatClass: number | string
+  seatNumber: string
+  from: string
+  to: string
+  status: number | string
+  price: string | number
+}
+
+export type AdminOrderCreate = Omit<AdminOrder, 'id'>
+export type AdminOrderUpdate = AdminOrder
+
 export interface WaitListOrder {
   id: string
   accountId: string

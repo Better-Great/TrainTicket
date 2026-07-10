@@ -13,10 +13,9 @@ cd ts-ui-web && bun run check && bun run dev
 ## Done recently
 
 - News TT-219
-- Admin: stations, routes, trains, travels, prices, config, contacts, users
+- Admin: stations, routes, trains, travels, prices, config, contacts, users, **orders**
 
 ## Next
 
-1. Orders admin BFF (+ unit tests)
-2. Security config / dashboard metrics
-3. Gateway live mode + smoke — deferred
+1. Food delivery tracking (TT-220) or security config
+2. Gateway live mode + smoke — deferred

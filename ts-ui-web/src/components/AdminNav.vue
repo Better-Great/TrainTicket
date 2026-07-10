@@ -4,6 +4,7 @@ import { RouterLink, useRoute } from 'vue-router'
 const route = useRoute()
 
 const links = [
+  { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/stations', label: 'Stations' },
   { to: '/admin/routes', label: 'Routes' },
   { to: '/admin/trains', label: 'Trains' },

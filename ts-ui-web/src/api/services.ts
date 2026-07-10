@@ -27,6 +27,8 @@ import type {
   AdminContactCreate,
   TravelRecord,
   TravelUpsertRequest,
+  AdminOrder,
+  AdminOrderCreate,
 } from './types'
 
 export function captchaUrl(): string {
@@ -391,4 +393,27 @@ export async function updateTravel(body: TravelUpsertRequest) {
 export async function deleteTravel(tripId: string) {
   if (isMockMode()) return mockApi.deleteTravel(tripId)
   return apiDelete(`/api/v1/admintravelservice/admintravel/${tripId}`, 'admin')
+}
+
+export async function listAdminOrders() {
+  if (isMockMode()) return mockApi.listAdminOrders()
+  return apiGet<AdminOrder[]>('/api/v1/adminorderservice/adminorder', 'admin')
+}
+
+export async function createAdminOrder(body: AdminOrderCreate) {
+  if (isMockMode()) return mockApi.createAdminOrder(body)
+  return apiPost<AdminOrder>('/api/v1/adminorderservice/adminorder', body, 'admin')
+}
+
+export async function updateAdminOrder(body: AdminOrder) {
+  if (isMockMode()) return mockApi.updateAdminOrder(body)
+  return apiPut<AdminOrder>('/api/v1/adminorderservice/adminorder', body, 'admin')
+}
+
+export async function deleteAdminOrder(orderId: string, trainNumber: string) {
+  if (isMockMode()) return mockApi.deleteAdminOrder(orderId, trainNumber)
+  return apiDelete(
+    `/api/v1/adminorderservice/adminorder/${orderId}/${encodeURIComponent(trainNumber)}`,
+    'admin',
+  )
 }

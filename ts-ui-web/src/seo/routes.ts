@@ -128,4 +128,10 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/admin/travels',
     noindex: true,
   },
+  adminOrders: {
+    title: 'Admin orders',
+    description: 'Aggregated order management across high-speed and other trains.',
+    path: '/admin/orders',
+    noindex: true,
+  },
 }

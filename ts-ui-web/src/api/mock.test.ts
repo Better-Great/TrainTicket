@@ -586,4 +586,44 @@ describe('mockApi — full service coverage', () => {
       ).toBe(0)
     })
   })
+
+  describe('admin orders CRUD', () => {
+    it('lists aggregated seed orders', async () => {
+      expect((await mockApi.listAdminOrders()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes an order', async () => {
+      const created = await mockApi.createAdminOrder({
+        boughtDate: '2026-07-11',
+        travelDate: '2026-07-21',
+        travelTime: '10:00:00',
+        accountId: 'acct-1',
+        contactsName: 'Pat',
+        documentType: 1,
+        contactsDocumentNumber: 'X1',
+        trainNumber: 'G7777',
+        coachNumber: 2,
+        seatClass: 2,
+        seatNumber: '2B',
+        from: 'Shang Hai',
+        to: 'Nan Jing',
+        status: 0,
+        price: '88',
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateAdminOrder({
+        ...created.data,
+        status: 1,
+        price: '90',
+      })
+      expect(updated.data.status).toBe(1)
+      expect(
+        (await mockApi.deleteAdminOrder(created.data.id, created.data.trainNumber)).status,
+      ).toBe(1)
+    })
+
+    it('delete requires matching train number', async () => {
+      expect((await mockApi.deleteAdminOrder('ord-admin-1', 'WRONG')).status).toBe(0)
+    })
+  })
 })

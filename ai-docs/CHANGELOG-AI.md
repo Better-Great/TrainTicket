@@ -4,6 +4,17 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin orders BFF
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/orders` with mock + `adminorderservice/adminorder`
+- Status filter/search; delete requires orderId + trainNumber; **81** Vitest tests
+
+---
+
 ## 2026-07-10 — admin travels CRUD
 
 **Agent:** Cursor  

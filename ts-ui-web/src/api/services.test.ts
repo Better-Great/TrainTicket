@@ -52,6 +52,10 @@ import {
   createTravel,
   updateTravel,
   deleteTravel,
+  listAdminOrders,
+  createAdminOrder,
+  updateAdminOrder,
+  deleteAdminOrder,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -308,5 +312,29 @@ describe('services (mock mode)', () => {
     })
     expect(updated.data.trip.stationsName).toBe('Jia Xing')
     expect((await deleteTravel('D8888')).status).toBe(1)
+  })
+
+  it('admin order services CRUD', async () => {
+    expect((await listAdminOrders()).data.length).toBeGreaterThan(0)
+    const created = await createAdminOrder({
+      boughtDate: '2026-07-12',
+      travelDate: '2026-07-22',
+      travelTime: '11:00:00',
+      accountId: 'acct-svc',
+      contactsName: 'Ops',
+      documentType: 1,
+      contactsDocumentNumber: 'D9',
+      trainNumber: 'G5555',
+      coachNumber: 1,
+      seatClass: 3,
+      seatNumber: '9F',
+      from: 'Shang Hai',
+      to: 'Su Zhou',
+      status: 0,
+      price: '55',
+    })
+    expect(created.status).toBe(1)
+    expect((await updateAdminOrder({ ...created.data, status: 2 })).data.status).toBe(2)
+    expect((await deleteAdminOrder(created.data.id, created.data.trainNumber)).status).toBe(1)
   })
 })

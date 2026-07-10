@@ -26,6 +26,8 @@ import type {
   AdminContactCreate,
   TravelRecord,
   TravelUpsertRequest,
+  AdminOrder,
+  AdminOrderCreate,
 } from './types'
 import { travelTripIdString } from './types'
 
@@ -179,6 +181,45 @@ const seedTravels: TravelRecord[] = [
   },
 ]
 
+const seedAdminOrders: AdminOrder[] = [
+  {
+    id: 'ord-admin-1',
+    boughtDate: '2026-07-10',
+    travelDate: '2026-07-15',
+    travelTime: '09:00:00',
+    accountId: '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a',
+    contactsName: 'Alex Rider',
+    documentType: 1,
+    contactsDocumentNumber: 'A12345678',
+    trainNumber: 'G1234',
+    coachNumber: 5,
+    seatClass: 2,
+    seatNumber: '5A',
+    from: 'Shang Hai',
+    to: 'Su Zhou',
+    status: 0,
+    price: '75.5',
+  },
+  {
+    id: 'ord-admin-2',
+    boughtDate: '2026-07-09',
+    travelDate: '2026-07-16',
+    travelTime: '14:30:00',
+    accountId: 'user-admin-demo',
+    contactsName: 'Sam Chen',
+    documentType: 2,
+    contactsDocumentNumber: 'P99887766',
+    trainNumber: 'Z2345',
+    coachNumber: 3,
+    seatClass: 3,
+    seatNumber: '12C',
+    from: 'Shang Hai',
+    to: 'Hang Zhou',
+    status: 1,
+    price: '48.0',
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
@@ -189,6 +230,7 @@ let mockAdminUsers = structuredClone(seedAdminUsers)
 let mockPrices = structuredClone(seedPrices)
 let mockConfigs = structuredClone(seedConfigs)
 let mockTravels = structuredClone(seedTravels)
+let mockAdminOrders = structuredClone(seedAdminOrders)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -202,6 +244,7 @@ export function resetMockState() {
   mockPrices = structuredClone(seedPrices)
   mockConfigs = structuredClone(seedConfigs)
   mockTravels = structuredClone(seedTravels)
+  mockAdminOrders = structuredClone(seedAdminOrders)
   walletBalance = 2000
 }
 
@@ -971,6 +1014,92 @@ export const mockApi = {
       return { status: 0, msg: 'Travel not found', data: null }
     }
     mockTravels = mockTravels.filter((t) => travelTripIdString(t.trip.tripId) !== tripId)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listAdminOrders(): Promise<ApiResponse<AdminOrder[]>> {
+    await delay()
+    return { status: 1, msg: 'Get the orders successfully!', data: structuredClone(mockAdminOrders) }
+  },
+
+  async createAdminOrder(body: AdminOrderCreate): Promise<ApiResponse<AdminOrder>> {
+    await delay()
+    if (!body.accountId?.trim() || !body.trainNumber?.trim() || !body.from?.trim() || !body.to?.trim()) {
+      return {
+        status: 0,
+        msg: 'Account, train, from, and to are required',
+        data: null as unknown as AdminOrder,
+      }
+    }
+    if (!body.travelDate?.trim()) {
+      return { status: 0, msg: 'Travel date is required', data: null as unknown as AdminOrder }
+    }
+    const price = Number(body.price)
+    if (!Number.isFinite(price) || price < 0) {
+      return { status: 0, msg: 'Price must be a non-negative number', data: null as unknown as AdminOrder }
+    }
+    const created: AdminOrder = {
+      id: `ord-admin-${Date.now()}`,
+      boughtDate: body.boughtDate?.trim() || new Date().toISOString().slice(0, 10),
+      travelDate: body.travelDate.trim(),
+      travelTime: body.travelTime?.trim() || '00:00:00',
+      accountId: body.accountId.trim(),
+      contactsName: body.contactsName?.trim() || '',
+      documentType: Number(body.documentType) || 1,
+      contactsDocumentNumber: body.contactsDocumentNumber?.trim() || '',
+      trainNumber: body.trainNumber.trim(),
+      coachNumber: Number(body.coachNumber) || 1,
+      seatClass: Number(body.seatClass) || 2,
+      seatNumber: String(body.seatNumber ?? ''),
+      from: body.from.trim(),
+      to: body.to.trim(),
+      status: Number(body.status) || 0,
+      price: String(price),
+    }
+    mockAdminOrders = [created, ...mockAdminOrders]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateAdminOrder(body: AdminOrder): Promise<ApiResponse<AdminOrder>> {
+    await delay()
+    if (!mockAdminOrders.some((o) => o.id === body.id)) {
+      return { status: 0, msg: 'Order not found', data: null as unknown as AdminOrder }
+    }
+    if (!body.accountId?.trim() || !body.trainNumber?.trim() || !body.from?.trim() || !body.to?.trim()) {
+      return {
+        status: 0,
+        msg: 'Account, train, from, and to are required',
+        data: null as unknown as AdminOrder,
+      }
+    }
+    const price = Number(body.price)
+    if (!Number.isFinite(price) || price < 0) {
+      return { status: 0, msg: 'Price must be a non-negative number', data: null as unknown as AdminOrder }
+    }
+    const updated: AdminOrder = {
+      ...body,
+      accountId: body.accountId.trim(),
+      trainNumber: body.trainNumber.trim(),
+      from: body.from.trim(),
+      to: body.to.trim(),
+      contactsName: body.contactsName?.trim() || '',
+      contactsDocumentNumber: body.contactsDocumentNumber?.trim() || '',
+      status: Number(body.status),
+      price: String(price),
+    }
+    mockAdminOrders = mockAdminOrders.map((o) => (o.id === body.id ? updated : o))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteAdminOrder(orderId: string, trainNumber: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    const found = mockAdminOrders.find(
+      (o) => o.id === orderId && o.trainNumber === trainNumber,
+    )
+    if (!found) {
+      return { status: 0, msg: 'Order not found', data: null }
+    }
+    mockAdminOrders = mockAdminOrders.filter((o) => !(o.id === orderId && o.trainNumber === trainNumber))
     return { status: 1, msg: 'Deleted', data: null }
   },
 

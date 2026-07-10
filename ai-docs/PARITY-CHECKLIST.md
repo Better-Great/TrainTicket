@@ -67,7 +67,7 @@ Check off in SPA + E2E as each item ships.
 ## Admin
 
 - [x] Admin login — SPA `/admin/login`
-- [ ] Orders admin (aggregated BFF)
+- [x] Orders admin (aggregated BFF) — SPA `/admin/orders`
 - [x] Routes CRUD — SPA `/admin/routes`
 - [x] Travels/trips CRUD — SPA `/admin/travels`
 - [x] Stations CRUD — SPA `/admin/stations` (TT-301 partial)
