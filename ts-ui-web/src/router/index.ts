@@ -87,6 +87,12 @@ const routes: RouteRecordRaw[] = [
     meta: { seoKey: 'offices' },
   },
   {
+    path: '/news',
+    name: 'news',
+    component: () => import('@/views/NewsView.vue'),
+    meta: { seoKey: 'news' },
+  },
+  {
     path: '/admin/login',
     name: 'admin-login',
     component: () => import('@/views/AdminLoginView.vue'),

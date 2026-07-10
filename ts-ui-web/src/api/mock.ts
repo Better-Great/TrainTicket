@@ -14,6 +14,7 @@ import type {
   SpecificOfficesQuery,
   TicketOffice,
   Station,
+  NewsItem,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -383,8 +384,28 @@ export const mockApi = {
     return { status: 1, msg: 'Deleted', data: null }
   },
 
+  async news(): Promise<NewsItem[]> {
+    await delay()
+    return structuredClone(seedNews)
+  },
+
   tripIdString,
 }
+
+const seedNews: NewsItem[] = [
+  {
+    Title: 'News Service Complete',
+    Content: 'Congratulations: Your News Service Complete',
+  },
+  {
+    Title: 'Total Ticket System Complete',
+    Content: 'Just a total test',
+  },
+  {
+    Title: 'SPA modernization',
+    Content: 'TrainTicket UI now ships as a Bun + Vue 3 client with local mock APIs.',
+  },
+]
 
 const seedRegions: OfficeProvince[] = [
   {

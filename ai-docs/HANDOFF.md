@@ -1,8 +1,8 @@
 # Handoff — TrainTicket Modernization
 
 **Last updated:** 2026-07-10  
-**Branch:** `feat` (local commits + uncommitted UI unify)  
-**Active focus:** Single UI package `ts-ui-web/`
+**Branch:** `feat` (local commits; do not push unless asked)  
+**Active focus:** Whole `TrainTicket/` — section-by-section with unit tests
 
 ## UI layout (ADR-008)
 
@@ -20,12 +20,17 @@ ts-ui-web/
 
 ```bash
 cd ts-ui-web
-bun run check && bun run dev     # SPA :5173
+bun run check && bun run dev     # SPA :5173, mock by default
 bun run legacy                   # optional legacy static
 ```
 
+## Done recently
+
+- Client flows, wait-list, offices, admin stations
+- News feed TT-219 (`/news` + Go service tests)
+
 ## Next
 
-1. News feed or more admin CRUDs  
-2. Gateway live mode  
-3. Commit accumulated work when ready  
+1. Admin Routes CRUD (+ unit tests)
+2. Admin Trains / Users CRUD
+3. Gateway live mode (`VITE_USE_MOCK=false`) + smoke — deferred

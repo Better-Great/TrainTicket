@@ -69,6 +69,11 @@ export const routeSeo: Record<string, SeoMeta> = {
     description: 'Find train ticket offices by province, city, and district.',
     path: '/offices',
   },
+  news: {
+    title: 'News',
+    description: 'System news from the TrainTicket news service.',
+    path: '/news',
+  },
   adminLogin: {
     title: 'Admin sign in',
     description: 'Administrator access for TrainTicket operations.',

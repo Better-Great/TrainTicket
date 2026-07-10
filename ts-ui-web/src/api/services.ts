@@ -15,6 +15,7 @@ import type {
   SpecificOfficesQuery,
   TicketOffice,
   Station,
+  NewsItem,
 } from './types'
 
 export function captchaUrl(): string {
@@ -234,4 +235,14 @@ export async function updateStation(body: Station) {
 export async function deleteStation(id: string) {
   if (isMockMode()) return mockApi.deleteStation(id)
   return apiDelete(`/api/v1/adminbasicservice/adminbasic/stations/${id}`, 'admin')
+}
+
+export async function getNews(): Promise<NewsItem[]> {
+  if (isMockMode()) return mockApi.news()
+  // Prefer normalized gateway path; fall back to legacy /news-service/news
+  try {
+    return await rawJson<NewsItem[]>('/api/v1/newsservice/news')
+  } catch {
+    return rawJson<NewsItem[]>('/news-service/news')
+  }
 }

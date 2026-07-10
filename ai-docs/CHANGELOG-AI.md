@@ -4,6 +4,19 @@ Newest first.
 
 ---
 
+## 2026-07-10 — news feed (TT-219)
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/news` with mock seed + live `/api/v1/newsservice/news` (fallback `/news-service/news`)
+- Nav, SEO route meta, sitemap
+- Vitest coverage for mock/services; `ts-news-service` Go tests (`hello` JSON + port env)
+- **48** Vitest tests green
+
+---
+
 ## 2026-07-10 — unify UI under ts-ui-web (ADR-008)
 
 **Agent:** Cursor  

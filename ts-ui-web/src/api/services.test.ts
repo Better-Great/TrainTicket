@@ -24,6 +24,7 @@ import {
   createStation,
   updateStation,
   deleteStation,
+  getNews,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -151,5 +152,11 @@ describe('services (mock mode)', () => {
     })
     expect(updated.data.name).toBe('Zhenjiang')
     expect((await deleteStation(created.data.id)).status).toBe(1)
+  })
+
+  it('news service', async () => {
+    const items = await getNews()
+    expect(items.length).toBeGreaterThanOrEqual(2)
+    expect(items[0]?.Title).toBeTruthy()
   })
 })

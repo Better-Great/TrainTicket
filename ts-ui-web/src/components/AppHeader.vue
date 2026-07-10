@@ -21,6 +21,7 @@ const links = [
   { to: '/wallet', label: 'Wallet' },
   { to: '/waitlist', label: 'Wait-list' },
   { to: '/offices', label: 'Offices' },
+  { to: '/news', label: 'News' },
   { to: '/admin/login', label: 'Admin' },
 ]
 

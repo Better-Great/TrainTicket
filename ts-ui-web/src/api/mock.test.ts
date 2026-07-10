@@ -277,4 +277,13 @@ describe('mockApi — full service coverage', () => {
       expect((await mockApi.createStation({ name: 'Shang Hai', stayTime: 3 })).status).toBe(0)
     })
   })
+
+  describe('news', () => {
+    it('returns news items with Title and Content', async () => {
+      const items = await mockApi.news()
+      expect(items.length).toBeGreaterThanOrEqual(2)
+      expect(items[0]?.Title).toBeTruthy()
+      expect(items[0]?.Content).toBeTruthy()
+    })
+  })
 })

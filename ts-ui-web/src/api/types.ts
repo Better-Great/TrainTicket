@@ -141,6 +141,11 @@ export interface Station {
   stayTime: number
 }
 
+export interface NewsItem {
+  Title: string
+  Content: string
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',
