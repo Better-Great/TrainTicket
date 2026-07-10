@@ -59,7 +59,7 @@ Check off in SPA + E2E as each item ships.
 - [x] Contacts CRUD (client page) — SPA list/create (TT-214 partial)
 - [x] News feed — TT-219 SPA mock + Go service tests
 - [x] Ticket office finder — TT-212 SPA mock
-- [ ] Food delivery tracking — TT-220
+- [x] Food delivery tracking — TT-220 SPA mock
 - [ ] Email: preserve, create, change, cancel notifications
 
 ---

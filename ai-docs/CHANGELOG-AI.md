@@ -4,6 +4,17 @@ Newest first.
 
 ---
 
+## 2026-07-10 — food delivery tracking (TT-220)
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/food` with mock + `fooddeliveryservice` (create, trip/seat/time updates, delete)
+- Search + seat tracking UX; **85** Vitest tests
+
+---
+
 ## 2026-07-10 — admin orders BFF
 
 **Agent:** Cursor  

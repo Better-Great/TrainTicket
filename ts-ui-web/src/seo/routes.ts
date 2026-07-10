@@ -64,6 +64,12 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/waitlist',
     noindex: true,
   },
+  food: {
+    title: 'Food delivery',
+    description: 'Order and track food delivery to your train seat.',
+    path: '/food',
+    noindex: true,
+  },
   offices: {
     title: 'Ticket offices',
     description: 'Find train ticket offices by province, city, and district.',

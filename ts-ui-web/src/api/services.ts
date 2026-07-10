@@ -29,6 +29,8 @@ import type {
   TravelUpsertRequest,
   AdminOrder,
   AdminOrderCreate,
+  FoodDeliveryOrder,
+  FoodDeliveryCreate,
 } from './types'
 
 export function captchaUrl(): string {
@@ -416,4 +418,42 @@ export async function deleteAdminOrder(orderId: string, trainNumber: string) {
     `/api/v1/adminorderservice/adminorder/${orderId}/${encodeURIComponent(trainNumber)}`,
     'admin',
   )
+}
+
+export async function listFoodDeliveries() {
+  if (isMockMode()) return mockApi.listFoodDeliveries()
+  return apiGet<FoodDeliveryOrder[]>('/api/v1/fooddeliveryservice/orders/all')
+}
+
+export async function getFoodDelivery(id: string) {
+  if (isMockMode()) return mockApi.getFoodDelivery(id)
+  return apiGet<FoodDeliveryOrder>(`/api/v1/fooddeliveryservice/orders/${id}`)
+}
+
+export async function createFoodDelivery(body: FoodDeliveryCreate) {
+  if (isMockMode()) return mockApi.createFoodDelivery(body)
+  return apiPost<FoodDeliveryOrder>('/api/v1/fooddeliveryservice/orders', body)
+}
+
+export async function updateFoodDeliveryTrip(orderId: string, tripId: string) {
+  if (isMockMode()) return mockApi.updateFoodDeliveryTrip(orderId, tripId)
+  return apiPut<FoodDeliveryOrder>('/api/v1/fooddeliveryservice/orders/tripid', { orderId, tripId })
+}
+
+export async function updateFoodDeliverySeat(orderId: string, seatNo: number) {
+  if (isMockMode()) return mockApi.updateFoodDeliverySeat(orderId, seatNo)
+  return apiPut<FoodDeliveryOrder>('/api/v1/fooddeliveryservice/orders/seatno', { orderId, seatNo })
+}
+
+export async function updateFoodDeliveryTime(orderId: string, deliveryTime: string) {
+  if (isMockMode()) return mockApi.updateFoodDeliveryTime(orderId, deliveryTime)
+  return apiPut<FoodDeliveryOrder>('/api/v1/fooddeliveryservice/orders/dtime', {
+    orderId,
+    deliveryTime,
+  })
+}
+
+export async function deleteFoodDelivery(id: string) {
+  if (isMockMode()) return mockApi.deleteFoodDelivery(id)
+  return apiDelete(`/api/v1/fooddeliveryservice/orders/d/${id}`)
 }

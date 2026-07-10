@@ -20,6 +20,7 @@ const links = [
   { to: '/contacts', label: 'Passengers' },
   { to: '/wallet', label: 'Wallet' },
   { to: '/waitlist', label: 'Wait-list' },
+  { to: '/food', label: 'Food' },
   { to: '/offices', label: 'Offices' },
   { to: '/news', label: 'News' },
   { to: '/admin/login', label: 'Admin' },

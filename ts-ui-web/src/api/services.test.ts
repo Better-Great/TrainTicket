@@ -56,6 +56,12 @@ import {
   createAdminOrder,
   updateAdminOrder,
   deleteAdminOrder,
+  listFoodDeliveries,
+  createFoodDelivery,
+  updateFoodDeliveryTrip,
+  updateFoodDeliverySeat,
+  updateFoodDeliveryTime,
+  deleteFoodDelivery,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -336,5 +342,24 @@ describe('services (mock mode)', () => {
     expect(created.status).toBe(1)
     expect((await updateAdminOrder({ ...created.data, status: 2 })).data.status).toBe(2)
     expect((await deleteAdminOrder(created.data.id, created.data.trainNumber)).status).toBe(1)
+  })
+
+  it('food delivery services', async () => {
+    expect((await listFoodDeliveries()).data.length).toBeGreaterThan(0)
+    const created = await createFoodDelivery({
+      stationFoodStoreId: 'store-svc',
+      tripId: 'D100',
+      seatNo: 3,
+      deliveryTime: '2026-08-02 09:00:00',
+      deliveryFee: 2,
+      foodList: [{ foodName: 'Bun', price: 6 }],
+    })
+    expect(created.status).toBe(1)
+    expect((await updateFoodDeliveryTrip(created.data.id, 'D101')).data.tripId).toBe('D101')
+    expect((await updateFoodDeliverySeat(created.data.id, 4)).data.seatNo).toBe(4)
+    expect(
+      (await updateFoodDeliveryTime(created.data.id, '2026-08-02 10:00:00')).data.deliveryTime,
+    ).toContain('10:00')
+    expect((await deleteFoodDelivery(created.data.id)).status).toBe(1)
   })
 })

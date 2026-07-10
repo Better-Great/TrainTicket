@@ -28,6 +28,8 @@ import type {
   TravelUpsertRequest,
   AdminOrder,
   AdminOrderCreate,
+  FoodDeliveryOrder,
+  FoodDeliveryCreate,
 } from './types'
 import { travelTripIdString } from './types'
 
@@ -220,6 +222,32 @@ const seedAdminOrders: AdminOrder[] = [
   },
 ]
 
+const seedFoodDeliveries: FoodDeliveryOrder[] = [
+  {
+    id: 'fd-1',
+    stationFoodStoreId: 'store-shanghai-1',
+    foodList: [
+      { foodName: 'Beef Noodle', price: 28 },
+      { foodName: 'Green Tea', price: 8 },
+    ],
+    tripId: 'G1234',
+    seatNo: 12,
+    createdTime: '2026-07-10 08:00:00',
+    deliveryTime: '2026-07-15 09:30:00',
+    deliveryFee: 5,
+  },
+  {
+    id: 'fd-2',
+    stationFoodStoreId: 'store-nanjing-2',
+    foodList: [{ foodName: 'Rice Bowl', price: 22 }],
+    tripId: 'G1567',
+    seatNo: 5,
+    createdTime: '2026-07-09 18:00:00',
+    deliveryTime: '2026-07-16 15:00:00',
+    deliveryFee: 4,
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
@@ -231,6 +259,7 @@ let mockPrices = structuredClone(seedPrices)
 let mockConfigs = structuredClone(seedConfigs)
 let mockTravels = structuredClone(seedTravels)
 let mockAdminOrders = structuredClone(seedAdminOrders)
+let mockFoodDeliveries = structuredClone(seedFoodDeliveries)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -245,6 +274,7 @@ export function resetMockState() {
   mockConfigs = structuredClone(seedConfigs)
   mockTravels = structuredClone(seedTravels)
   mockAdminOrders = structuredClone(seedAdminOrders)
+  mockFoodDeliveries = structuredClone(seedFoodDeliveries)
   walletBalance = 2000
 }
 
@@ -1100,6 +1130,113 @@ export const mockApi = {
       return { status: 0, msg: 'Order not found', data: null }
     }
     mockAdminOrders = mockAdminOrders.filter((o) => !(o.id === orderId && o.trainNumber === trainNumber))
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listFoodDeliveries(): Promise<ApiResponse<FoodDeliveryOrder[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockFoodDeliveries) }
+  },
+
+  async getFoodDelivery(id: string): Promise<ApiResponse<FoodDeliveryOrder>> {
+    await delay()
+    const found = mockFoodDeliveries.find((o) => o.id === id)
+    if (!found) return { status: 0, msg: 'Delivery not found', data: null as unknown as FoodDeliveryOrder }
+    return { status: 1, data: structuredClone(found) }
+  },
+
+  async createFoodDelivery(body: FoodDeliveryCreate): Promise<ApiResponse<FoodDeliveryOrder>> {
+    await delay()
+    if (!body.tripId?.trim() || !body.stationFoodStoreId?.trim()) {
+      return {
+        status: 0,
+        msg: 'Trip and store are required',
+        data: null as unknown as FoodDeliveryOrder,
+      }
+    }
+    if (!Number.isInteger(body.seatNo) || body.seatNo <= 0) {
+      return { status: 0, msg: 'Seat number must be a positive integer', data: null as unknown as FoodDeliveryOrder }
+    }
+    if (!body.foodList?.length) {
+      return { status: 0, msg: 'At least one food item is required', data: null as unknown as FoodDeliveryOrder }
+    }
+    if (!body.deliveryTime?.trim()) {
+      return { status: 0, msg: 'Delivery time is required', data: null as unknown as FoodDeliveryOrder }
+    }
+    const created: FoodDeliveryOrder = {
+      id: `fd-${Date.now()}`,
+      stationFoodStoreId: body.stationFoodStoreId.trim(),
+      foodList: body.foodList.map((f) => ({
+        foodName: f.foodName.trim(),
+        price: Number(f.price),
+      })),
+      tripId: body.tripId.trim(),
+      seatNo: body.seatNo,
+      createdTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      deliveryTime: body.deliveryTime.trim(),
+      deliveryFee: Number.isFinite(body.deliveryFee) ? body.deliveryFee : 0,
+    }
+    mockFoodDeliveries = [created, ...mockFoodDeliveries]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateFoodDeliveryTrip(
+    orderId: string,
+    tripId: string,
+  ): Promise<ApiResponse<FoodDeliveryOrder>> {
+    await delay()
+    const idx = mockFoodDeliveries.findIndex((o) => o.id === orderId)
+    if (idx < 0) {
+      return { status: 0, msg: 'Delivery not found', data: null as unknown as FoodDeliveryOrder }
+    }
+    if (!tripId?.trim()) {
+      return { status: 0, msg: 'Trip ID is required', data: null as unknown as FoodDeliveryOrder }
+    }
+    const updated = { ...mockFoodDeliveries[idx]!, tripId: tripId.trim() }
+    mockFoodDeliveries = mockFoodDeliveries.map((o) => (o.id === orderId ? updated : o))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async updateFoodDeliverySeat(
+    orderId: string,
+    seatNo: number,
+  ): Promise<ApiResponse<FoodDeliveryOrder>> {
+    await delay()
+    const idx = mockFoodDeliveries.findIndex((o) => o.id === orderId)
+    if (idx < 0) {
+      return { status: 0, msg: 'Delivery not found', data: null as unknown as FoodDeliveryOrder }
+    }
+    if (!Number.isInteger(seatNo) || seatNo <= 0) {
+      return { status: 0, msg: 'Seat number must be a positive integer', data: null as unknown as FoodDeliveryOrder }
+    }
+    const updated = { ...mockFoodDeliveries[idx]!, seatNo }
+    mockFoodDeliveries = mockFoodDeliveries.map((o) => (o.id === orderId ? updated : o))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async updateFoodDeliveryTime(
+    orderId: string,
+    deliveryTime: string,
+  ): Promise<ApiResponse<FoodDeliveryOrder>> {
+    await delay()
+    const idx = mockFoodDeliveries.findIndex((o) => o.id === orderId)
+    if (idx < 0) {
+      return { status: 0, msg: 'Delivery not found', data: null as unknown as FoodDeliveryOrder }
+    }
+    if (!deliveryTime?.trim()) {
+      return { status: 0, msg: 'Delivery time is required', data: null as unknown as FoodDeliveryOrder }
+    }
+    const updated = { ...mockFoodDeliveries[idx]!, deliveryTime: deliveryTime.trim() }
+    mockFoodDeliveries = mockFoodDeliveries.map((o) => (o.id === orderId ? updated : o))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteFoodDelivery(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockFoodDeliveries.some((o) => o.id === id)) {
+      return { status: 0, msg: 'Delivery not found', data: null }
+    }
+    mockFoodDeliveries = mockFoodDeliveries.filter((o) => o.id !== id)
     return { status: 1, msg: 'Deleted', data: null }
   },
 

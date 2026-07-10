@@ -1,19 +1,19 @@
-# Prioritized Improvements — 2026-07-10 (v10)
+# Prioritized Improvements — 2026-07-10 (v11)
 
 **Policy:** UI-first, local-first. Whole-repo sections with unit tests.
 
 ## Done this session
 
-- Admin Orders BFF (+ filter/search)
+- Admin Orders BFF; Food delivery TT-220
 
 ## Next
 
 | P | Item |
 |---|------|
-| P0 | Food delivery tracking (TT-220) |
-| P1 | Security config / dashboard metrics |
+| P0 | Security config / dashboard metrics |
+| P1 | Voucher print |
 | P1 | Gateway live mode + smoke |
-| P2 | Voucher print |
+| P2 | Consign / email notifications |
 
 ## Verify
 

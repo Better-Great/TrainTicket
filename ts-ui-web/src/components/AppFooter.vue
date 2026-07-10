@@ -14,6 +14,7 @@ import { RouterLink } from 'vue-router'
         <RouterLink to="/advanced">Advanced</RouterLink>
         <RouterLink to="/wallet">Wallet</RouterLink>
         <RouterLink to="/waitlist">Wait-list</RouterLink>
+        <RouterLink to="/food">Food</RouterLink>
         <RouterLink to="/offices">Offices</RouterLink>
         <RouterLink to="/news">News</RouterLink>
         <RouterLink to="/admin/login">Admin</RouterLink>

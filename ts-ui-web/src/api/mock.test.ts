@@ -626,4 +626,46 @@ describe('mockApi — full service coverage', () => {
       expect((await mockApi.deleteAdminOrder('ord-admin-1', 'WRONG')).status).toBe(0)
     })
   })
+
+  describe('food delivery', () => {
+    it('lists seed deliveries', async () => {
+      expect((await mockApi.listFoodDeliveries()).data.length).toBe(2)
+    })
+
+    it('creates, updates trip/seat/time, and deletes', async () => {
+      const created = await mockApi.createFoodDelivery({
+        stationFoodStoreId: 'store-x',
+        tripId: 'G9000',
+        seatNo: 7,
+        deliveryTime: '2026-08-01 12:00:00',
+        deliveryFee: 3,
+        foodList: [{ foodName: 'Soup', price: 15 }],
+      })
+      expect(created.status).toBe(1)
+      expect((await mockApi.updateFoodDeliveryTrip(created.data.id, 'G9001')).data.tripId).toBe(
+        'G9001',
+      )
+      expect((await mockApi.updateFoodDeliverySeat(created.data.id, 8)).data.seatNo).toBe(8)
+      expect(
+        (await mockApi.updateFoodDeliveryTime(created.data.id, '2026-08-01 13:00:00')).data
+          .deliveryTime,
+      ).toContain('13:00')
+      expect((await mockApi.deleteFoodDelivery(created.data.id)).status).toBe(1)
+    })
+
+    it('rejects empty food list', async () => {
+      expect(
+        (
+          await mockApi.createFoodDelivery({
+            stationFoodStoreId: 's',
+            tripId: 'G1',
+            seatNo: 1,
+            deliveryTime: '2026-08-01 12:00:00',
+            deliveryFee: 1,
+            foodList: [],
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
 })

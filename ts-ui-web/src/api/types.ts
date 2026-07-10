@@ -267,6 +267,24 @@ export function travelTripIdString(tripId: TravelTrip['tripId']): string {
   return `${tripId.type}${tripId.number}`
 }
 
+export interface FoodItem {
+  foodName: string
+  price: number
+}
+
+export interface FoodDeliveryOrder {
+  id: string
+  stationFoodStoreId: string
+  foodList: FoodItem[]
+  tripId: string
+  seatNo: number
+  createdTime: string
+  deliveryTime: string
+  deliveryFee: number
+}
+
+export type FoodDeliveryCreate = Omit<FoodDeliveryOrder, 'id' | 'createdTime'>
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

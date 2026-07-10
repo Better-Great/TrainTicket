@@ -12,10 +12,11 @@ cd ts-ui-web && bun run check && bun run dev
 
 ## Done recently
 
-- News TT-219
-- Admin: stations, routes, trains, travels, prices, config, contacts, users, **orders**
+- Full admin CRUD shell (stations → orders)
+- News TT-219; Food delivery TT-220 (`/food`)
 
 ## Next
 
-1. Food delivery tracking (TT-220) or security config
-2. Gateway live mode + smoke — deferred
+1. Security config / dashboard metrics
+2. Voucher print
+3. Gateway live mode + smoke — deferred

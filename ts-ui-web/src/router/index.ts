@@ -81,6 +81,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, seoKey: 'waitlist' },
   },
   {
+    path: '/food',
+    name: 'food',
+    component: () => import('@/views/FoodDeliveryView.vue'),
+    meta: { requiresAuth: true, seoKey: 'food' },
+  },
+  {
     path: '/offices',
     name: 'offices',
     component: () => import('@/views/TicketOfficeView.vue'),
