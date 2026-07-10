@@ -19,6 +19,8 @@ import type {
   Route,
   RouteUpsertRequest,
   TrainType,
+  AdminUser,
+  AdminUserCreate,
 } from './types'
 
 export function captchaUrl(): string {
@@ -283,4 +285,24 @@ export async function updateTrain(body: TrainType) {
 export async function deleteTrain(id: string) {
   if (isMockMode()) return mockApi.deleteTrain(id)
   return apiDelete(`/api/v1/adminbasicservice/adminbasic/trains/${id}`, 'admin')
+}
+
+export async function listUsers() {
+  if (isMockMode()) return mockApi.listUsers()
+  return apiGet<AdminUser[]>('/api/v1/adminuserservice/users', 'admin')
+}
+
+export async function createUser(body: AdminUserCreate) {
+  if (isMockMode()) return mockApi.createUser(body)
+  return apiPost<AdminUser>('/api/v1/adminuserservice/users', body, 'admin')
+}
+
+export async function updateUser(body: AdminUser) {
+  if (isMockMode()) return mockApi.updateUser(body)
+  return apiPut<AdminUser>('/api/v1/adminuserservice/users', body, 'admin')
+}
+
+export async function deleteUser(userId: string) {
+  if (isMockMode()) return mockApi.deleteUser(userId)
+  return apiDelete(`/api/v1/adminuserservice/users/${userId}`, 'admin')
 }

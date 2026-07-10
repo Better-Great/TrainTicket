@@ -18,6 +18,8 @@ import type {
   Route,
   RouteUpsertRequest,
   TrainType,
+  AdminUser,
+  AdminUserCreate,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -98,12 +100,34 @@ const seedTrains: TrainType[] = [
   { id: 'tr-2', name: 'ZhiDa', economyClass: 180, confortClass: 80, averageSpeed: 120 },
 ]
 
+const seedAdminUsers: AdminUser[] = [
+  {
+    userId: '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a',
+    userName: 'fdse_microservice',
+    password: '111111',
+    gender: 1,
+    email: 'fdse@example.com',
+    documentType: 1,
+    documentNum: '1234567890',
+  },
+  {
+    userId: 'user-admin-demo',
+    userName: 'admin',
+    password: '222222',
+    gender: 1,
+    email: 'admin@trainticket.local',
+    documentType: 1,
+    documentNum: '9999999999',
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
 let mockStations = structuredClone(seedStations)
 let mockRoutes = structuredClone(seedRoutes)
 let mockTrains = structuredClone(seedTrains)
+let mockAdminUsers = structuredClone(seedAdminUsers)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -113,6 +137,7 @@ export function resetMockState() {
   mockStations = structuredClone(seedStations)
   mockRoutes = structuredClone(seedRoutes)
   mockTrains = structuredClone(seedTrains)
+  mockAdminUsers = structuredClone(seedAdminUsers)
   walletBalance = 2000
 }
 
@@ -560,6 +585,61 @@ export const mockApi = {
       return { status: 0, msg: 'Train not found', data: null }
     }
     mockTrains = mockTrains.filter((t) => t.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listUsers(): Promise<ApiResponse<AdminUser[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockAdminUsers) }
+  },
+
+  async createUser(body: AdminUserCreate): Promise<ApiResponse<AdminUser>> {
+    await delay()
+    if (!body.userName?.trim() || !body.password?.trim()) {
+      return { status: 0, msg: 'Username and password are required', data: null as unknown as AdminUser }
+    }
+    if (mockAdminUsers.some((u) => u.userName.toLowerCase() === body.userName.trim().toLowerCase())) {
+      return { status: 0, msg: 'Username already exists', data: null as unknown as AdminUser }
+    }
+    const created: AdminUser = {
+      userId: `user-${Date.now()}`,
+      userName: body.userName.trim(),
+      password: body.password,
+      gender: Number(body.gender) || 0,
+      email: body.email?.trim() ?? '',
+      documentType: Number(body.documentType) || 1,
+      documentNum: body.documentNum?.trim() ?? '',
+    }
+    mockAdminUsers = [...mockAdminUsers, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateUser(body: AdminUser): Promise<ApiResponse<AdminUser>> {
+    await delay()
+    if (!mockAdminUsers.some((u) => u.userId === body.userId)) {
+      return { status: 0, msg: 'User not found', data: null as unknown as AdminUser }
+    }
+    if (!body.userName?.trim() || !body.password?.trim()) {
+      return { status: 0, msg: 'Username and password are required', data: null as unknown as AdminUser }
+    }
+    const updated: AdminUser = {
+      ...body,
+      userName: body.userName.trim(),
+      email: body.email?.trim() ?? '',
+      documentNum: body.documentNum?.trim() ?? '',
+      gender: Number(body.gender) || 0,
+      documentType: Number(body.documentType) || 1,
+    }
+    mockAdminUsers = mockAdminUsers.map((u) => (u.userId === body.userId ? updated : u))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteUser(userId: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockAdminUsers.some((u) => u.userId === userId)) {
+      return { status: 0, msg: 'User not found', data: null }
+    }
+    mockAdminUsers = mockAdminUsers.filter((u) => u.userId !== userId)
     return { status: 1, msg: 'Deleted', data: null }
   },
 

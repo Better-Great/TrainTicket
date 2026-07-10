@@ -4,6 +4,17 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin users CRUD
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/users` with mock + `adminuserservice/users`
+- Unit tests for CRUD + duplicate username; **61** Vitest tests green
+
+---
+
 ## 2026-07-10 — admin trains CRUD
 
 **Agent:** Cursor  

@@ -176,6 +176,20 @@ export interface TrainType {
   averageSpeed: number
 }
 
+/** Admin user account (adminuserservice). */
+export interface AdminUser {
+  userId: string
+  userName: string
+  password: string
+  gender: number | string
+  email: string
+  documentType: number | string
+  documentNum: string
+}
+
+export type AdminUserCreate = Omit<AdminUser, 'userId'>
+export type AdminUserUpdate = AdminUser
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

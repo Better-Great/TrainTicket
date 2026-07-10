@@ -12,10 +12,11 @@ cd ts-ui-web && bun run check && bun run dev
 
 ## Done recently
 
-- News TT-219; admin stations, routes, **trains**
+- News TT-219
+- Admin: stations, routes, trains, **users**
 
 ## Next
 
-1. Admin Users CRUD (+ unit tests)
-2. Prices / Config / Contacts admin
+1. Admin Prices / Config / Contacts CRUD
+2. Travels/trips CRUD
 3. Gateway live mode + smoke — deferred

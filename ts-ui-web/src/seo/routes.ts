@@ -98,4 +98,10 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/admin/trains',
     noindex: true,
   },
+  adminUsers: {
+    title: 'Admin users',
+    description: 'Create, update, and delete user accounts.',
+    path: '/admin/users',
+    noindex: true,
+  },
 }

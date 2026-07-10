@@ -390,4 +390,43 @@ describe('mockApi — full service coverage', () => {
       ).toBe(0)
     })
   })
+
+  describe('admin users CRUD', () => {
+    it('lists seed users', async () => {
+      expect((await mockApi.listUsers()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a user', async () => {
+      const created = await mockApi.createUser({
+        userName: 'traveler1',
+        password: 'secret1',
+        gender: 1,
+        email: 't1@example.com',
+        documentType: 2,
+        documentNum: 'P123',
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateUser({
+        ...created.data,
+        email: 't1b@example.com',
+      })
+      expect(updated.data.email).toBe('t1b@example.com')
+      expect((await mockApi.deleteUser(created.data.userId)).status).toBe(1)
+    })
+
+    it('rejects duplicate username', async () => {
+      expect(
+        (
+          await mockApi.createUser({
+            userName: 'admin',
+            password: 'x',
+            gender: 1,
+            email: '',
+            documentType: 1,
+            documentNum: '',
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
 })

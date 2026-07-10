@@ -32,6 +32,10 @@ import {
   createTrain,
   updateTrain,
   deleteTrain,
+  listUsers,
+  createUser,
+  updateUser,
+  deleteUser,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -206,5 +210,21 @@ describe('services (mock mode)', () => {
     })
     expect(updated.data.averageSpeed).toBe(170)
     expect((await deleteTrain(created.data.id)).status).toBe(1)
+  })
+
+  it('admin user services CRUD', async () => {
+    expect((await listUsers()).data.length).toBeGreaterThan(0)
+    const created = await createUser({
+      userName: 'ops_user',
+      password: 'pass123',
+      gender: 2,
+      email: 'ops@example.com',
+      documentType: 1,
+      documentNum: 'ID99',
+    })
+    expect(created.status).toBe(1)
+    const updated = await updateUser({ ...created.data, documentNum: 'ID100' })
+    expect(updated.data.documentNum).toBe('ID100')
+    expect((await deleteUser(created.data.userId)).status).toBe(1)
   })
 })
