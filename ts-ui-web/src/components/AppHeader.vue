@@ -19,6 +19,7 @@ const links = [
   { to: '/collect', label: 'Collect' },
   { to: '/contacts', label: 'Passengers' },
   { to: '/wallet', label: 'Wallet' },
+  { to: '/waitlist', label: 'Wait-list' },
 ]
 
 function logout() {

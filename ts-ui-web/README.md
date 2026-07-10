@@ -28,7 +28,10 @@ Do **not** containerize this UI until `bun run check` is green and the mock flow
 | Script | Purpose |
 |--------|---------|
 | `dev` / `dev:mock` | Local Vite server |
-| `test` | Vitest unit tests |
+| `test` | Vitest unit tests (API services, stores, utils, components) |
 | `typecheck` | `vue-tsc` |
 | `build` | Production bundle |
 | `check` | typecheck + test + build |
+
+Every mock-backed service path (auth, travel, contacts, preserve/pay/collect/enter, wallet, wait-list) has unit coverage via `src/api/mock.test.ts` and `src/api/services.test.ts`.
+

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { listOrders, payOrder } from '@/api/services'
 import type { Order } from '@/api/types'
 import { ORDER_STATUS } from '@/api/types'
@@ -27,8 +28,10 @@ async function refresh() {
 
 async function pay(order: Order) {
   busyId.value = order.id
+  error.value = ''
   try {
-    await payOrder(order.id, order.trainNumber)
+    const res = await payOrder(order.id, order.trainNumber)
+    if (res.status !== 1) throw new Error(res.msg ?? 'Payment failed')
     await refresh()
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Payment failed'
@@ -49,9 +52,12 @@ onMounted(() => {
         <p class="eyebrow">Account</p>
         <h1>Orders</h1>
       </div>
-      <button type="button" class="refresh" :disabled="loading" @click="refresh">
-        {{ loading ? 'Refreshing…' : 'Refresh' }}
-      </button>
+      <div class="head-actions">
+        <RouterLink class="link" to="/wallet">Wallet</RouterLink>
+        <button type="button" class="refresh" :disabled="loading" @click="refresh">
+          {{ loading ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </div>
     </header>
 
     <p v-if="error" class="error" role="alert">{{ error }}</p>
@@ -68,14 +74,17 @@ onMounted(() => {
             {{ ORDER_STATUS[o.status] ?? `Status ${o.status}` }}
           </p>
         </div>
-        <button
-          v-if="o.status === 0"
-          type="button"
-          :disabled="busyId === o.id"
-          @click="pay(o)"
-        >
-          {{ busyId === o.id ? 'Paying…' : 'Pay' }}
-        </button>
+        <div class="actions">
+          <button
+            v-if="o.status === 0"
+            type="button"
+            :disabled="busyId === o.id"
+            @click="pay(o)"
+          >
+            {{ busyId === o.id ? 'Paying…' : 'Pay' }}
+          </button>
+          <RouterLink v-if="o.status === 1" class="next" to="/collect">Collect</RouterLink>
+        </div>
       </li>
     </ul>
   </section>
@@ -95,6 +104,19 @@ onMounted(() => {
   align-items: end;
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.head-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.link,
+.next {
+  font-weight: 700;
+  color: var(--rail);
+  font-size: 0.9rem;
 }
 
 .eyebrow {
@@ -134,6 +156,12 @@ button {
   padding: 1.1rem 0;
   border-bottom: 1px solid var(--line);
   animation: rise 0.4s ease both;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 @keyframes rise {

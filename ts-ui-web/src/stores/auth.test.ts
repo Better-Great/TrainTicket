@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { resetMockState } from '@/api/mock'
 import { useAuthStore } from '@/stores/auth'
 
 describe('useAuthStore', () => {
   beforeEach(() => {
     sessionStorage.clear()
+    resetMockState()
     setActivePinia(createPinia())
   })
 

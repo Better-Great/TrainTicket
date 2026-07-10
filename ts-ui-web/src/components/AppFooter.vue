@@ -13,6 +13,7 @@ import { RouterLink } from 'vue-router'
         <RouterLink to="/search">Search</RouterLink>
         <RouterLink to="/advanced">Advanced</RouterLink>
         <RouterLink to="/wallet">Wallet</RouterLink>
+        <RouterLink to="/waitlist">Wait-list</RouterLink>
         <RouterLink to="/register">Register</RouterLink>
         <a href="/robots.txt">Robots</a>
         <a href="/sitemap.xml">Sitemap</a>

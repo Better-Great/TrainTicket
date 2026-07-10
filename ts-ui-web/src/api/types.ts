@@ -82,6 +82,32 @@ export interface Order {
   contactsName?: string
 }
 
+export interface WaitListOrder {
+  id: string
+  accountId: string
+  contactsId: string
+  contactsName?: string
+  trainNumber: string
+  seatType: number
+  from: string
+  to: string
+  price: string
+  waitUtilTime: string
+  createdTime: string
+  status: number
+}
+
+export interface WaitListCreateRequest {
+  accountId: string
+  contactsId: string
+  tripId: string
+  seatType: number
+  date: string
+  from: string
+  to: string
+  price: string
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',
@@ -90,4 +116,13 @@ export const ORDER_STATUS: Record<number, string> = {
   4: 'Cancelled',
   5: 'Changed',
   6: 'Refunded',
+}
+
+export const WAIT_LIST_STATUS: Record<number, string> = {
+  0: 'Not paid',
+  1: 'Paid · waiting',
+  2: 'Collected',
+  3: 'Cancelled',
+  4: 'Refunded',
+  5: 'Expired',
 }

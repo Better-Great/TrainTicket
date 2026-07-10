@@ -72,6 +72,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/WalletView.vue'),
     meta: { requiresAuth: true, seoKey: 'wallet' },
   },
+  {
+    path: '/waitlist',
+    name: 'waitlist',
+    component: () => import('@/views/WaitListView.vue'),
+    meta: { requiresAuth: true, seoKey: 'waitlist' },
+  },
 ]
 
 const router = createRouter({

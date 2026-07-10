@@ -14,11 +14,12 @@
 
 | P | Item |
 |---|------|
-| P0 | Wallet / top-up (TT-215) |
-| P0 | Wait-list orders UI (TT-211) |
-| P1 | Ticket office finder (TT-212) |
+| P0 | Ticket office finder (TT-212) |
 | P1 | Admin login + one admin CRUD shell |
-| P2 | Gateway live mode + smoke (after SPA parity core) |
+| P2 | Gateway live mode + smoke |
+
+Wait-list (TT-211) and wallet (TT-215) are in the SPA (wait-list may be uncommitted after `f1119ae`).
+
 
 ## Verify
 

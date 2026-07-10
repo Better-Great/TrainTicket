@@ -58,4 +58,10 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/wallet',
     noindex: true,
   },
+  waitlist: {
+    title: 'Wait-list',
+    description: 'Join and manage train seat wait-list orders.',
+    path: '/waitlist',
+    noindex: true,
+  },
 }

@@ -9,6 +9,8 @@ import type {
   RegisterRequest,
   TravelQuery,
   Trip,
+  WaitListCreateRequest,
+  WaitListOrder,
 } from './types'
 
 export function captchaUrl(): string {
@@ -163,4 +165,20 @@ export async function collectTicket(orderId: string) {
 export async function enterStation(orderId: string) {
   if (isMockMode()) return mockApi.enter(orderId)
   return apiGet(`/api/v1/executeservice/execute/execute/${orderId}`)
+}
+
+export async function listWaitOrders(accountId: string) {
+  if (isMockMode()) return mockApi.waitListOrders(accountId)
+  return apiGet<WaitListOrder[]>('/api/v1/waitorderservice/waitlistorders')
+}
+
+export async function createWaitOrder(body: WaitListCreateRequest) {
+  if (isMockMode()) return mockApi.createWaitList(body)
+  return apiPost<WaitListOrder>('/api/v1/waitorderservice/order', body)
+}
+
+export async function cancelWaitOrder(id: string, accountId: string) {
+  if (isMockMode()) return mockApi.cancelWaitList(id, accountId)
+  // Backend has no dedicated cancel route yet — keep client API ready
+  return apiPost<WaitListOrder>(`/api/v1/waitorderservice/order/${id}/cancel`, { accountId })
 }

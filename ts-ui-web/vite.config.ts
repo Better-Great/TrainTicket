@@ -30,7 +30,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/api/**', 'src/stores/**', 'src/utils/**'],
+      include: ['src/api/**', 'src/stores/**', 'src/utils/**', 'src/composables/**'],
     },
   },
 })

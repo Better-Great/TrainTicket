@@ -5,5 +5,7 @@ Disallow: /book
 Disallow: /orders
 Disallow: /collect
 Disallow: /contacts
+Disallow: /wallet
+Disallow: /waitlist
 
 Sitemap: /sitemap.xml

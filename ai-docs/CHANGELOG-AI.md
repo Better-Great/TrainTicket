@@ -4,6 +4,31 @@ Newest first.
 
 ---
 
+## 2026-07-10 — wait-list polish + full service unit tests
+
+**Agent:** Cursor  
+
+### Summary
+
+- Wait-list UX: validation, cancel, active/history filter, status chips, station swap, skeletons
+- Mock hardening: `resetMockState`, wallet debit on pay, lifecycle guards, wait-list duplicate checks
+- Unit tests for **every** SPA service path — **37** tests green
+- Orders page: wallet link + collect CTA; pay respects mock status errors
+
+---
+
+## 2026-07-10 — wait-list UI (TT-211)
+
+**Agent:** Cursor  
+
+### Summary
+
+- Added `/waitlist` — list + create wait-list orders (mock + gateway paths)
+- Nav/SEO/robots updated; mock unit test added
+- Prior SPA commit `f1119ae` remains local (not pushed)
+
+---
+
 ## 2026-07-10 — skills + SEO + parity pages
 
 **Agent:** Cursor  
