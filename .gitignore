@@ -48,4 +48,4 @@ admin-order/
 
 # Node.js
 node_modules/
-local.env
+local.envjar/

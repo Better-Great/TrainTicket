@@ -4,6 +4,19 @@ Newest first.
 
 ---
 
+## 2026-07-10 — Track B local: polyglot + core Java ↔ SPA
+
+**Agent:** Cursor  
+
+### Summary
+
+- Polyglot local modes: news (Go), office (file), voucher (in-memory); `smoke-polyglot.sh` 8/8
+- Java gateway local profile + jar; SPA→gateway→polyglot without `VITE_POLYGLOT_DIRECT`
+- Core Java (station/route/train/auth) on shared MySQL+Nacos; `smoke-java-core.sh` **13/13**
+- Scripts: `start-polyglot-local`, `start-gateway-local`, `start-java-core-local`, smokes
+
+---
+
 ## 2026-07-10 — Stage A UI ready + Track B probe
 
 **Agent:** Cursor  

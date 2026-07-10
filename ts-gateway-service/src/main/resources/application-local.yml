@@ -1,0 +1,27 @@
+# Local Track B: polyglot over HTTP; optional Nacos for Java lb:// routes.
+#
+#   java -jar ... --spring.profiles.active=local
+#   With Java services: GATEWAY_NACOS=1 ./scripts/start-gateway-local.sh
+
+server:
+  port: 18888
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        # Default off (polyglot-only). Enable with GATEWAY_NACOS=1 / env override.
+        enabled: ${GATEWAY_NACOS:false}
+        register-enabled: false
+        server-addr: ${NACOS_ADDRS:127.0.0.1:8848}
+    service-registry:
+      auto-registration:
+        enabled: false
+
+# Polyglot HTTP upstreams (already http:// in application.yml)
+NEWS_SERVICE_HOST: 127.0.0.1
+NEWS_SERVICE_PORT: 12862
+TICKET_OFFICE_SERVICE_HOST: 127.0.0.1
+TICKET_OFFICE_SERVICE_PORT: 16108
+VOUCHER_SERVICE_HOST: 127.0.0.1
+VOUCHER_SERVICE_PORT: 16101
