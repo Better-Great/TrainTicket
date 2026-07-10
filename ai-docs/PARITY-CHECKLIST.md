@@ -71,7 +71,7 @@ Check off in SPA + E2E as each item ships.
 - [x] Routes CRUD — SPA `/admin/routes`
 - [ ] Travels/trips CRUD
 - [x] Stations CRUD — SPA `/admin/stations` (TT-301 partial)
-- [ ] Trains CRUD
+- [x] Trains CRUD — SPA `/admin/trains`
 - [ ] Prices CRUD
 - [ ] Config CRUD
 - [ ] Contacts admin CRUD

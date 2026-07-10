@@ -338,4 +338,56 @@ describe('mockApi — full service coverage', () => {
       expect(res.status).toBe(0)
     })
   })
+
+  describe('admin trains CRUD', () => {
+    it('lists seed trains', async () => {
+      expect((await mockApi.listTrains()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a train', async () => {
+      const created = await mockApi.createTrain({
+        name: 'DongChe',
+        economyClass: 150,
+        confortClass: 60,
+        averageSpeed: 200,
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateTrain({
+        id: created.data.id,
+        name: 'DongChe',
+        economyClass: 160,
+        confortClass: 70,
+        averageSpeed: 210,
+      })
+      expect(updated.data.economyClass).toBe(160)
+      expect((await mockApi.deleteTrain(created.data.id)).status).toBe(1)
+    })
+
+    it('rejects invalid create', async () => {
+      expect(
+        (await mockApi.createTrain({ name: '', economyClass: 1, confortClass: 1, averageSpeed: 1 }))
+          .status,
+      ).toBe(0)
+      expect(
+        (
+          await mockApi.createTrain({
+            name: 'X',
+            economyClass: 0,
+            confortClass: 1,
+            averageSpeed: 1,
+          })
+        ).status,
+      ).toBe(0)
+      expect(
+        (
+          await mockApi.createTrain({
+            name: 'GaoTie',
+            economyClass: 1,
+            confortClass: 1,
+            averageSpeed: 1,
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
 })

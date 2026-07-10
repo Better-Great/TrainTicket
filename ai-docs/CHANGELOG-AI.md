@@ -4,6 +4,18 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin trains CRUD
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/trains` with mock + `adminbasicservice/adminbasic/trains`
+- Legacy `confortClass` spelling preserved; unit tests for CRUD + validation
+- **57** Vitest tests green
+
+---
+
 ## 2026-07-10 — admin routes CRUD
 
 **Agent:** Cursor  

@@ -167,6 +167,15 @@ export interface RouteUpsertRequest {
   endStation: string
 }
 
+/** Train type (legacy spelling confortClass preserved). */
+export interface TrainType {
+  id: string
+  name: string
+  economyClass: number
+  confortClass: number
+  averageSpeed: number
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

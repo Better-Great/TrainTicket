@@ -1,18 +1,17 @@
-# Prioritized Improvements — 2026-07-10 (v5)
+# Prioritized Improvements — 2026-07-10 (v6)
 
 **Policy:** UI-first, local-first. Whole-repo sections with unit tests.
 
 ## Done this session
 
-- News TT-219 + Go tests
-- Admin Routes CRUD + Vitest
+- News TT-219; Admin Routes; Admin Trains
 
 ## Next
 
 | P | Item |
 |---|------|
-| P0 | Admin Trains CRUD (+ tests) |
-| P0 | Admin Users CRUD |
+| P0 | Admin Users CRUD (+ tests) |
+| P1 | Prices / Config / Contacts admin |
 | P1 | Gateway live mode + smoke |
 | P2 | Food delivery tracking (TT-220) |
 

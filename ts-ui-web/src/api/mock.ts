@@ -17,6 +17,7 @@ import type {
   NewsItem,
   Route,
   RouteUpsertRequest,
+  TrainType,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -92,11 +93,17 @@ const seedRoutes: Route[] = [
   },
 ]
 
+const seedTrains: TrainType[] = [
+  { id: 'tr-1', name: 'GaoTie', economyClass: 200, confortClass: 100, averageSpeed: 250 },
+  { id: 'tr-2', name: 'ZhiDa', economyClass: 180, confortClass: 80, averageSpeed: 120 },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
 let mockStations = structuredClone(seedStations)
 let mockRoutes = structuredClone(seedRoutes)
+let mockTrains = structuredClone(seedTrains)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -105,6 +112,7 @@ export function resetMockState() {
   mockWaitList = structuredClone(seedWaitList)
   mockStations = structuredClone(seedStations)
   mockRoutes = structuredClone(seedRoutes)
+  mockTrains = structuredClone(seedTrains)
   walletBalance = 2000
 }
 
@@ -476,6 +484,83 @@ export const mockApi = {
     }
     mockRoutes = mockRoutes.filter((r) => r.id !== id)
     return { status: 1, msg: 'Delete Success', data: id }
+  },
+
+  async listTrains(): Promise<ApiResponse<TrainType[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockTrains) }
+  },
+
+  async createTrain(body: Omit<TrainType, 'id'>): Promise<ApiResponse<TrainType>> {
+    await delay()
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Train name is required', data: null as unknown as TrainType }
+    }
+    if (
+      !Number.isInteger(body.economyClass) ||
+      body.economyClass <= 0 ||
+      !Number.isInteger(body.confortClass) ||
+      body.confortClass <= 0 ||
+      !Number.isInteger(body.averageSpeed) ||
+      body.averageSpeed <= 0
+    ) {
+      return {
+        status: 0,
+        msg: 'economyClass, confortClass and averageSpeed must be positive integers',
+        data: null as unknown as TrainType,
+      }
+    }
+    if (mockTrains.some((t) => t.name.toLowerCase() === body.name.trim().toLowerCase())) {
+      return { status: 0, msg: 'Train type already exists', data: null as unknown as TrainType }
+    }
+    const created: TrainType = {
+      id: `tr-${Date.now()}`,
+      name: body.name.trim(),
+      economyClass: body.economyClass,
+      confortClass: body.confortClass,
+      averageSpeed: body.averageSpeed,
+    }
+    mockTrains = [...mockTrains, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateTrain(body: TrainType): Promise<ApiResponse<TrainType>> {
+    await delay()
+    if (!mockTrains.some((t) => t.id === body.id)) {
+      return { status: 0, msg: 'Train not found', data: null as unknown as TrainType }
+    }
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Train name is required', data: null as unknown as TrainType }
+    }
+    if (
+      !Number.isInteger(body.economyClass) ||
+      body.economyClass <= 0 ||
+      !Number.isInteger(body.confortClass) ||
+      body.confortClass <= 0 ||
+      !Number.isInteger(body.averageSpeed) ||
+      body.averageSpeed <= 0
+    ) {
+      return {
+        status: 0,
+        msg: 'economyClass, confortClass and averageSpeed must be positive integers',
+        data: null as unknown as TrainType,
+      }
+    }
+    const updated: TrainType = {
+      ...body,
+      name: body.name.trim(),
+    }
+    mockTrains = mockTrains.map((t) => (t.id === body.id ? updated : t))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteTrain(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockTrains.some((t) => t.id === id)) {
+      return { status: 0, msg: 'Train not found', data: null }
+    }
+    mockTrains = mockTrains.filter((t) => t.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
   },
 
   tripIdString,

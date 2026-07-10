@@ -28,6 +28,10 @@ import {
   listRoutes,
   upsertRoute,
   deleteRoute,
+  listTrains,
+  createTrain,
+  updateTrain,
+  deleteTrain,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -182,5 +186,25 @@ describe('services (mock mode)', () => {
     })
     expect(updated.data.stations).toContain('Dong Guan')
     expect((await deleteRoute(created.data.id)).status).toBe(1)
+  })
+
+  it('admin train services CRUD', async () => {
+    expect((await listTrains()).data.length).toBeGreaterThan(0)
+    const created = await createTrain({
+      name: 'TeKuai',
+      economyClass: 120,
+      confortClass: 40,
+      averageSpeed: 160,
+    })
+    expect(created.status).toBe(1)
+    const updated = await updateTrain({
+      id: created.data.id,
+      name: 'TeKuai',
+      economyClass: 130,
+      confortClass: 45,
+      averageSpeed: 170,
+    })
+    expect(updated.data.averageSpeed).toBe(170)
+    expect((await deleteTrain(created.data.id)).status).toBe(1)
   })
 })

@@ -110,6 +110,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/AdminRoutesView.vue'),
     meta: { requiresAdmin: true, seoKey: 'adminRoutes' },
   },
+  {
+    path: '/admin/trains',
+    name: 'admin-trains',
+    component: () => import('@/views/AdminTrainsView.vue'),
+    meta: { requiresAdmin: true, seoKey: 'adminTrains' },
+  },
 ]
 
 const router = createRouter({

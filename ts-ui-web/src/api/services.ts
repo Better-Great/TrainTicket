@@ -18,6 +18,7 @@ import type {
   NewsItem,
   Route,
   RouteUpsertRequest,
+  TrainType,
 } from './types'
 
 export function captchaUrl(): string {
@@ -262,4 +263,24 @@ export async function upsertRoute(body: RouteUpsertRequest) {
 export async function deleteRoute(id: string) {
   if (isMockMode()) return mockApi.deleteRoute(id)
   return apiDelete(`/api/v1/adminrouteservice/adminroute/${id}`, 'admin')
+}
+
+export async function listTrains() {
+  if (isMockMode()) return mockApi.listTrains()
+  return apiGet<TrainType[]>('/api/v1/adminbasicservice/adminbasic/trains', 'admin')
+}
+
+export async function createTrain(body: Omit<TrainType, 'id'>) {
+  if (isMockMode()) return mockApi.createTrain(body)
+  return apiPost<TrainType>('/api/v1/adminbasicservice/adminbasic/trains', body, 'admin')
+}
+
+export async function updateTrain(body: TrainType) {
+  if (isMockMode()) return mockApi.updateTrain(body)
+  return apiPut<TrainType>('/api/v1/adminbasicservice/adminbasic/trains', body, 'admin')
+}
+
+export async function deleteTrain(id: string) {
+  if (isMockMode()) return mockApi.deleteTrain(id)
+  return apiDelete(`/api/v1/adminbasicservice/adminbasic/trains/${id}`, 'admin')
 }

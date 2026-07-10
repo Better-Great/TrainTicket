@@ -6,6 +6,7 @@ const route = useRoute()
 const links = [
   { to: '/admin/stations', label: 'Stations' },
   { to: '/admin/routes', label: 'Routes' },
+  { to: '/admin/trains', label: 'Trains' },
 ]
 </script>
 
