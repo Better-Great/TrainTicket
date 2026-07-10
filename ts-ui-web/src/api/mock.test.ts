@@ -286,4 +286,56 @@ describe('mockApi — full service coverage', () => {
       expect(items[0]?.Content).toBeTruthy()
     })
   })
+
+  describe('admin routes CRUD', () => {
+    it('lists seed routes', async () => {
+      const res = await mockApi.listRoutes()
+      expect(res.data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a route', async () => {
+      const created = await mockApi.upsertRoute({
+        stationList: 'Bei Jing,Tian Jin',
+        distanceList: '0,120',
+        startStation: 'Bei Jing',
+        endStation: 'Tian Jin',
+      })
+      expect(created.status).toBe(1)
+      expect(created.data.stations).toEqual(['Bei Jing', 'Tian Jin'])
+
+      const updated = await mockApi.upsertRoute({
+        id: created.data.id,
+        stationList: 'Bei Jing,Tian Jin,Tang Shan',
+        distanceList: '0,120,220',
+        startStation: 'Bei Jing',
+        endStation: 'Tang Shan',
+      })
+      expect(updated.status).toBe(1)
+      expect(updated.data.stations.length).toBe(3)
+
+      const deleted = await mockApi.deleteRoute(created.data.id)
+      expect(deleted.status).toBe(1)
+      expect((await mockApi.listRoutes()).data.some((r) => r.id === created.data.id)).toBe(false)
+    })
+
+    it('rejects mismatched station/distance counts', async () => {
+      const res = await mockApi.upsertRoute({
+        stationList: 'A,B',
+        distanceList: '0',
+        startStation: 'A',
+        endStation: 'B',
+      })
+      expect(res.status).toBe(0)
+    })
+
+    it('rejects start/end that do not match list ends', async () => {
+      const res = await mockApi.upsertRoute({
+        stationList: 'A,B',
+        distanceList: '0,10',
+        startStation: 'X',
+        endStation: 'B',
+      })
+      expect(res.status).toBe(0)
+    })
+  })
 })

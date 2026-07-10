@@ -15,6 +15,8 @@ import type {
   TicketOffice,
   Station,
   NewsItem,
+  Route,
+  RouteUpsertRequest,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -73,10 +75,28 @@ const seedStations: Station[] = [
   { id: 'st-3', name: 'Nan Jing', stayTime: 8 },
 ]
 
+const seedRoutes: Route[] = [
+  {
+    id: 'route-1',
+    stations: ['Shang Hai', 'Su Zhou', 'Nan Jing'],
+    distances: [0, 84, 301],
+    startStation: 'Shang Hai',
+    endStation: 'Nan Jing',
+  },
+  {
+    id: 'route-2',
+    stations: ['Shang Hai', 'Hang Zhou'],
+    distances: [0, 169],
+    startStation: 'Shang Hai',
+    endStation: 'Hang Zhou',
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
 let mockStations = structuredClone(seedStations)
+let mockRoutes = structuredClone(seedRoutes)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -84,6 +104,7 @@ export function resetMockState() {
   mockOrders = structuredClone(seedOrders)
   mockWaitList = structuredClone(seedWaitList)
   mockStations = structuredClone(seedStations)
+  mockRoutes = structuredClone(seedRoutes)
   walletBalance = 2000
 }
 
@@ -387,6 +408,74 @@ export const mockApi = {
   async news(): Promise<NewsItem[]> {
     await delay()
     return structuredClone(seedNews)
+  },
+
+  async listRoutes(): Promise<ApiResponse<Route[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockRoutes) }
+  },
+
+  async upsertRoute(body: RouteUpsertRequest): Promise<ApiResponse<Route>> {
+    await delay()
+    const stations = body.stationList
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    const distances = body.distanceList.split(',').map((d) => Number(d.trim()))
+    if (stations.length < 2) {
+      return { status: 0, msg: 'At least two stations required', data: null as unknown as Route }
+    }
+    if (stations.length !== distances.length || distances.some((n) => Number.isNaN(n))) {
+      return {
+        status: 0,
+        msg: 'Station Number Not Equal To Distance Number',
+        data: null as unknown as Route,
+      }
+    }
+    if (!body.startStation?.trim() || !body.endStation?.trim()) {
+      return { status: 0, msg: 'Start and end stations are required', data: null as unknown as Route }
+    }
+    const startStation = body.startStation.trim()
+    const endStation = body.endStation.trim()
+    if (stations[0] !== startStation || stations[stations.length - 1] !== endStation) {
+      return {
+        status: 0,
+        msg: 'Start/end must match first and last stations in the list',
+        data: null as unknown as Route,
+      }
+    }
+
+    const existingId = body.id?.trim()
+    if (existingId && mockRoutes.some((r) => r.id === existingId)) {
+      const updated: Route = {
+        id: existingId,
+        stations,
+        distances,
+        startStation,
+        endStation,
+      }
+      mockRoutes = mockRoutes.map((r) => (r.id === existingId ? updated : r))
+      return { status: 1, msg: 'Save and Modify success', data: updated }
+    }
+
+    const created: Route = {
+      id: existingId && existingId.length >= 32 ? existingId : `route-${Date.now()}`,
+      stations,
+      distances,
+      startStation,
+      endStation,
+    }
+    mockRoutes = [...mockRoutes, created]
+    return { status: 1, msg: 'Save and Modify success', data: created }
+  },
+
+  async deleteRoute(id: string): Promise<ApiResponse<string>> {
+    await delay()
+    if (!mockRoutes.some((r) => r.id === id)) {
+      return { status: 0, msg: 'Route not found', data: id }
+    }
+    mockRoutes = mockRoutes.filter((r) => r.id !== id)
+    return { status: 1, msg: 'Delete Success', data: id }
   },
 
   tripIdString,

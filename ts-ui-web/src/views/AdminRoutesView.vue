@@ -2,43 +2,51 @@
 import { onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import AdminNav from '@/components/AdminNav.vue'
-import {
-  createStation,
-  deleteStation,
-  listStations,
-  updateStation,
-} from '@/api/services'
-import type { Station } from '@/api/types'
+import { deleteRoute, listRoutes, upsertRoute } from '@/api/services'
+import type { Route } from '@/api/types'
 import { useAdminStore } from '@/stores/admin'
 
 const admin = useAdminStore()
 const router = useRouter()
 
-const stations = ref<Station[]>([])
+const routes = ref<Route[]>([])
 const loading = ref(false)
 const busyId = ref('')
 const error = ref('')
 const ok = ref('')
 
 const form = reactive({
-  name: '',
-  stayTime: 5,
+  stationList: 'Shang Hai,Su Zhou,Nan Jing',
+  distanceList: '0,84,301',
+  startStation: 'Shang Hai',
+  endStation: 'Nan Jing',
 })
 
 const edit = reactive({
   id: '',
-  name: '',
-  stayTime: 5,
+  stationList: '',
+  distanceList: '',
+  startStation: '',
+  endStation: '',
 })
+
+function asLists(r: Route) {
+  return {
+    stationList: r.stations.join(','),
+    distanceList: r.distances.join(','),
+    startStation: r.startStation || r.startStationId || r.stations[0] || '',
+    endStation: r.endStation || r.terminalStationId || r.stations[r.stations.length - 1] || '',
+  }
+}
 
 async function refresh() {
   loading.value = true
   error.value = ''
   try {
-    const res = await listStations()
-    stations.value = res.data ?? []
+    const res = await listRoutes()
+    routes.value = res.data ?? []
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load stations'
+    error.value = e instanceof Error ? e.message : 'Failed to load routes'
   } finally {
     loading.value = false
   }
@@ -48,24 +56,22 @@ async function add() {
   error.value = ''
   ok.value = ''
   try {
-    const res = await createStation({
-      name: form.name.trim(),
-      stayTime: Number(form.stayTime),
-    })
+    const res = await upsertRoute({ ...form })
     if (res.status !== 1) throw new Error(res.msg ?? 'Create failed')
-    form.name = ''
-    form.stayTime = 5
-    ok.value = `Added ${res.data.name}`
+    ok.value = `Saved route ${res.data.startStation} → ${res.data.endStation}`
     await refresh()
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Create failed'
   }
 }
 
-function startEdit(s: Station) {
-  edit.id = s.id
-  edit.name = s.name
-  edit.stayTime = s.stayTime
+function startEdit(r: Route) {
+  const lists = asLists(r)
+  edit.id = r.id
+  edit.stationList = lists.stationList
+  edit.distanceList = lists.distanceList
+  edit.startStation = lists.startStation
+  edit.endStation = lists.endStation
 }
 
 async function saveEdit() {
@@ -74,13 +80,15 @@ async function saveEdit() {
   error.value = ''
   ok.value = ''
   try {
-    const res = await updateStation({
+    const res = await upsertRoute({
       id: edit.id,
-      name: edit.name.trim(),
-      stayTime: Number(edit.stayTime),
+      stationList: edit.stationList,
+      distanceList: edit.distanceList,
+      startStation: edit.startStation,
+      endStation: edit.endStation,
     })
     if (res.status !== 1) throw new Error(res.msg ?? 'Update failed')
-    ok.value = `Updated ${res.data.name}`
+    ok.value = `Updated ${res.data.id}`
     edit.id = ''
     await refresh()
   } catch (e) {
@@ -95,9 +103,9 @@ async function remove(id: string) {
   error.value = ''
   ok.value = ''
   try {
-    const res = await deleteStation(id)
+    const res = await deleteRoute(id)
     if (res.status !== 1) throw new Error(res.msg ?? 'Delete failed')
-    ok.value = 'Station deleted'
+    ok.value = 'Route deleted'
     if (edit.id === id) edit.id = ''
     await refresh()
   } catch (e) {
@@ -122,9 +130,9 @@ onMounted(() => {
     <header class="head">
       <div>
         <p class="eyebrow">Admin</p>
-        <h1>Stations</h1>
+        <h1>Routes</h1>
         <p class="lede">
-          CRUD via <code>adminbasicservice/adminbasic/stations</code> · signed in as
+          CRUD via <code>adminrouteservice/adminroute</code> · signed in as
           <strong>{{ admin.username }}</strong>
         </p>
       </div>
@@ -142,53 +150,75 @@ onMounted(() => {
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <p v-if="ok" class="ok" role="status">{{ ok }}</p>
 
-    <h2>Station list</h2>
+    <h2>Route list</h2>
     <ul class="list" aria-live="polite">
-      <li v-for="s in stations" :key="s.id" class="row">
-        <template v-if="edit.id === s.id">
-          <input v-model="edit.name" aria-label="Station name" />
-          <input
-            v-model.number="edit.stayTime"
-            type="number"
-            min="1"
-            step="1"
-            aria-label="Stay time"
-          />
+      <li v-for="r in routes" :key="r.id" class="row">
+        <template v-if="edit.id === r.id">
+          <div class="edit-grid">
+          <label>
+            <span>Stations (comma-separated)</span>
+            <input v-model="edit.stationList" aria-label="Stations" />
+          </label>
+          <label>
+            <span>Distances</span>
+            <input v-model="edit.distanceList" aria-label="Distances" />
+          </label>
+          <label>
+            <span>Start</span>
+            <input v-model="edit.startStation" aria-label="Start station" />
+          </label>
+          <label>
+            <span>End</span>
+            <input v-model="edit.endStation" aria-label="End station" />
+          </label>
           <div class="actions">
-            <button type="button" :disabled="busyId === s.id" @click="saveEdit">Save</button>
+            <button type="button" :disabled="busyId === r.id" @click="saveEdit">Save</button>
             <button type="button" class="ghost" @click="edit.id = ''">Cancel</button>
+          </div>
           </div>
         </template>
         <template v-else>
+          <div class="row-view">
           <div>
-            <strong>{{ s.name }}</strong>
-            <p class="meta">Stay {{ s.stayTime }} min · {{ s.id }}</p>
+            <strong>{{ r.startStation || r.startStationId }} → {{ r.endStation || r.terminalStationId }}</strong>
+            <p class="meta">
+              {{ r.stations.join(' · ') }} · km {{ r.distances.join('/') }} · {{ r.id }}
+            </p>
           </div>
           <div class="actions">
-            <button type="button" class="ghost" @click="startEdit(s)">Edit</button>
+            <button type="button" class="ghost" @click="startEdit(r)">Edit</button>
             <button
               type="button"
               class="danger"
-              :disabled="busyId === s.id"
-              @click="remove(s.id)"
+              :disabled="busyId === r.id"
+              @click="remove(r.id)"
             >
-              {{ busyId === s.id ? '…' : 'Delete' }}
+              {{ busyId === r.id ? '…' : 'Delete' }}
             </button>
+          </div>
           </div>
         </template>
       </li>
-      <li v-if="!stations.length && !loading" class="empty">No stations yet.</li>
+      <li v-if="!routes.length && !loading" class="empty">No routes yet.</li>
     </ul>
 
-    <h2>Add station</h2>
+    <h2>Add route</h2>
     <form class="form" @submit.prevent="add">
       <label>
-        <span>Name</span>
-        <input v-model="form.name" required />
+        <span>Stations (comma-separated)</span>
+        <input v-model="form.stationList" required placeholder="A,B,C" />
       </label>
       <label>
-        <span>Stay time (min)</span>
-        <input v-model.number="form.stayTime" type="number" min="1" step="1" required />
+        <span>Distances (same count)</span>
+        <input v-model="form.distanceList" required placeholder="0,100,250" />
+      </label>
+      <label>
+        <span>Start station</span>
+        <input v-model="form.startStation" required />
+      </label>
+      <label>
+        <span>End station</span>
+        <input v-model="form.endStation" required />
       </label>
       <button type="submit">Create</button>
     </form>
@@ -232,7 +262,7 @@ h2 {
 
 .lede {
   color: var(--muted);
-  max-width: 48ch;
+  max-width: 52ch;
 }
 
 .lede code,
@@ -261,19 +291,25 @@ h2 {
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 1.4fr 0.6fr auto;
-  gap: 0.75rem;
-  align-items: center;
   padding: 0.9rem 0;
   border-bottom: 1px solid var(--line);
 }
 
+.row-view {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.edit-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
 .form {
   display: grid;
-  grid-template-columns: 1fr 160px auto;
   gap: 0.75rem;
-  align-items: end;
   max-width: 720px;
 }
 
@@ -326,8 +362,7 @@ button {
 }
 
 @media (max-width: 720px) {
-  .row,
-  .form {
+  .row-view {
     grid-template-columns: 1fr;
   }
 }

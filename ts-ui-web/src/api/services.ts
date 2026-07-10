@@ -16,6 +16,8 @@ import type {
   TicketOffice,
   Station,
   NewsItem,
+  Route,
+  RouteUpsertRequest,
 } from './types'
 
 export function captchaUrl(): string {
@@ -245,4 +247,19 @@ export async function getNews(): Promise<NewsItem[]> {
   } catch {
     return rawJson<NewsItem[]>('/news-service/news')
   }
+}
+
+export async function listRoutes() {
+  if (isMockMode()) return mockApi.listRoutes()
+  return apiGet<Route[]>('/api/v1/adminrouteservice/adminroute', 'admin')
+}
+
+export async function upsertRoute(body: RouteUpsertRequest) {
+  if (isMockMode()) return mockApi.upsertRoute(body)
+  return apiPost<Route>('/api/v1/adminrouteservice/adminroute', body, 'admin')
+}
+
+export async function deleteRoute(id: string) {
+  if (isMockMode()) return mockApi.deleteRoute(id)
+  return apiDelete(`/api/v1/adminrouteservice/adminroute/${id}`, 'admin')
 }

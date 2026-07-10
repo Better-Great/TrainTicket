@@ -86,4 +86,10 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/admin/stations',
     noindex: true,
   },
+  adminRoutes: {
+    title: 'Admin routes',
+    description: 'Create, update, and delete train routes.',
+    path: '/admin/routes',
+    noindex: true,
+  },
 }

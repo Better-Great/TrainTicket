@@ -14,23 +14,20 @@ ts-ui-web/
   Dockerfile
 ```
 
-`ts-ui-dashboard/` **removed**. Compose service name may still be `ts-ui-dashboard` with `build: ts-ui-web`.
-
 ## Local
 
 ```bash
 cd ts-ui-web
 bun run check && bun run dev     # SPA :5173, mock by default
-bun run legacy                   # optional legacy static
 ```
 
 ## Done recently
 
-- Client flows, wait-list, offices, admin stations
-- News feed TT-219 (`/news` + Go service tests)
+- Client flows, wait-list, offices, news (TT-219)
+- Admin stations + **routes** CRUD
 
 ## Next
 
-1. Admin Routes CRUD (+ unit tests)
-2. Admin Trains / Users CRUD
+1. Admin Trains CRUD (+ unit tests)
+2. Admin Users CRUD
 3. Gateway live mode (`VITE_USE_MOCK=false`) + smoke — deferred

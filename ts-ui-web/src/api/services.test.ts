@@ -25,6 +25,9 @@ import {
   updateStation,
   deleteStation,
   getNews,
+  listRoutes,
+  upsertRoute,
+  deleteRoute,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -158,5 +161,26 @@ describe('services (mock mode)', () => {
     const items = await getNews()
     expect(items.length).toBeGreaterThanOrEqual(2)
     expect(items[0]?.Title).toBeTruthy()
+  })
+
+  it('admin route services CRUD', async () => {
+    const listed = await listRoutes()
+    expect(listed.data.length).toBeGreaterThan(0)
+    const created = await upsertRoute({
+      stationList: 'Guang Zhou,Shen Zhen',
+      distanceList: '0,140',
+      startStation: 'Guang Zhou',
+      endStation: 'Shen Zhen',
+    })
+    expect(created.status).toBe(1)
+    const updated = await upsertRoute({
+      id: created.data.id,
+      stationList: 'Guang Zhou,Dong Guan,Shen Zhen',
+      distanceList: '0,60,140',
+      startStation: 'Guang Zhou',
+      endStation: 'Shen Zhen',
+    })
+    expect(updated.data.stations).toContain('Dong Guan')
+    expect((await deleteRoute(created.data.id)).status).toBe(1)
   })
 })

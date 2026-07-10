@@ -4,6 +4,18 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin routes CRUD
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/routes` with mock + `/api/v1/adminrouteservice/adminroute`
+- Shared admin nav; validation aligned with Java RouteInfo (comma lists)
+- Unit tests for create/update/delete and mismatch cases
+
+---
+
 ## 2026-07-10 — news feed (TT-219)
 
 **Agent:** Cursor  

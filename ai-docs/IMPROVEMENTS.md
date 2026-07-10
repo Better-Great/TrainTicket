@@ -1,19 +1,18 @@
-# Prioritized Improvements — 2026-07-10 (v4)
+# Prioritized Improvements — 2026-07-10 (v5)
 
-**Policy:** UI-first, local-first. Whole-repo sections with unit tests. Skills enforce senior UI/UX, fullstack, Java, devops, system design.
+**Policy:** UI-first, local-first. Whole-repo sections with unit tests.
 
 ## Done this session
 
-- News feed TT-219: `/news`, mock + gateway paths, SEO/nav
-- `ts-news-service` Go unit tests
-- Vitest **48** green via `bun run check`
+- News TT-219 + Go tests
+- Admin Routes CRUD + Vitest
 
 ## Next
 
 | P | Item |
 |---|------|
-| P0 | Admin Routes CRUD (+ tests) |
-| P0 | Admin Trains / Users CRUD |
+| P0 | Admin Trains CRUD (+ tests) |
+| P0 | Admin Users CRUD |
 | P1 | Gateway live mode + smoke |
 | P2 | Food delivery tracking (TT-220) |
 
@@ -21,5 +20,4 @@
 
 ```bash
 cd ts-ui-web && bun run check && bun run dev
-cd ts-news-service && go test ./...
 ```

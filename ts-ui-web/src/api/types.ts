@@ -146,6 +146,27 @@ export interface NewsItem {
   Content: string
 }
 
+/** Route as returned by route / admin-route services. */
+export interface Route {
+  id: string
+  stations: string[]
+  distances: number[]
+  startStation: string
+  endStation: string
+  /** Legacy admin UI field aliases */
+  startStationId?: string
+  terminalStationId?: string
+}
+
+/** Create/update payload — comma-separated lists match Java RouteInfo. */
+export interface RouteUpsertRequest {
+  id?: string
+  stationList: string
+  distanceList: string
+  startStation: string
+  endStation: string
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',
