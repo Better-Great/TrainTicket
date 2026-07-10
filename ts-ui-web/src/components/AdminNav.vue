@@ -4,6 +4,7 @@ import { RouterLink, useRoute } from 'vue-router'
 const route = useRoute()
 
 const links = [
+  { to: '/admin', label: 'Dashboard' },
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/stations', label: 'Stations' },
   { to: '/admin/routes', label: 'Routes' },
@@ -13,6 +14,7 @@ const links = [
   { to: '/admin/config', label: 'Config' },
   { to: '/admin/contacts', label: 'Contacts' },
   { to: '/admin/users', label: 'Users' },
+  { to: '/admin/security', label: 'Security' },
 ]
 </script>
 

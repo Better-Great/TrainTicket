@@ -285,6 +285,56 @@ export interface FoodDeliveryOrder {
 
 export type FoodDeliveryCreate = Omit<FoodDeliveryOrder, 'id' | 'createdTime'>
 
+/** Anti-scalping security config (securityservice). */
+export interface SecurityConfigItem {
+  id: string
+  name: string
+  value: string
+  description: string
+}
+
+export type SecurityConfigCreate = Omit<SecurityConfigItem, 'id'>
+
+export interface SecurityCheckResult {
+  status: boolean | number
+  message?: string
+  msg?: string
+}
+
+/** Voucher print payload from voucherservice /getVoucher. */
+export interface Voucher {
+  voucher_id: string | number
+  order_id: string
+  travelDate: string
+  contactName: string
+  train_number: string
+  seat_number: string
+  start_station: string
+  dest_station: string
+  price: string | number
+}
+
+export interface VoucherRequest {
+  orderId: string
+  type: 0 | 1
+}
+
+/** Admin dashboard aggregate counts. */
+export interface AdminDashboardMetrics {
+  stations: number
+  routes: number
+  trains: number
+  travels: number
+  prices: number
+  configs: number
+  contacts: number
+  users: number
+  orders: number
+  waitList: number
+  foodDeliveries: number
+  securityConfigs: number
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

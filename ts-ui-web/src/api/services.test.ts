@@ -62,6 +62,13 @@ import {
   updateFoodDeliverySeat,
   updateFoodDeliveryTime,
   deleteFoodDelivery,
+  listSecurityConfigs,
+  createSecurityConfig,
+  updateSecurityConfig,
+  deleteSecurityConfig,
+  checkSecurity,
+  getVoucher,
+  getAdminDashboardMetrics,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -361,5 +368,25 @@ describe('services (mock mode)', () => {
       (await updateFoodDeliveryTime(created.data.id, '2026-08-02 10:00:00')).data.deliveryTime,
     ).toContain('10:00')
     expect((await deleteFoodDelivery(created.data.id)).status).toBe(1)
+  })
+
+  it('security, voucher, and dashboard services', async () => {
+    expect((await listSecurityConfigs()).data.length).toBeGreaterThan(0)
+    const created = await createSecurityConfig({
+      name: 'svc_flag',
+      value: '1',
+      description: 'd',
+    })
+    expect(created.status).toBe(1)
+    expect((await updateSecurityConfig({ ...created.data, value: '2' })).data.value).toBe('2')
+    expect((await checkSecurity('acct')).status).toBe(1)
+    expect((await deleteSecurityConfig(created.data.id)).status).toBe(1)
+
+    const voucher = await getVoucher({ orderId: 'ord-admin-1', type: 1 })
+    expect(voucher.order_id).toBe('ord-admin-1')
+
+    const dash = await getAdminDashboardMetrics()
+    expect(dash.data.trains).toBeGreaterThan(0)
+    expect(dash.data.foodDeliveries).toBeGreaterThan(0)
   })
 })

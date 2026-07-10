@@ -87,6 +87,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, seoKey: 'food' },
   },
   {
+    path: '/voucher',
+    name: 'voucher',
+    component: () => import('@/views/VoucherView.vue'),
+    meta: { requiresAuth: true, seoKey: 'voucher' },
+  },
+  {
     path: '/offices',
     name: 'offices',
     component: () => import('@/views/TicketOfficeView.vue'),
@@ -103,6 +109,12 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-login',
     component: () => import('@/views/AdminLoginView.vue'),
     meta: { seoKey: 'adminLogin' },
+  },
+  {
+    path: '/admin',
+    name: 'admin-dashboard',
+    component: () => import('@/views/AdminDashboardView.vue'),
+    meta: { requiresAdmin: true, seoKey: 'adminDashboard' },
   },
   {
     path: '/admin/stations',
@@ -157,6 +169,12 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-orders',
     component: () => import('@/views/AdminOrdersView.vue'),
     meta: { requiresAdmin: true, seoKey: 'adminOrders' },
+  },
+  {
+    path: '/admin/security',
+    name: 'admin-security',
+    component: () => import('@/views/AdminSecurityView.vue'),
+    meta: { requiresAdmin: true, seoKey: 'adminSecurity' },
   },
 ]
 

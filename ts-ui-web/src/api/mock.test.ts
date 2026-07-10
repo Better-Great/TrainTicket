@@ -668,4 +668,37 @@ describe('mockApi — full service coverage', () => {
       ).toBe(0)
     })
   })
+
+  describe('security + voucher + dashboard', () => {
+    it('security config CRUD and account check', async () => {
+      expect((await mockApi.listSecurityConfigs()).data.length).toBe(2)
+      const created = await mockApi.createSecurityConfig({
+        name: 'test_limit',
+        value: '3',
+        description: 'test',
+      })
+      expect(created.status).toBe(1)
+      expect(
+        (await mockApi.updateSecurityConfig({ ...created.data, value: '4' })).data.value,
+      ).toBe('4')
+      const check = await mockApi.checkSecurity('4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a')
+      expect(check.status).toBe(1)
+      expect((await mockApi.deleteSecurityConfig(created.data.id)).status).toBe(1)
+    })
+
+    it('issues a voucher for an admin order', async () => {
+      const v = await mockApi.getVoucher({ orderId: 'ord-admin-1', type: 1 })
+      expect(v.order_id).toBe('ord-admin-1')
+      expect(v.train_number).toBe('G1234')
+      const again = await mockApi.getVoucher({ orderId: 'ord-admin-1', type: 1 })
+      expect(again.voucher_id).toBe(v.voucher_id)
+    })
+
+    it('dashboard metrics are positive', async () => {
+      const m = await mockApi.dashboardMetrics()
+      expect(m.data.stations).toBeGreaterThan(0)
+      expect(m.data.orders).toBeGreaterThan(0)
+      expect(m.data.securityConfigs).toBeGreaterThan(0)
+    })
+  })
 })

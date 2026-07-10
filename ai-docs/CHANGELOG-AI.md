@@ -4,6 +4,19 @@ Newest first.
 
 ---
 
+## 2026-07-10 — Stage A UI ready + Track B probe
+
+**Agent:** Cursor  
+
+### Summary
+
+- Completed Stage A SPA parity: security (TT-306), admin dashboard, voucher print
+- `./scripts/smoke-stage-a-ui.sh` — **91** Vitest tests + build green
+- Track B probed: gateway `18888` / edge `8080` down; `smoke-test-routes.sh` fails until compose up
+- Vite mock SPA on `:5173` responds 200
+
+---
+
 ## 2026-07-10 — food delivery tracking (TT-220)
 
 **Agent:** Cursor  

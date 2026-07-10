@@ -25,7 +25,7 @@ async function submit() {
   })
   if (ok) {
     const redirect =
-      typeof route.query.redirect === 'string' ? route.query.redirect : '/admin/stations'
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/admin'
     router.push(redirect)
   } else {
     refreshCaptcha()

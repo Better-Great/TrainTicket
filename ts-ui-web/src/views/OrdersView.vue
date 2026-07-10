@@ -84,6 +84,13 @@ onMounted(() => {
             {{ busyId === o.id ? 'Paying…' : 'Pay' }}
           </button>
           <RouterLink v-if="o.status === 1" class="next" to="/collect">Collect</RouterLink>
+          <RouterLink
+            v-if="o.status >= 1"
+            class="next"
+            :to="{ name: 'voucher', query: { orderId: o.id, train_number: o.trainNumber } }"
+          >
+            Voucher
+          </RouterLink>
         </div>
       </li>
     </ul>

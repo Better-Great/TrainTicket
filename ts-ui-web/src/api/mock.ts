@@ -30,6 +30,12 @@ import type {
   AdminOrderCreate,
   FoodDeliveryOrder,
   FoodDeliveryCreate,
+  SecurityConfigItem,
+  SecurityConfigCreate,
+  SecurityCheckResult,
+  Voucher,
+  VoucherRequest,
+  AdminDashboardMetrics,
 } from './types'
 import { travelTripIdString } from './types'
 
@@ -248,6 +254,21 @@ const seedFoodDeliveries: FoodDeliveryOrder[] = [
   },
 ]
 
+const seedSecurityConfigs: SecurityConfigItem[] = [
+  {
+    id: 'sec-1',
+    name: 'max_order_per_account_per_day',
+    value: '5',
+    description: 'Max tickets one account can buy per day',
+  },
+  {
+    id: 'sec-2',
+    name: 'max_order_interval_minutes',
+    value: '1',
+    description: 'Minimum minutes between orders (anti-scalping)',
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
@@ -260,6 +281,8 @@ let mockConfigs = structuredClone(seedConfigs)
 let mockTravels = structuredClone(seedTravels)
 let mockAdminOrders = structuredClone(seedAdminOrders)
 let mockFoodDeliveries = structuredClone(seedFoodDeliveries)
+let mockSecurityConfigs = structuredClone(seedSecurityConfigs)
+let mockVouchers: Record<string, Voucher> = {}
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -275,6 +298,8 @@ export function resetMockState() {
   mockTravels = structuredClone(seedTravels)
   mockAdminOrders = structuredClone(seedAdminOrders)
   mockFoodDeliveries = structuredClone(seedFoodDeliveries)
+  mockSecurityConfigs = structuredClone(seedSecurityConfigs)
+  mockVouchers = {}
   walletBalance = 2000
 }
 
@@ -1238,6 +1263,130 @@ export const mockApi = {
     }
     mockFoodDeliveries = mockFoodDeliveries.filter((o) => o.id !== id)
     return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listSecurityConfigs(): Promise<ApiResponse<SecurityConfigItem[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockSecurityConfigs) }
+  },
+
+  async createSecurityConfig(body: SecurityConfigCreate): Promise<ApiResponse<SecurityConfigItem>> {
+    await delay()
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Name is required', data: null as unknown as SecurityConfigItem }
+    }
+    if (mockSecurityConfigs.some((c) => c.name.toLowerCase() === body.name.trim().toLowerCase())) {
+      return { status: 0, msg: 'Config already exists', data: null as unknown as SecurityConfigItem }
+    }
+    const created: SecurityConfigItem = {
+      id: `sec-${Date.now()}`,
+      name: body.name.trim(),
+      value: body.value?.trim() ?? '',
+      description: body.description?.trim() ?? '',
+    }
+    mockSecurityConfigs = [...mockSecurityConfigs, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateSecurityConfig(body: SecurityConfigItem): Promise<ApiResponse<SecurityConfigItem>> {
+    await delay()
+    if (!mockSecurityConfigs.some((c) => c.id === body.id)) {
+      return { status: 0, msg: 'Config not found', data: null as unknown as SecurityConfigItem }
+    }
+    const updated: SecurityConfigItem = {
+      ...body,
+      name: body.name.trim(),
+      value: body.value?.trim() ?? '',
+      description: body.description?.trim() ?? '',
+    }
+    mockSecurityConfigs = mockSecurityConfigs.map((c) => (c.id === body.id ? updated : c))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteSecurityConfig(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockSecurityConfigs.some((c) => c.id === id)) {
+      return { status: 0, msg: 'Config not found', data: null }
+    }
+    mockSecurityConfigs = mockSecurityConfigs.filter((c) => c.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async checkSecurity(accountId: string): Promise<ApiResponse<SecurityCheckResult>> {
+    await delay()
+    if (!accountId?.trim()) {
+      return {
+        status: 0,
+        msg: 'Account ID required',
+        data: { status: false, message: 'Account ID required' },
+      }
+    }
+    const ordersToday = mockAdminOrders.filter((o) => o.accountId === accountId.trim()).length
+    const maxCfg = mockSecurityConfigs.find((c) => c.name === 'max_order_per_account_per_day')
+    const max = Number(maxCfg?.value ?? 5)
+    if (ordersToday >= max) {
+      return {
+        status: 1,
+        data: {
+          status: false,
+          message: `Account exceeds max orders (${ordersToday}/${max})`,
+        },
+      }
+    }
+    return {
+      status: 1,
+      data: { status: true, message: 'Account passed security check' },
+    }
+  },
+
+  async getVoucher(body: VoucherRequest): Promise<Voucher> {
+    await delay()
+    if (!body.orderId?.trim()) throw new Error('orderId is required')
+    const cached = mockVouchers[body.orderId]
+    if (cached) return structuredClone(cached)
+
+    const admin = mockAdminOrders.find((o) => o.id === body.orderId)
+    const client = mockOrders.find((o) => o.id === body.orderId)
+    const src = admin ?? client
+    if (!src) throw new Error('Order not found for voucher')
+
+    const voucher: Voucher = {
+      voucher_id: 10000 + Object.keys(mockVouchers).length + 1,
+      order_id: src.id,
+      travelDate: 'travelDate' in src ? String(src.travelDate) : String((src as Order).travelDate),
+      contactName:
+        'contactsName' in src && src.contactsName
+          ? String(src.contactsName)
+          : (src as Order).contactsName ?? 'Passenger',
+      train_number: src.trainNumber,
+      seat_number: 'seatNumber' in src ? String((src as AdminOrder).seatNumber || '1A') : '1A',
+      start_station: src.from,
+      dest_station: src.to,
+      price: src.price,
+    }
+    mockVouchers[body.orderId] = voucher
+    return structuredClone(voucher)
+  },
+
+  async dashboardMetrics(): Promise<ApiResponse<AdminDashboardMetrics>> {
+    await delay()
+    return {
+      status: 1,
+      data: {
+        stations: mockStations.length,
+        routes: mockRoutes.length,
+        trains: mockTrains.length,
+        travels: mockTravels.length,
+        prices: mockPrices.length,
+        configs: mockConfigs.length,
+        contacts: mockContacts.length,
+        users: mockAdminUsers.length,
+        orders: mockAdminOrders.length,
+        waitList: mockWaitList.length,
+        foodDeliveries: mockFoodDeliveries.length,
+        securityConfigs: mockSecurityConfigs.length,
+      },
+    }
   },
 
   tripIdString,

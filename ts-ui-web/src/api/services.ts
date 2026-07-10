@@ -31,6 +31,12 @@ import type {
   AdminOrderCreate,
   FoodDeliveryOrder,
   FoodDeliveryCreate,
+  SecurityConfigItem,
+  SecurityConfigCreate,
+  SecurityCheckResult,
+  Voucher,
+  VoucherRequest,
+  AdminDashboardMetrics,
 } from './types'
 
 export function captchaUrl(): string {
@@ -456,4 +462,96 @@ export async function updateFoodDeliveryTime(orderId: string, deliveryTime: stri
 export async function deleteFoodDelivery(id: string) {
   if (isMockMode()) return mockApi.deleteFoodDelivery(id)
   return apiDelete(`/api/v1/fooddeliveryservice/orders/d/${id}`)
+}
+
+export async function listSecurityConfigs() {
+  if (isMockMode()) return mockApi.listSecurityConfigs()
+  return apiGet<SecurityConfigItem[]>('/api/v1/securityservice/securityConfigs', 'admin')
+}
+
+export async function createSecurityConfig(body: SecurityConfigCreate) {
+  if (isMockMode()) return mockApi.createSecurityConfig(body)
+  return apiPost<SecurityConfigItem>('/api/v1/securityservice/securityConfigs', body, 'admin')
+}
+
+export async function updateSecurityConfig(body: SecurityConfigItem) {
+  if (isMockMode()) return mockApi.updateSecurityConfig(body)
+  return apiPut<SecurityConfigItem>('/api/v1/securityservice/securityConfigs', body, 'admin')
+}
+
+export async function deleteSecurityConfig(id: string) {
+  if (isMockMode()) return mockApi.deleteSecurityConfig(id)
+  return apiDelete(`/api/v1/securityservice/securityConfigs/${id}`, 'admin')
+}
+
+export async function checkSecurity(accountId: string) {
+  if (isMockMode()) return mockApi.checkSecurity(accountId)
+  return apiGet<SecurityCheckResult>(
+    `/api/v1/securityservice/securityConfigs/${encodeURIComponent(accountId)}`,
+    'admin',
+  )
+}
+
+export async function getVoucher(body: VoucherRequest): Promise<Voucher> {
+  if (isMockMode()) return mockApi.getVoucher(body)
+  try {
+    return await rawJson<Voucher>('/api/v1/voucherservice/voucher', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  } catch {
+    return rawJson<Voucher>('/getVoucher', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  }
+}
+
+export async function getAdminDashboardMetrics() {
+  if (isMockMode()) return mockApi.dashboardMetrics()
+  // Live: aggregate from list endpoints in parallel
+  const [
+    stations,
+    routes,
+    trains,
+    travels,
+    prices,
+    configs,
+    contacts,
+    users,
+    orders,
+    waitList,
+    food,
+    security,
+  ] = await Promise.all([
+    listStations(),
+    listRoutes(),
+    listTrains(),
+    listTravels(),
+    listPrices(),
+    listConfigs(),
+    listAdminContacts(),
+    listUsers(),
+    listAdminOrders(),
+    listWaitOrders('').catch(() => ({ status: 1, data: [] as Awaited<ReturnType<typeof listWaitOrders>>['data'] })),
+    listFoodDeliveries(),
+    listSecurityConfigs(),
+  ])
+  return {
+    status: 1 as const,
+    data: {
+      stations: stations.data?.length ?? 0,
+      routes: routes.data?.length ?? 0,
+      trains: trains.data?.length ?? 0,
+      travels: travels.data?.length ?? 0,
+      prices: prices.data?.length ?? 0,
+      configs: configs.data?.length ?? 0,
+      contacts: contacts.data?.length ?? 0,
+      users: users.data?.length ?? 0,
+      orders: orders.data?.length ?? 0,
+      waitList: Array.isArray(waitList.data) ? waitList.data.length : 0,
+      foodDeliveries: food.data?.length ?? 0,
+      securityConfigs: security.data?.length ?? 0,
+    } satisfies AdminDashboardMetrics,
+  }
 }

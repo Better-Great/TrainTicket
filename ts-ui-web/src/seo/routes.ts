@@ -70,6 +70,12 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/food',
     noindex: true,
   },
+  voucher: {
+    title: 'Voucher',
+    description: 'Printable travel voucher for a completed order.',
+    path: '/voucher',
+    noindex: true,
+  },
   offices: {
     title: 'Ticket offices',
     description: 'Find train ticket offices by province, city, and district.',
@@ -138,6 +144,18 @@ export const routeSeo: Record<string, SeoMeta> = {
     title: 'Admin orders',
     description: 'Aggregated order management across high-speed and other trains.',
     path: '/admin/orders',
+    noindex: true,
+  },
+  adminDashboard: {
+    title: 'Admin dashboard',
+    description: 'Operational metrics across TrainTicket admin resources.',
+    path: '/admin',
+    noindex: true,
+  },
+  adminSecurity: {
+    title: 'Admin security',
+    description: 'Anti-scalping security configuration and account checks.',
+    path: '/admin/security',
     noindex: true,
   },
 }

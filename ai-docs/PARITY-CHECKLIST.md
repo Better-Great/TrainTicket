@@ -48,7 +48,7 @@ Check off in SPA + E2E as each item ships.
 
 - [x] Collect ticket (`executeservice/execute/collected/{orderId}`) — SPA mock
 - [x] Enter station / execute (`executeservice/execute/execute/{orderId}`) — SPA mock
-- [ ] Voucher print (`voucherservice` / legacy `/getVoucher`)
+- [x] Voucher print (`voucherservice` / legacy `/getVoucher`) — SPA `/voucher`
 - [ ] Consign list by account
 - [x] Wait-list orders UI — TT-211 SPA mock
 
