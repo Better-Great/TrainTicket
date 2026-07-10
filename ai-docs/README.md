@@ -5,12 +5,13 @@ Cross-IDE continuity for AI-assisted development. **Commit this directory to Git
 ## Start here
 
 1. [`HANDOFF.md`](HANDOFF.md) — current sprint, blockers, next ticket
-2. [`ROADMAP.md`](ROADMAP.md) — phased modernization plan
-3. [`AUDIT.md`](AUDIT.md) — honest status before server move
-4. [`MIGRATION.md`](MIGRATION.md) — new server setup
-5. [`ARCHITECTURE.md`](ARCHITECTURE.md) — current vs target architecture
-6. [`PARITY-CHECKLIST.md`](PARITY-CHECKLIST.md) — feature parity vs reference
-7. [`backlog/README.md`](backlog/README.md) — ticket index
+2. [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — prioritized improvements (what to do next)
+3. [`ROADMAP.md`](ROADMAP.md) — phased modernization plan
+4. [`AUDIT.md`](AUDIT.md) — honest status before server move
+5. [`MIGRATION.md`](MIGRATION.md) — new server setup
+6. [`ARCHITECTURE.md`](ARCHITECTURE.md) — current vs target architecture
+7. [`PARITY-CHECKLIST.md`](PARITY-CHECKLIST.md) — feature parity vs reference
+8. [`backlog/README.md`](backlog/README.md) — ticket index
 
 ## Session protocol
 
@@ -26,6 +27,7 @@ Cross-IDE continuity for AI-assisted development. **Commit this directory to Git
 ai-docs/
   README.md                 # This file
   HANDOFF.md                # Live state — update every session
+  IMPROVEMENTS.md           # Prioritized next improvements
   ROADMAP.md                # Master plan + sprint table
   ARCHITECTURE.md           # Routing, services, diagrams
   DECISIONS.md              # Architecture Decision Records

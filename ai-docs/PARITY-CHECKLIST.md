@@ -7,25 +7,25 @@ Check off in SPA + E2E as each item ships.
 
 ## Auth & users
 
-- [ ] Login with captcha (`POST /api/v1/users/login`)
-- [ ] User registration (`POST /api/v1/userservice/users/register`)
-- [ ] JWT on protected endpoints
-- [ ] Logout (client + server)
+- [x] Login with captcha (`POST /api/v1/users/login`) — SPA mock
+- [x] User registration (`POST /api/v1/userservice/users/register`) — SPA mock
+- [x] JWT on protected endpoints — client Bearer + route guards
+- [x] Logout (client + server) — client clear
 - [ ] Avatar upload (`POST /api/v1/avatar`)
 
 ---
 
 ## Trip search & booking
 
-- [ ] Basic trip search (`travelservice` + `travel2service` `trips/left`)
+- [x] Basic trip search (`travelservice` + `travel2service` `trips/left`) — SPA mock + client
 - [ ] G/D routing rule preserved (or hidden via BFF TT-532)
-- [ ] Booking: contact select or inline create
-- [ ] Booking: seat class selection
-- [ ] Booking: assurance optional
+- [x] Booking: contact select or inline create — SPA
+- [x] Booking: seat class selection — SPA
+- [ ] Booking: assurance optional — partial (select only)
 - [ ] Booking: food (train vs station)
 - [ ] Booking: consign optional
-- [ ] Preserve saga → unpaid order
-- [ ] Advanced search: minStation / cheapest / quickest (`travelplanservice`)
+- [x] Preserve saga → unpaid order — SPA mock
+- [x] Advanced search: minStation / cheapest / quickest (`travelplanservice`) — SPA mock
 - [ ] Transfer search (`travelPlan/transferResult`) — TT-216
 - [ ] Route planning (`routeplanservice`) — TT-217
 
@@ -33,21 +33,21 @@ Check off in SPA + E2E as each item ships.
 
 ## Orders & payment
 
-- [ ] Order list by account
-- [ ] Pay via inside-payment wallet
-- [ ] Wallet balance view + top-up — TT-215
+- [x] Order list by account — SPA mock
+- [x] Pay via inside-payment wallet — SPA mock pay
+- [x] Wallet balance view + top-up — TT-215 SPA mock
 - [ ] Cancel with refund preview
 - [ ] Cancel confirm + refund
 - [ ] Rebook + price difference payment
 - [ ] Post-order consign from order list — TT-218
-- [ ] Order status: NOTPAID → PAID → COLLECTED → USED
+- [x] Order status: NOTPAID → PAID → COLLECTED → USED — SPA mock path
 
 ---
 
 ## Ticket lifecycle
 
-- [ ] Collect ticket (`executeservice/execute/collected/{orderId}`)
-- [ ] Enter station / execute (`executeservice/execute/execute/{orderId}`)
+- [x] Collect ticket (`executeservice/execute/collected/{orderId}`) — SPA mock
+- [x] Enter station / execute (`executeservice/execute/execute/{orderId}`) — SPA mock
 - [ ] Voucher print (`voucherservice` / legacy `/getVoucher`)
 - [ ] Consign list by account
 - [ ] Wait-list orders UI — TT-211
@@ -56,7 +56,7 @@ Check off in SPA + E2E as each item ships.
 
 ## Ancillary
 
-- [ ] Contacts CRUD (client page) — TT-214
+- [x] Contacts CRUD (client page) — SPA list/create (TT-214 partial)
 - [ ] News feed — TT-219
 - [ ] Ticket office finder — TT-212
 - [ ] Food delivery tracking — TT-220
@@ -96,7 +96,8 @@ Check off in SPA + E2E as each item ships.
 
 ## Exceed reference (not in original production UI)
 
-- [ ] Modern Bun + Vue 3 + TypeScript SPA
+- [x] Modern Bun + Vue 3 + TypeScript SPA (in progress)
+- [x] SEO: per-route meta, robots, sitemap, JSON-LD, webmanifest
 - [ ] Gateway BFF hides G/D split — TT-532
 - [ ] OpenAPI-generated TypeScript client — TT-527
 - [ ] Centralized gateway JWT auth — TT-501

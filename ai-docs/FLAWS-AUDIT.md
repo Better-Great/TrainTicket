@@ -24,7 +24,7 @@
 
 | Flaw | Evidence | Ticket | Status |
 |------|----------|--------|--------|
-| Split API routing (nginx + gateway) | `nginx.conf` | TT-001–004 | In Progress |
+| Split API routing (nginx + gateway) | `nginx.conf` | TT-001–004, TT-007 | In Progress |
 | Auth duplicated in 40+ services | per-service `JWTFilter` | TT-501 | Open |
 | Blocking `RestTemplate` saga chains | `PreserveServiceImpl.java` | TT-517 | Open |
 | East-west hardcoded host:port | `@Value` in service impls | TT-518 | Open |

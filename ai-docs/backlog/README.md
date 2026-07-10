@@ -18,6 +18,8 @@
 | [EPIC-08](EPIC-08-resilience.md) | Resilience & sagas | S6 | Backlog |
 | [EPIC-09](EPIC-09-research-ops.md) | Research benchmark ops | S7+ | Backlog |
 
+Open S0 leftovers: **TT-006** (ports), **TT-007** (avatar direct HTTP), green smoke. See [`../IMPROVEMENTS.md`](../IMPROVEMENTS.md).
+
 ## Client UI tickets (Phase 2)
 
 | ID | Title | Epic |

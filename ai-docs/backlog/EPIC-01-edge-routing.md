@@ -16,6 +16,7 @@ Single north-south API entry via `ts-gateway-service`. UI nginx proxies to gatew
 | TT-003 | nginx: `/api/` + legacy → gateway; static for `/` | Done |
 | TT-004 | Optional dedicated edge container on :8080 | Backlog |
 | TT-006 | Port docs vs `.env` alignment | Backlog |
+| TT-007 | Avatar: direct HTTP gateway route (no Nacos `lb://`) | Backlog |
 
 ## Route map
 

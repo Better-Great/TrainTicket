@@ -4,6 +4,66 @@ Newest first.
 
 ---
 
+## 2026-07-10 — skills + SEO + parity pages
+
+**Agent:** Cursor  
+**Tickets:** TT-207, TT-214, TT-401/403 (partial), SEO
+
+### Summary
+
+- Installed skills: senior-ui-ux, senior-fullstack, senior-java, cloud-devops, system-design + project `trainticket-modernize`
+- SPA SEO: route meta, OG/Twitter, canonical, robots.txt, sitemap.xml, JSON-LD, webmanifest
+- UX: skip link, mobile menu, footer, reduced-motion
+- New pages: Advanced search, Passengers (contacts)
+- Tests: 10 passing via `bun run check`
+
+---
+
+## 2026-07-10 — UI-first SPA scaffold (local)
+
+**Agent:** Cursor  
+**Tickets:** TT-101–105 (partial), TT-201–206 (partial), TT-406
+
+### Summary
+
+- Policy: improve UI locally with mocks **before** Docker/container testing
+- Created `ts-ui-web/` — Bun + Vite + Vue 3 + TS + Pinia + Vue Router
+- Design tokens (Syne/Manrope, steel + signal amber); hero + core client flows
+- Mock API for login → search → book → pay → collect
+- `bun run check` green (8 unit tests + production build)
+- Updated `IMPROVEMENTS.md` / `HANDOFF.md` for UI-first sequence
+
+### Verify locally
+
+```bash
+cd ts-ui-web && bun run check && bun run dev
+```
+
+---
+
+## 2026-07-10 — path confirm + improvements backlog
+
+**Agent:** Cursor  
+**Tickets:** planning (TT-006, TT-007, pull-forward TT-706/604)
+
+### Summary
+
+- Confirmed active path: `TrainTicket/` on `feat` (S0 commit `0c80c43`); `train-ticket/` read-only
+- Added `IMPROVEMENTS.md` — P0 smoke/ports/avatar, then SPA + lean compose + optional k8s
+- New ticket **TT-007** (avatar direct HTTP gateway route)
+- Refreshed `HANDOFF.md` (commit already done; smoke still unverified)
+
+### Files changed
+
+- `ai-docs/IMPROVEMENTS.md` (new)
+- `ai-docs/HANDOFF.md`
+- `ai-docs/README.md`
+- `ai-docs/ROADMAP.md`
+- `ai-docs/backlog/EPIC-01-edge-routing.md`
+- `ai-docs/sessions/2026-07-10-path-improvements.md`
+
+---
+
 ## 2026-07-09 — ai-docs complete tree
 
 **Agent:** Cursor  

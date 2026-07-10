@@ -1,24 +1,28 @@
 # EPIC-02 — Frontend SPA (Bun + Vue 3 + TypeScript)
 
-**Status:** Backlog  
+**Status:** In Progress — `ts-ui-web/` scaffolded; mock-first local  
 **Sprint:** S1
 
 ## Goal
 
-Replace legacy static HTML (Vue2 + jQuery + AngularJS) with `ts-ui-web/` — Bun, Vite, Vue 3, TypeScript, Tailwind, Pinia.
+Replace legacy static HTML (Vue2 + jQuery + AngularJS) with `ts-ui-web/` — Bun, Vite, Vue 3, TypeScript.
+
+## Local-first rule
+
+Run and test the SPA with `VITE_USE_MOCK=true` until `bun run check` is green and the browser flow works. **Do not containerize the UI first.**
 
 ## Tickets
 
 | ID | Title | Status |
 |----|-------|--------|
-| TT-101 | Scaffold `ts-ui-web` (Bun + Vite + Vue 3 + TS) | Backlog |
-| TT-102 | Pin Bun version in repo | Backlog |
-| TT-103 | API client layer (`/api/v1/*`) | Backlog |
-| TT-104 | Auth module (login, captcha, JWT, guards) | Backlog |
-| TT-105 | Vite dev proxy `/api` → gateway | Backlog |
+| TT-101 | Scaffold `ts-ui-web` (Bun + Vite + Vue 3 + TS) | Done |
+| TT-102 | Pin Bun version in repo | Done (`packageManager`) |
+| TT-103 | API client layer (`/api/v1/*`) + mock | Done |
+| TT-104 | Auth module (login, captcha, JWT, guards) | Done |
+| TT-105 | Vite dev proxy `/api` → gateway | Done |
 | TT-106 | Production build → static nginx behind edge | Backlog |
 | TT-107 | Migrate ticket-office to Bun runtime | Backlog |
-| TT-108 | API client uses only gateway paths | Backlog |
+| TT-108 | API client uses only gateway paths | Done (paths ready) |
 
 ## Stack
 

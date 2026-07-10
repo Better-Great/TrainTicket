@@ -37,6 +37,7 @@
 | TT-004 | Dedicated edge container | Backlog |
 | TT-005 | PARITY-CHECKLIST | Done |
 | TT-006 | Port docs alignment | Backlog |
+| TT-007 | Avatar polyglot direct HTTP route | Backlog |
 
 ---
 
@@ -44,7 +45,7 @@
 
 | ID | Ticket | Status |
 |----|--------|--------|
-| TT-101–108 | Bun + Vue 3 scaffold, API client, auth | Backlog |
+| TT-101–108 | Bun + Vue 3 scaffold, API client, auth | **In progress** (`ts-ui-web/` local) |
 | TT-107 | ticket-office on Bun | Backlog |
 
 ---

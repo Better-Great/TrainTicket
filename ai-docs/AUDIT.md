@@ -69,7 +69,7 @@ Also rebuilt locally (usually gitignored):
 
 | Issue | Detail |
 |-------|--------|
-| Avatar via `lb://` | `ts-avatar-service` does **not** register Nacos; gateway route may fail |
+| Avatar via `lb://` | `ts-avatar-service` does **not** register Nacos; gateway route may fail → **TT-007** |
 | JWT secret `"secret"` | `JWTUtil.java` — security debt |
 | 46-container stack | Heavy for dev; no lean profile yet (TT-706) |
 | No `k8s/` dir | Despite `docs/DEPLOYMENT.md` reference |
