@@ -48,6 +48,10 @@ import {
   createAdminContact,
   updateAdminContact,
   deleteAdminContact,
+  listTravels,
+  createTravel,
+  updateTravel,
+  deleteTravel,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -277,5 +281,32 @@ describe('services (mock mode)', () => {
     expect(created.status).toBe(1)
     expect((await updateAdminContact({ ...created.data, name: 'Jordan K' })).data.name).toBe('Jordan K')
     expect((await deleteAdminContact(created.data.id)).status).toBe(1)
+  })
+
+  it('admin travel services CRUD', async () => {
+    expect((await listTravels()).data.length).toBeGreaterThan(0)
+    const created = await createTravel({
+      tripId: 'D8888',
+      trainTypeName: 'GaoTie',
+      routeId: 'route-2',
+      startStationName: 'Shang Hai',
+      stationsName: 'Hang Zhou',
+      terminalStationName: 'Hang Zhou',
+      startTime: '2026-09-01 07:00:00',
+      endTime: '2026-09-01 09:00:00',
+    })
+    expect(created.status).toBe(1)
+    const updated = await updateTravel({
+      tripId: 'D8888',
+      trainTypeName: 'GaoTie',
+      routeId: 'route-2',
+      startStationName: 'Shang Hai',
+      stationsName: 'Jia Xing',
+      terminalStationName: 'Hang Zhou',
+      startTime: '2026-09-01 07:30:00',
+      endTime: '2026-09-01 09:30:00',
+    })
+    expect(updated.data.trip.stationsName).toBe('Jia Xing')
+    expect((await deleteTravel('D8888')).status).toBe(1)
   })
 })

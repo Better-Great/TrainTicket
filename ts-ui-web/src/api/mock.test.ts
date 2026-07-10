@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockApi, resetMockState } from '@/api/mock'
+import { travelTripIdString } from '@/api/types'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
 
@@ -530,6 +531,56 @@ describe('mockApi — full service coverage', () => {
             documentType: 1,
             documentNumber: '1',
             phoneNumber: '1',
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
+
+  describe('admin travels CRUD', () => {
+    it('lists seed travels', async () => {
+      expect((await mockApi.listTravels()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a travel', async () => {
+      const created = await mockApi.createTravel({
+        tripId: 'G9999',
+        trainTypeName: 'GaoTie',
+        routeId: 'route-1',
+        startStationName: 'Shang Hai',
+        stationsName: 'Su Zhou',
+        terminalStationName: 'Nan Jing',
+        startTime: '2026-08-01 08:00:00',
+        endTime: '2026-08-01 10:00:00',
+      })
+      expect(created.status).toBe(1)
+      expect(travelTripIdString(created.data.trip.tripId)).toBe('G9999')
+      const updated = await mockApi.updateTravel({
+        tripId: 'G9999',
+        trainTypeName: 'GaoTie',
+        routeId: 'route-1',
+        startStationName: 'Shang Hai',
+        stationsName: 'Su Zhou',
+        terminalStationName: 'Nan Jing',
+        startTime: '2026-08-01 09:00:00',
+        endTime: '2026-08-01 11:00:00',
+      })
+      expect(updated.data.trip.startTime).toContain('09:00')
+      expect((await mockApi.deleteTravel('G9999')).status).toBe(1)
+    })
+
+    it('rejects duplicate trip id', async () => {
+      expect(
+        (
+          await mockApi.createTravel({
+            tripId: 'G1234',
+            trainTypeName: 'GaoTie',
+            routeId: 'route-1',
+            startStationName: 'Shang Hai',
+            stationsName: 'Su Zhou',
+            terminalStationName: 'Nan Jing',
+            startTime: '2026-08-01 08:00:00',
+            endTime: '2026-08-01 10:00:00',
           })
         ).status,
       ).toBe(0)

@@ -4,6 +4,17 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin travels CRUD
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/travels` with mock + `admintravelservice/admintravel`
+- Trip ID helper; options from trains/routes/stations; **77** Vitest tests
+
+---
+
 ## 2026-07-10 — admin prices, config, contacts
 
 **Agent:** Cursor  

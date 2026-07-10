@@ -24,7 +24,10 @@ import type {
   PriceCreate,
   ConfigEntry,
   AdminContactCreate,
+  TravelRecord,
+  TravelUpsertRequest,
 } from './types'
+import { travelTripIdString } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
 
@@ -147,6 +150,35 @@ const seedConfigs: ConfigEntry[] = [
   { name: 'DrawTicketAllocationProportion', value: '0.5', description: 'Draw ticket share' },
 ]
 
+const seedTravels: TravelRecord[] = [
+  {
+    trip: {
+      tripId: { type: 'G', number: '1234' },
+      trainTypeName: 'GaoTie',
+      trainTypeId: 'GaoTie',
+      routeId: 'route-1',
+      startStationName: 'Shang Hai',
+      stationsName: 'Su Zhou',
+      terminalStationName: 'Nan Jing',
+      startTime: '2026-07-15 09:00:00',
+      endTime: '2026-07-15 11:20:00',
+    },
+  },
+  {
+    trip: {
+      tripId: { type: 'Z', number: '2345' },
+      trainTypeName: 'ZhiDa',
+      trainTypeId: 'ZhiDa',
+      routeId: 'route-2',
+      startStationName: 'Shang Hai',
+      stationsName: 'Jia Xing',
+      terminalStationName: 'Hang Zhou',
+      startTime: '2026-07-15 14:30:00',
+      endTime: '2026-07-15 16:45:00',
+    },
+  },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
@@ -156,6 +188,7 @@ let mockTrains = structuredClone(seedTrains)
 let mockAdminUsers = structuredClone(seedAdminUsers)
 let mockPrices = structuredClone(seedPrices)
 let mockConfigs = structuredClone(seedConfigs)
+let mockTravels = structuredClone(seedTravels)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -168,6 +201,7 @@ export function resetMockState() {
   mockAdminUsers = structuredClone(seedAdminUsers)
   mockPrices = structuredClone(seedPrices)
   mockConfigs = structuredClone(seedConfigs)
+  mockTravels = structuredClone(seedTravels)
   walletBalance = 2000
 }
 
@@ -851,6 +885,92 @@ export const mockApi = {
       return { status: 0, msg: 'Contact not found', data: null }
     }
     mockContacts = mockContacts.filter((c) => c.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listTravels(): Promise<ApiResponse<TravelRecord[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockTravels) }
+  },
+
+  async createTravel(body: TravelUpsertRequest): Promise<ApiResponse<TravelRecord>> {
+    await delay()
+    const tripId = body.tripId?.trim()
+    if (!tripId) {
+      return { status: 0, msg: 'Trip ID is required', data: null as unknown as TravelRecord }
+    }
+    if (
+      !body.trainTypeName?.trim() ||
+      !body.routeId?.trim() ||
+      !body.startStationName?.trim() ||
+      !body.terminalStationName?.trim() ||
+      !body.startTime?.trim() ||
+      !body.endTime?.trim()
+    ) {
+      return { status: 0, msg: 'Missing required travel fields', data: null as unknown as TravelRecord }
+    }
+    if (mockTravels.some((t) => travelTripIdString(t.trip.tripId) === tripId)) {
+      return { status: 0, msg: 'Trip already exists', data: null as unknown as TravelRecord }
+    }
+    const match = /^([A-Za-z]+)(\d+)$/.exec(tripId)
+    const created: TravelRecord = {
+      trip: {
+        tripId: match ? { type: match[1]!, number: match[2]! } : tripId,
+        trainTypeName: body.trainTypeName.trim(),
+        trainTypeId: body.trainTypeName.trim(),
+        routeId: body.routeId.trim(),
+        startStationName: body.startStationName.trim(),
+        stationsName: body.stationsName?.trim() ?? '',
+        terminalStationName: body.terminalStationName.trim(),
+        startTime: body.startTime.trim(),
+        endTime: body.endTime.trim(),
+      },
+    }
+    mockTravels = [...mockTravels, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateTravel(body: TravelUpsertRequest): Promise<ApiResponse<TravelRecord>> {
+    await delay()
+    const tripId = body.tripId?.trim()
+    const idx = mockTravels.findIndex((t) => travelTripIdString(t.trip.tripId) === tripId)
+    if (idx < 0) {
+      return { status: 0, msg: 'Travel not found', data: null as unknown as TravelRecord }
+    }
+    if (
+      !body.trainTypeName?.trim() ||
+      !body.routeId?.trim() ||
+      !body.startStationName?.trim() ||
+      !body.terminalStationName?.trim() ||
+      !body.startTime?.trim() ||
+      !body.endTime?.trim()
+    ) {
+      return { status: 0, msg: 'Missing required travel fields', data: null as unknown as TravelRecord }
+    }
+    const existing = mockTravels[idx]!
+    const updated: TravelRecord = {
+      trip: {
+        ...existing.trip,
+        trainTypeName: body.trainTypeName.trim(),
+        trainTypeId: body.trainTypeName.trim(),
+        routeId: body.routeId.trim(),
+        startStationName: body.startStationName.trim(),
+        stationsName: body.stationsName?.trim() ?? '',
+        terminalStationName: body.terminalStationName.trim(),
+        startTime: body.startTime.trim(),
+        endTime: body.endTime.trim(),
+      },
+    }
+    mockTravels = mockTravels.map((t, i) => (i === idx ? updated : t))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteTravel(tripId: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockTravels.some((t) => travelTripIdString(t.trip.tripId) === tripId)) {
+      return { status: 0, msg: 'Travel not found', data: null }
+    }
+    mockTravels = mockTravels.filter((t) => travelTripIdString(t.trip.tripId) !== tripId)
     return { status: 1, msg: 'Deleted', data: null }
   },
 

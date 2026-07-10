@@ -211,6 +211,39 @@ export interface ConfigEntry {
 /** Admin contact create (requires accountId). */
 export type AdminContactCreate = Omit<Contact, 'id'> & { accountId: string }
 
+/** Travel trip as nested under admin travel records. */
+export interface TravelTrip {
+  tripId: string | { type: string; number: string }
+  trainTypeName?: string
+  trainTypeId?: string
+  routeId: string
+  startStationName: string
+  stationsName: string
+  terminalStationName: string
+  startTime: string
+  endTime: string
+}
+
+export interface TravelRecord {
+  trip: TravelTrip
+}
+
+export interface TravelUpsertRequest {
+  tripId: string
+  trainTypeName: string
+  routeId: string
+  startStationName: string
+  stationsName: string
+  terminalStationName: string
+  startTime: string
+  endTime: string
+}
+
+export function travelTripIdString(tripId: TravelTrip['tripId']): string {
+  if (typeof tripId === 'string') return tripId
+  return `${tripId.type}${tripId.number}`
+}
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

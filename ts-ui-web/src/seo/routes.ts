@@ -122,4 +122,10 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/admin/contacts',
     noindex: true,
   },
+  adminTravels: {
+    title: 'Admin travels',
+    description: 'Create, update, and delete travel trips.',
+    path: '/admin/travels',
+    noindex: true,
+  },
 }
