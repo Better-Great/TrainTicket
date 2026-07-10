@@ -21,6 +21,10 @@ import type {
   TrainType,
   AdminUser,
   AdminUserCreate,
+  Price,
+  PriceCreate,
+  ConfigEntry,
+  AdminContactCreate,
 } from './types'
 
 export function captchaUrl(): string {
@@ -305,4 +309,64 @@ export async function updateUser(body: AdminUser) {
 export async function deleteUser(userId: string) {
   if (isMockMode()) return mockApi.deleteUser(userId)
   return apiDelete(`/api/v1/adminuserservice/users/${userId}`, 'admin')
+}
+
+export async function listPrices() {
+  if (isMockMode()) return mockApi.listPrices()
+  return apiGet<Price[]>('/api/v1/adminbasicservice/adminbasic/prices', 'admin')
+}
+
+export async function createPrice(body: PriceCreate) {
+  if (isMockMode()) return mockApi.createPrice(body)
+  return apiPost<Price>('/api/v1/adminbasicservice/adminbasic/prices', body, 'admin')
+}
+
+export async function updatePrice(body: Price) {
+  if (isMockMode()) return mockApi.updatePrice(body)
+  return apiPut<Price>('/api/v1/adminbasicservice/adminbasic/prices', body, 'admin')
+}
+
+export async function deletePrice(id: string) {
+  if (isMockMode()) return mockApi.deletePrice(id)
+  return apiDelete(`/api/v1/adminbasicservice/adminbasic/prices/${id}`, 'admin')
+}
+
+export async function listConfigs() {
+  if (isMockMode()) return mockApi.listConfigs()
+  return apiGet<ConfigEntry[]>('/api/v1/adminbasicservice/adminbasic/configs', 'admin')
+}
+
+export async function createConfig(body: ConfigEntry) {
+  if (isMockMode()) return mockApi.createConfig(body)
+  return apiPost<ConfigEntry>('/api/v1/adminbasicservice/adminbasic/configs', body, 'admin')
+}
+
+export async function updateConfig(body: ConfigEntry) {
+  if (isMockMode()) return mockApi.updateConfig(body)
+  return apiPut<ConfigEntry>('/api/v1/adminbasicservice/adminbasic/configs', body, 'admin')
+}
+
+export async function deleteConfig(name: string) {
+  if (isMockMode()) return mockApi.deleteConfig(name)
+  return apiDelete(`/api/v1/adminbasicservice/adminbasic/configs/${encodeURIComponent(name)}`, 'admin')
+}
+
+export async function listAdminContacts() {
+  if (isMockMode()) return mockApi.listAdminContacts()
+  return apiGet<Contact[]>('/api/v1/adminbasicservice/adminbasic/contacts', 'admin')
+}
+
+export async function createAdminContact(body: AdminContactCreate) {
+  if (isMockMode()) return mockApi.createAdminContact(body)
+  return apiPost<Contact>('/api/v1/adminbasicservice/adminbasic/contacts', body, 'admin')
+}
+
+export async function updateAdminContact(body: Contact) {
+  if (isMockMode()) return mockApi.updateAdminContact(body)
+  return apiPut<Contact>('/api/v1/adminbasicservice/adminbasic/contacts', body, 'admin')
+}
+
+export async function deleteAdminContact(id: string) {
+  if (isMockMode()) return mockApi.deleteAdminContact(id)
+  return apiDelete(`/api/v1/adminbasicservice/adminbasic/contacts/${id}`, 'admin')
 }

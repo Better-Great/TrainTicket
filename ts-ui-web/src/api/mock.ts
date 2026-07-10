@@ -20,6 +20,10 @@ import type {
   TrainType,
   AdminUser,
   AdminUserCreate,
+  Price,
+  PriceCreate,
+  ConfigEntry,
+  AdminContactCreate,
 } from './types'
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -121,6 +125,28 @@ const seedAdminUsers: AdminUser[] = [
   },
 ]
 
+const seedPrices: Price[] = [
+  {
+    id: 'price-1',
+    routeId: 'route-1',
+    trainType: 'GaoTie',
+    basicPriceRate: 0.28,
+    firstClassPriceRate: 0.45,
+  },
+  {
+    id: 'price-2',
+    routeId: 'route-2',
+    trainType: 'GaoTie',
+    basicPriceRate: 0.3,
+    firstClassPriceRate: 0.5,
+  },
+]
+
+const seedConfigs: ConfigEntry[] = [
+  { name: 'DirectTicketAllocationProportion', value: '0.5', description: 'Direct ticket share' },
+  { name: 'DrawTicketAllocationProportion', value: '0.5', description: 'Draw ticket share' },
+]
+
 let mockContacts = structuredClone(seedContacts)
 let mockOrders = structuredClone(seedOrders)
 let mockWaitList = structuredClone(seedWaitList)
@@ -128,6 +154,8 @@ let mockStations = structuredClone(seedStations)
 let mockRoutes = structuredClone(seedRoutes)
 let mockTrains = structuredClone(seedTrains)
 let mockAdminUsers = structuredClone(seedAdminUsers)
+let mockPrices = structuredClone(seedPrices)
+let mockConfigs = structuredClone(seedConfigs)
 let walletBalance = 2000
 
 export function resetMockState() {
@@ -138,6 +166,8 @@ export function resetMockState() {
   mockRoutes = structuredClone(seedRoutes)
   mockTrains = structuredClone(seedTrains)
   mockAdminUsers = structuredClone(seedAdminUsers)
+  mockPrices = structuredClone(seedPrices)
+  mockConfigs = structuredClone(seedConfigs)
   walletBalance = 2000
 }
 
@@ -640,6 +670,187 @@ export const mockApi = {
       return { status: 0, msg: 'User not found', data: null }
     }
     mockAdminUsers = mockAdminUsers.filter((u) => u.userId !== userId)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listPrices(): Promise<ApiResponse<Price[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockPrices) }
+  },
+
+  async createPrice(body: PriceCreate): Promise<ApiResponse<Price>> {
+    await delay()
+    if (!body.routeId?.trim() || !body.trainType?.trim()) {
+      return { status: 0, msg: 'Route and train type are required', data: null as unknown as Price }
+    }
+    if (
+      !Number.isFinite(body.basicPriceRate) ||
+      body.basicPriceRate <= 0 ||
+      !Number.isFinite(body.firstClassPriceRate) ||
+      body.firstClassPriceRate <= 0
+    ) {
+      return {
+        status: 0,
+        msg: 'Price rates must be positive numbers',
+        data: null as unknown as Price,
+      }
+    }
+    const created: Price = {
+      id: `price-${Date.now()}`,
+      routeId: body.routeId.trim(),
+      trainType: body.trainType.trim(),
+      basicPriceRate: body.basicPriceRate,
+      firstClassPriceRate: body.firstClassPriceRate,
+    }
+    mockPrices = [...mockPrices, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updatePrice(body: Price): Promise<ApiResponse<Price>> {
+    await delay()
+    if (!mockPrices.some((p) => p.id === body.id)) {
+      return { status: 0, msg: 'Price not found', data: null as unknown as Price }
+    }
+    if (!body.routeId?.trim() || !body.trainType?.trim()) {
+      return { status: 0, msg: 'Route and train type are required', data: null as unknown as Price }
+    }
+    if (
+      !Number.isFinite(body.basicPriceRate) ||
+      body.basicPriceRate <= 0 ||
+      !Number.isFinite(body.firstClassPriceRate) ||
+      body.firstClassPriceRate <= 0
+    ) {
+      return {
+        status: 0,
+        msg: 'Price rates must be positive numbers',
+        data: null as unknown as Price,
+      }
+    }
+    const updated: Price = {
+      ...body,
+      routeId: body.routeId.trim(),
+      trainType: body.trainType.trim(),
+    }
+    mockPrices = mockPrices.map((p) => (p.id === body.id ? updated : p))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deletePrice(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockPrices.some((p) => p.id === id)) {
+      return { status: 0, msg: 'Price not found', data: null }
+    }
+    mockPrices = mockPrices.filter((p) => p.id !== id)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listConfigs(): Promise<ApiResponse<ConfigEntry[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockConfigs) }
+  },
+
+  async createConfig(body: ConfigEntry): Promise<ApiResponse<ConfigEntry>> {
+    await delay()
+    if (!body.name?.trim()) {
+      return { status: 0, msg: 'Config name is required', data: null as unknown as ConfigEntry }
+    }
+    if (mockConfigs.some((c) => c.name.toLowerCase() === body.name.trim().toLowerCase())) {
+      return { status: 0, msg: 'Config already exists', data: null as unknown as ConfigEntry }
+    }
+    const created: ConfigEntry = {
+      name: body.name.trim(),
+      value: body.value?.trim() ?? '',
+      description: body.description?.trim() ?? '',
+    }
+    mockConfigs = [...mockConfigs, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateConfig(body: ConfigEntry): Promise<ApiResponse<ConfigEntry>> {
+    await delay()
+    if (!mockConfigs.some((c) => c.name === body.name)) {
+      return { status: 0, msg: 'Config not found', data: null as unknown as ConfigEntry }
+    }
+    const updated: ConfigEntry = {
+      name: body.name,
+      value: body.value?.trim() ?? '',
+      description: body.description?.trim() ?? '',
+    }
+    mockConfigs = mockConfigs.map((c) => (c.name === body.name ? updated : c))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteConfig(name: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockConfigs.some((c) => c.name === name)) {
+      return { status: 0, msg: 'Config not found', data: null }
+    }
+    mockConfigs = mockConfigs.filter((c) => c.name !== name)
+    return { status: 1, msg: 'Deleted', data: null }
+  },
+
+  async listAdminContacts(): Promise<ApiResponse<Contact[]>> {
+    await delay()
+    return { status: 1, data: structuredClone(mockContacts) }
+  },
+
+  async createAdminContact(body: AdminContactCreate): Promise<ApiResponse<Contact>> {
+    await delay()
+    if (!body.accountId?.trim()) {
+      return { status: 0, msg: 'Account ID is required', data: null as unknown as Contact }
+    }
+    if (!body.name?.trim() || !body.documentNumber?.trim() || !body.phoneNumber?.trim()) {
+      return {
+        status: 0,
+        msg: 'Name, document, and phone are required',
+        data: null as unknown as Contact,
+      }
+    }
+    const docType = Number(body.documentType)
+    if (!Number.isInteger(docType) || docType <= 0) {
+      return { status: 0, msg: 'Document type must be a positive integer', data: null as unknown as Contact }
+    }
+    const created: Contact = {
+      id: `c-${Date.now()}`,
+      accountId: body.accountId.trim(),
+      name: body.name.trim(),
+      documentType: docType,
+      documentNumber: body.documentNumber.trim(),
+      phoneNumber: body.phoneNumber.trim(),
+    }
+    mockContacts = [...mockContacts, created]
+    return { status: 1, msg: 'Created', data: created }
+  },
+
+  async updateAdminContact(body: Contact): Promise<ApiResponse<Contact>> {
+    await delay()
+    if (!mockContacts.some((c) => c.id === body.id)) {
+      return { status: 0, msg: 'Contact not found', data: null as unknown as Contact }
+    }
+    if (!body.name?.trim() || !body.documentNumber?.trim() || !body.phoneNumber?.trim()) {
+      return {
+        status: 0,
+        msg: 'Name, document, and phone are required',
+        data: null as unknown as Contact,
+      }
+    }
+    const updated: Contact = {
+      ...body,
+      name: body.name.trim(),
+      documentNumber: body.documentNumber.trim(),
+      phoneNumber: body.phoneNumber.trim(),
+      documentType: Number(body.documentType),
+    }
+    mockContacts = mockContacts.map((c) => (c.id === body.id ? updated : c))
+    return { status: 1, msg: 'Updated', data: updated }
+  },
+
+  async deleteAdminContact(id: string): Promise<ApiResponse<unknown>> {
+    await delay()
+    if (!mockContacts.some((c) => c.id === id)) {
+      return { status: 0, msg: 'Contact not found', data: null }
+    }
+    mockContacts = mockContacts.filter((c) => c.id !== id)
     return { status: 1, msg: 'Deleted', data: null }
   },
 

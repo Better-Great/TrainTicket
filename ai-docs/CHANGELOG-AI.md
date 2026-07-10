@@ -4,6 +4,17 @@ Newest first.
 
 ---
 
+## 2026-07-10 — admin prices, config, contacts
+
+**Agent:** Cursor  
+
+### Summary
+
+- SPA `/admin/prices`, `/admin/config`, `/admin/contacts` via `adminbasicservice`
+- Mock validation + Vitest; **73** tests green
+
+---
+
 ## 2026-07-10 — admin users CRUD
 
 **Agent:** Cursor  

@@ -36,6 +36,18 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  listPrices,
+  createPrice,
+  updatePrice,
+  deletePrice,
+  listConfigs,
+  createConfig,
+  updateConfig,
+  deleteConfig,
+  listAdminContacts,
+  createAdminContact,
+  updateAdminContact,
+  deleteAdminContact,
 } from '@/api/services'
 
 const accountId = '4d2a46c7-71ce-4cf1-b5bb-b68406a1fd6a'
@@ -226,5 +238,44 @@ describe('services (mock mode)', () => {
     const updated = await updateUser({ ...created.data, documentNum: 'ID100' })
     expect(updated.data.documentNum).toBe('ID100')
     expect((await deleteUser(created.data.userId)).status).toBe(1)
+  })
+
+  it('admin price services CRUD', async () => {
+    expect((await listPrices()).data.length).toBeGreaterThan(0)
+    const created = await createPrice({
+      routeId: 'route-svc',
+      trainType: 'GaoTie',
+      basicPriceRate: 0.25,
+      firstClassPriceRate: 0.4,
+    })
+    expect(created.status).toBe(1)
+    expect((await updatePrice({ ...created.data, firstClassPriceRate: 0.42 })).data.firstClassPriceRate).toBe(
+      0.42,
+    )
+    expect((await deletePrice(created.data.id)).status).toBe(1)
+  })
+
+  it('admin config services CRUD', async () => {
+    expect((await listConfigs()).data.length).toBeGreaterThan(0)
+    const created = await createConfig({ name: 'SvcFlag', value: 'on', description: 'd' })
+    expect(created.status).toBe(1)
+    expect((await updateConfig({ name: 'SvcFlag', value: 'off', description: 'd2' })).data.value).toBe(
+      'off',
+    )
+    expect((await deleteConfig('SvcFlag')).status).toBe(1)
+  })
+
+  it('admin contact services CRUD', async () => {
+    expect((await listAdminContacts()).data.length).toBeGreaterThan(0)
+    const created = await createAdminContact({
+      accountId: 'acct-svc',
+      name: 'Jordan',
+      documentType: 2,
+      documentNumber: 'PP1',
+      phoneNumber: '555-9',
+    })
+    expect(created.status).toBe(1)
+    expect((await updateAdminContact({ ...created.data, name: 'Jordan K' })).data.name).toBe('Jordan K')
+    expect((await deleteAdminContact(created.data.id)).status).toBe(1)
   })
 })

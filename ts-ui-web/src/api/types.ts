@@ -190,6 +190,27 @@ export interface AdminUser {
 export type AdminUserCreate = Omit<AdminUser, 'userId'>
 export type AdminUserUpdate = AdminUser
 
+/** Price rate for a route + train type. */
+export interface Price {
+  id: string
+  routeId: string
+  trainType: string
+  basicPriceRate: number
+  firstClassPriceRate: number
+}
+
+export type PriceCreate = Omit<Price, 'id'>
+
+/** Named system config entry. */
+export interface ConfigEntry {
+  name: string
+  value: string
+  description: string
+}
+
+/** Admin contact create (requires accountId). */
+export type AdminContactCreate = Omit<Contact, 'id'> & { accountId: string }
+
 export const ORDER_STATUS: Record<number, string> = {
   0: 'Not paid',
   1: 'Paid',

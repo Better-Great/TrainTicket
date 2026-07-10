@@ -429,4 +429,110 @@ describe('mockApi — full service coverage', () => {
       ).toBe(0)
     })
   })
+
+  describe('admin prices CRUD', () => {
+    it('lists seed prices', async () => {
+      expect((await mockApi.listPrices()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a price', async () => {
+      const created = await mockApi.createPrice({
+        routeId: 'route-x',
+        trainType: 'ZhiDa',
+        basicPriceRate: 0.2,
+        firstClassPriceRate: 0.35,
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updatePrice({
+        ...created.data,
+        basicPriceRate: 0.22,
+      })
+      expect(updated.data.basicPriceRate).toBe(0.22)
+      expect((await mockApi.deletePrice(created.data.id)).status).toBe(1)
+    })
+
+    it('rejects non-positive rates', async () => {
+      expect(
+        (
+          await mockApi.createPrice({
+            routeId: 'r',
+            trainType: 'G',
+            basicPriceRate: 0,
+            firstClassPriceRate: 0.1,
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
+
+  describe('admin configs CRUD', () => {
+    it('lists seed configs', async () => {
+      expect((await mockApi.listConfigs()).data.length).toBe(2)
+    })
+
+    it('creates, updates, and deletes a config', async () => {
+      const created = await mockApi.createConfig({
+        name: 'TestFlag',
+        value: '1',
+        description: 'test',
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateConfig({
+        name: 'TestFlag',
+        value: '0',
+        description: 'off',
+      })
+      expect(updated.data.value).toBe('0')
+      expect((await mockApi.deleteConfig('TestFlag')).status).toBe(1)
+    })
+
+    it('rejects duplicate name', async () => {
+      expect(
+        (
+          await mockApi.createConfig({
+            name: 'DirectTicketAllocationProportion',
+            value: '1',
+            description: '',
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
+
+  describe('admin contacts CRUD', () => {
+    it('lists contacts', async () => {
+      expect((await mockApi.listAdminContacts()).data.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('creates, updates, and deletes a contact', async () => {
+      const created = await mockApi.createAdminContact({
+        accountId: 'acct-1',
+        name: 'Pat Lee',
+        documentType: 1,
+        documentNumber: 'D111',
+        phoneNumber: '555-0200',
+      })
+      expect(created.status).toBe(1)
+      const updated = await mockApi.updateAdminContact({
+        ...created.data,
+        phoneNumber: '555-0201',
+      })
+      expect(updated.data.phoneNumber).toBe('555-0201')
+      expect((await mockApi.deleteAdminContact(created.data.id)).status).toBe(1)
+    })
+
+    it('rejects create without accountId', async () => {
+      expect(
+        (
+          await mockApi.createAdminContact({
+            accountId: '',
+            name: 'X',
+            documentType: 1,
+            documentNumber: '1',
+            phoneNumber: '1',
+          })
+        ).status,
+      ).toBe(0)
+    })
+  })
 })

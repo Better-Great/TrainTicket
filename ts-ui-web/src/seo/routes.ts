@@ -104,4 +104,22 @@ export const routeSeo: Record<string, SeoMeta> = {
     path: '/admin/users',
     noindex: true,
   },
+  adminPrices: {
+    title: 'Admin prices',
+    description: 'Create, update, and delete price rates.',
+    path: '/admin/prices',
+    noindex: true,
+  },
+  adminConfig: {
+    title: 'Admin config',
+    description: 'Create, update, and delete system config entries.',
+    path: '/admin/config',
+    noindex: true,
+  },
+  adminContacts: {
+    title: 'Admin contacts',
+    description: 'Create, update, and delete passenger contacts.',
+    path: '/admin/contacts',
+    noindex: true,
+  },
 }

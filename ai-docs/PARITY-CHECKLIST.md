@@ -72,9 +72,9 @@ Check off in SPA + E2E as each item ships.
 - [ ] Travels/trips CRUD
 - [x] Stations CRUD — SPA `/admin/stations` (TT-301 partial)
 - [x] Trains CRUD — SPA `/admin/trains`
-- [ ] Prices CRUD
-- [ ] Config CRUD
-- [ ] Contacts admin CRUD
+- [x] Prices CRUD — SPA `/admin/prices`
+- [x] Config CRUD — SPA `/admin/config`
+- [x] Contacts admin CRUD — SPA `/admin/contacts`
 - [x] Users CRUD — SPA `/admin/users`
 - [ ] Security config (anti-scalping) — TT-306
 - [ ] Admin dashboard metrics

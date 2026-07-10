@@ -7,6 +7,9 @@ const links = [
   { to: '/admin/stations', label: 'Stations' },
   { to: '/admin/routes', label: 'Routes' },
   { to: '/admin/trains', label: 'Trains' },
+  { to: '/admin/prices', label: 'Prices' },
+  { to: '/admin/config', label: 'Config' },
+  { to: '/admin/contacts', label: 'Contacts' },
   { to: '/admin/users', label: 'Users' },
 ]
 </script>
