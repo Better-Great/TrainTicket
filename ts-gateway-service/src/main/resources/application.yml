@@ -44,12 +44,12 @@ spring:
             - Path=/api/v1/assuranceservice/**
 
         - id: auth
-          uri: lb://${AUTH_SERVICE_HOST:ts-auth-service}
+          uri: ${AUTH_SERVICE_URI:lb://ts-auth-service}
           predicates:
             - Path=/api/v1/auth/**
 
         - id: auth-user
-          uri: lb://${AUTH_SERVICE_HOST:ts-auth-service}
+          uri: ${AUTH_SERVICE_URI:lb://ts-auth-service}
           predicates:
             - Path=/api/v1/users/**
 
@@ -59,7 +59,7 @@ spring:
             - Path=/api/v1/avatar/**
 
         - id: basic
-          uri: lb://${BASIC_SERVICE_HOST:ts-basic-service}
+          uri: ${BASIC_SERVICE_URI:lb://ts-basic-service}
           predicates:
             - Path=/api/v1/basicservice/**
 

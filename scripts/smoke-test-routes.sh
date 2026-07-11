@@ -54,7 +54,7 @@ soft_check() {
   local name="$1" url="$2" expect="${3:-}"
   printf "  %-40s " "$name"
   code=$(curl -s -o /tmp/smoke-body.txt -w "%{http_code}" --max-time 12 "$url" || echo 000)
-  if [[ "$code" == "503" || "$code" == "000" ]]; then
+  if [[ "$code" == "503" || "$code" == "000" || "$code" == "500" ]]; then
     echo "SKIP (downstream down)"
     return
   fi

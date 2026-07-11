@@ -62,8 +62,12 @@ echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS, http-direct local 
   export FOOD_DELIVERY_SERVICE_URI=http://127.0.0.1:18957
   export ORDER_SERVICE_URI=http://127.0.0.1:12031
   export TRAVEL_SERVICE_URI=http://127.0.0.1:12346
+  export AUTH_SERVICE_URI=http://127.0.0.1:12340
+  export BASIC_SERVICE_URI=http://127.0.0.1:15680
   export NACOS_ADDRS="${NACOS_ADDRS:-127.0.0.1:8848}"
   export GATEWAY_NACOS="$WITH_NACOS"
+  export JWT_SECRET="${JWT_SECRET:-change-me-local-dev-only}"
+  export GATEWAY_JWT_ENABLED="${GATEWAY_JWT_ENABLED:-true}"
   java -Xms96m -Xmx256m \
     -jar "$JAR" \
     --spring.profiles.active=local \

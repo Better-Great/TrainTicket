@@ -27,6 +27,8 @@ SERVICES=(
   "ts-verification-code-service|ts-verification-code-service|15678|-|VERIFY"
   "ts-order-service|ts-order-service|12031|ts-order-mysql|ORDER"
   "ts-travel-service|ts-travel-service|12346|ts-travel-mysql|TRAVEL"
+  "ts-auth-service|ts-auth-service|12340|ts-auth-mysql|AUTH"
+  "ts-basic-service|ts-basic-service|15680|-|BASIC"
 )
 
 ensure_dbs() {
