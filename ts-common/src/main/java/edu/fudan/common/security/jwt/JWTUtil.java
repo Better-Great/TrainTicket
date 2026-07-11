@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 
 /**
  * JWT helpers shared by microservices.
- * Signing key: {@code JWT_SECRET} env, else {@code jwt.secret} system property, else legacy default (dev only).
+ * Signing key: {@code JWT_SECRET} env, else {@code jwt.secret} system property, else refuses to start
+ * unless {@code ALLOW_DEFAULT_JWT_SECRET=true} is explicitly set (local scratch testing only).
  */
 public class JWTUtil {
 
@@ -42,7 +43,17 @@ public class JWTUtil {
         if (fromProp != null && !fromProp.trim().isEmpty()) {
             return fromProp.trim();
         }
-        LOGGER.warn("[JWT] Using default secret — set JWT_SECRET (or -Djwt.secret=) for non-local use");
+        boolean explicitlyAllowed = "true".equalsIgnoreCase(System.getenv("ALLOW_DEFAULT_JWT_SECRET"))
+                || "true".equalsIgnoreCase(System.getProperty("allow.default.jwt.secret"));
+        if (!explicitlyAllowed) {
+            throw new IllegalStateException(
+                    "[JWT] No JWT_SECRET set. Refusing to start with the insecure default signing key. "
+                            + "Set JWT_SECRET (or -Djwt.secret=) to a real secret, or set "
+                            + "ALLOW_DEFAULT_JWT_SECRET=true to explicitly opt into the insecure default "
+                            + "for local scratch testing only.");
+        }
+        LOGGER.warn("[JWT] Using insecure default secret — ALLOW_DEFAULT_JWT_SECRET=true was set explicitly. "
+                + "Do not use this outside local scratch testing.");
         return DEFAULT_SECRET;
     }
 
