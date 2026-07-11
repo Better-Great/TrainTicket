@@ -9,7 +9,17 @@ mkdir -p "$LOG" "$ROOT/jar"
 JAR="$ROOT/jar/ts-gateway-service-1.0.jar"
 BUILT="$ROOT/ts-gateway-service/target/ts-gateway-service-1.0.jar"
 
-if [[ ! -f "$JAR" && ! -f "$BUILT" ]]; then
+FORCE_REBUILD=false
+WITH_NACOS=false
+for arg in "$@"; do
+  case "$arg" in
+    --with-nacos) WITH_NACOS=true ;;
+    --rebuild) FORCE_REBUILD=true ;;
+  esac
+done
+[[ "${GATEWAY_NACOS:-}" == "1" ]] && WITH_NACOS=true
+
+if [[ "$FORCE_REBUILD" == "true" ]] || [[ ! -f "$JAR" && ! -f "$BUILT" ]]; then
   echo "=== Building ts-common + ts-gateway-service ==="
   (cd "$ROOT" && mvn -pl ts-common,ts-gateway-service -am -DskipTests package -q)
 fi
@@ -23,14 +33,10 @@ if [[ ! -f "$JAR" ]]; then
   exit 1
 fi
 
-WITH_NACOS=false
-if [[ "${1:-}" == "--with-nacos" ]] || [[ "${GATEWAY_NACOS:-}" == "1" ]]; then
-  WITH_NACOS=true
-fi
-
+# Always restart when --rebuild or --with-nacos; else skip if healthy
 if curl -sf --max-time 1 -o /dev/null http://127.0.0.1:18888/api/v1/newsservice/ 2>/dev/null; then
-  if [[ "$WITH_NACOS" == "true" ]]; then
-    echo "Restarting gateway with Nacos discovery..."
+  if [[ "$WITH_NACOS" == "true" || "$FORCE_REBUILD" == "true" || "${GATEWAY_RESTART:-}" == "1" ]]; then
+    echo "Restarting gateway..."
     if [[ -f "$LOG/gateway.pid" ]]; then kill "$(cat "$LOG/gateway.pid")" 2>/dev/null || true; fi
     pkill -f 'ts-gateway-service-1.0.jar' 2>/dev/null || true
     sleep 2
@@ -40,18 +46,25 @@ if curl -sf --max-time 1 -o /dev/null http://127.0.0.1:18888/api/v1/newsservice/
   fi
 fi
 
-echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS) ==="
+echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS, http-direct local URIs) ==="
 (
   cd "$ROOT"
-  export NEWS_SERVICE_HOST=127.0.0.1
-  export NEWS_SERVICE_PORT=12862
-  export TICKET_OFFICE_SERVICE_HOST=127.0.0.1
-  export TICKET_OFFICE_SERVICE_PORT=16108
-  export VOUCHER_SERVICE_HOST=127.0.0.1
-  export VOUCHER_SERVICE_PORT=16101
+  export NEWS_SERVICE_HOST=127.0.0.1 NEWS_SERVICE_PORT=12862
+  export TICKET_OFFICE_SERVICE_HOST=127.0.0.1 TICKET_OFFICE_SERVICE_PORT=16108
+  export VOUCHER_SERVICE_HOST=127.0.0.1 VOUCHER_SERVICE_PORT=16101
+  # Bypass Nacos lb:// for core local services (works even if Nacos flaps)
+  export STATION_SERVICE_URI=http://127.0.0.1:12345
+  export ROUTE_SERVICE_URI=http://127.0.0.1:11178
+  export TRAIN_SERVICE_URI=http://127.0.0.1:14567
+  export CONFIG_SERVICE_URI=http://127.0.0.1:15679
+  export VERIFICATION_CODE_SERVICE_URI=http://127.0.0.1:15678
+  export WAIT_ORDER_SERVICE_URI=http://127.0.0.1:17525
+  export FOOD_DELIVERY_SERVICE_URI=http://127.0.0.1:18957
+  export ORDER_SERVICE_URI=http://127.0.0.1:12031
+  export TRAVEL_SERVICE_URI=http://127.0.0.1:12346
   export NACOS_ADDRS="${NACOS_ADDRS:-127.0.0.1:8848}"
   export GATEWAY_NACOS="$WITH_NACOS"
-  java -Xms128m -Xmx384m \
+  java -Xms96m -Xmx256m \
     -jar "$JAR" \
     --spring.profiles.active=local \
     >"$LOG/gateway.log" 2>&1

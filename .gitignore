@@ -49,3 +49,6 @@ admin-order/
 # Node.js
 node_modules/
 local.envjar/
+
+# Local AI working notes (not for remote)
+ai-docs/

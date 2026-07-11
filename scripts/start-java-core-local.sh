@@ -15,7 +15,7 @@ MYSQL_PORT="${MYSQL_PORT:-3307}"
 MYSQL_USER="${MYSQL_USER:-root}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-root}"
 
-# Services: name|module|port|mysql_db|mysql_env_prefix
+# Services: name|module|port|mysql_db|mysql_env_prefix  (db=- means no MySQL)
 SERVICES=(
   "ts-auth-service|ts-auth-service|12340|ts-auth-mysql|AUTH"
   "ts-station-service|ts-station-service|12345|ts-station-mysql|STATION"
@@ -24,14 +24,27 @@ SERVICES=(
   "ts-config-service|ts-config-service|15679|ts-config-mysql|CONFIG"
   "ts-wait-order-service|ts-wait-order-service|17525|ts-wait-order-mysql|WAIT_ORDER"
   "ts-food-delivery-service|ts-food-delivery-service|18957|ts-food-delivery-mysql|FOOD_DELIVERY"
+  "ts-verification-code-service|ts-verification-code-service|15678|-|VERIFY"
+  "ts-order-service|ts-order-service|12031|ts-order-mysql|ORDER"
+  "ts-travel-service|ts-travel-service|12346|ts-travel-mysql|TRAVEL"
 )
 
 ensure_dbs() {
+  echo "Waiting for Nacos..."
+  for i in $(seq 1 30); do
+    if curl -sf --max-time 2 -o /dev/null "http://${NACOS_ADDRS%%:*}/nacos/" 2>/dev/null \
+      || curl -sf --max-time 2 -o /dev/null "http://127.0.0.1:8848/nacos/" 2>/dev/null; then
+      echo "Nacos ready"
+      break
+    fi
+    sleep 2
+  done
   docker exec trainticket-mysql mysql -uroot -proot -e "
     CREATE DATABASE IF NOT EXISTS \`ts-config-mysql\` CHARACTER SET utf8mb4;
     CREATE DATABASE IF NOT EXISTS \`ts-wait-order-mysql\` CHARACTER SET utf8mb4;
     CREATE DATABASE IF NOT EXISTS \`ts-food-delivery-mysql\` CHARACTER SET utf8mb4;
-    DROP TABLE IF EXISTS \`ts-config-mysql\`.\`config\`;
+    CREATE DATABASE IF NOT EXISTS \`ts-order-mysql\` CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS \`ts-travel-mysql\` CHARACTER SET utf8mb4;
   " 2>/dev/null || true
 }
 
@@ -70,15 +83,17 @@ start_one() {
   local user_var="${pfx}_MYSQL_USER"
   local pass_var="${pfx}_MYSQL_PASSWORD"
 
-  echo "Starting $name on :$port → mysql $db"
+  echo "Starting $name on :$port → mysql ${db}"
   (
     export NACOS_ADDRS
     export SPRING_CLOUD_NACOS_DISCOVERY_IP
-    export "$host_var=$MYSQL_HOST"
-    export "$port_var=$MYSQL_PORT"
-    export "$db_var=$db"
-    export "$user_var=$MYSQL_USER"
-    export "$pass_var=$MYSQL_PASSWORD"
+    if [[ "$db" != "-" ]]; then
+      export "$host_var=$MYSQL_HOST"
+      export "$port_var=$MYSQL_PORT"
+      export "$db_var=$db"
+      export "$user_var=$MYSQL_USER"
+      export "$pass_var=$MYSQL_PASSWORD"
+    fi
     java -Xms48m -Xmx192m -jar "$jar" >"$LOG/${name}.log" 2>&1
   ) &
   echo $! >"$LOG/${name}.pid"
@@ -111,7 +126,7 @@ for i in $(seq 1 90); do
     IFS='|' read -r _name _mod port _db _pfx <<<"$entry"
     ss -tln | grep -q ":${port} " && ((up++)) || true
   done
-  [[ "$up" -ge 6 ]] && break
+  [[ "$up" -ge 7 ]] && break
   sleep 1
 done
 for entry in "${SERVICES[@]}"; do

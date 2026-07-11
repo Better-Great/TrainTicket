@@ -69,7 +69,7 @@ spring:
             - Path=/api/v1/cancelservice/**
 
         - id: config
-          uri: lb://${CONFIG_SERVICE_HOST:ts-config-service}
+          uri: ${CONFIG_SERVICE_URI:lb://ts-config-service}
           predicates:
             - Path=/api/v1/configservice/**
 
@@ -114,7 +114,7 @@ spring:
             - Path=/api/v1/orderOtherService/**
 
         - id: order
-          uri: lb://${ORDER_SERVICE_HOST:ts-order-service}
+          uri: ${ORDER_SERVICE_URI:lb://ts-order-service}
           predicates:
             - Path=/api/v1/orderservice/**
 
@@ -149,7 +149,7 @@ spring:
             - Path=/api/v1/routeplanservice/**
 
         - id: route
-          uri: lb://${ROUTE_SERVICE_HOST:ts-route-service}
+          uri: ${ROUTE_SERVICE_URI:lb://ts-route-service}
           predicates:
             - Path=/api/v1/routeservice/**
 
@@ -169,7 +169,7 @@ spring:
             - Path=/api/v1/stationfoodservice/**
 
         - id: station
-          uri: lb://${STATION_SERVICE_HOST:ts-station-service}
+          uri: ${STATION_SERVICE_URI:lb://ts-station-service}
           predicates:
             - Path=/api/v1/stationservice/**
 
@@ -179,7 +179,7 @@ spring:
             - Path=/api/v1/trainfoodservice/**
 
         - id: train
-          uri: lb://${TRAIN_SERVICE_HOST:ts-train-service}
+          uri: ${TRAIN_SERVICE_URI:lb://ts-train-service}
           predicates:
             - Path=/api/v1/trainservice/**
 
@@ -194,7 +194,7 @@ spring:
             - Path=/api/v1/travelplanservice/**
 
         - id: travel
-          uri: lb://${TRAVEL_SERVICE_HOST:ts-travel-service}
+          uri: ${TRAVEL_SERVICE_URI:lb://ts-travel-service}
           predicates:
             - Path=/api/v1/travelservice/**
 
@@ -204,17 +204,17 @@ spring:
             - Path=/api/v1/userservice/users/**
 
         - id: verification-code
-          uri: lb://${VERIFICATION_CODE_SERVICE_HOST:ts-verification-code-service}
+          uri: ${VERIFICATION_CODE_SERVICE_URI:lb://ts-verification-code-service}
           predicates:
             - Path=/api/v1/verifycode/**
 
         - id: wait-order
-          uri: lb://${WAIT_ORDER_SERVICE_HOST:ts-wait-order-service}
+          uri: ${WAIT_ORDER_SERVICE_URI:lb://ts-wait-order-service}
           predicates:
             - Path=/api/v1/waitorderservice/**
 
         - id: food-delivery
-          uri: lb://${FOOD_DELIVERY_SERVICE_HOST:ts-food-delivery-service}
+          uri: ${FOOD_DELIVERY_SERVICE_URI:lb://ts-food-delivery-service}
           predicates:
             - Path=/api/v1/fooddeliveryservice/**
 
