@@ -23,9 +23,9 @@ spring:
 swagger:
   controllerPackage: inside_payment.controller
 
-OrderServiceHost: 127.0.0.1
-OrderServicePort: 12031
-OrderOtherServiceHost: 127.0.0.1
-OrderOtherServicePort: 12032
-PaymentServiceHost: 127.0.0.1
-PaymentServicePort: 19001
+OrderServiceHost: ${ORDER_SERVICE_HOST:ts-order-service}
+OrderServicePort: ${ORDER_SERVICE_PORT:12031}
+OrderOtherServiceHost: ${ORDER_OTHER_SERVICE_HOST:ts-order-other-service}
+OrderOtherServicePort: ${ORDER_OTHER_SERVICE_PORT:12032}
+PaymentServiceHost: ${PAYMENT_SERVICE_HOST:ts-payment-service}
+PaymentServicePort: ${PAYMENT_SERVICE_PORT:19001}

@@ -15,6 +15,18 @@ MYSQL_PORT="${MYSQL_PORT:-3307}"
 MYSQL_USER="${MYSQL_USER:-root}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-root}"
 
+# East-west peers: jar defaults are K8s service names; pin loopback for laptop
+export STATION_SERVICE_HOST="${STATION_SERVICE_HOST:-127.0.0.1}"
+export TRAIN_SERVICE_HOST="${TRAIN_SERVICE_HOST:-127.0.0.1}"
+export ROUTE_SERVICE_HOST="${ROUTE_SERVICE_HOST:-127.0.0.1}"
+export PRICE_SERVICE_HOST="${PRICE_SERVICE_HOST:-127.0.0.1}"
+export BASIC_SERVICE_HOST="${BASIC_SERVICE_HOST:-127.0.0.1}"
+export SEAT_SERVICE_HOST="${SEAT_SERVICE_HOST:-127.0.0.1}"
+export ORDER_SERVICE_HOST="${ORDER_SERVICE_HOST:-127.0.0.1}"
+export ORDER_OTHER_SERVICE_HOST="${ORDER_OTHER_SERVICE_HOST:-127.0.0.1}"
+export CONFIG_SERVICE_HOST="${CONFIG_SERVICE_HOST:-127.0.0.1}"
+export TRAVEL_SERVICE_HOST="${TRAVEL_SERVICE_HOST:-127.0.0.1}"
+
 # Services: name|module|port|mysql_db|mysql_env_prefix  (db=- means no MySQL)
 SERVICES=(
   "ts-auth-service|ts-auth-service|12340|ts-auth-mysql|AUTH"

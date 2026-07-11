@@ -12,9 +12,9 @@ spring:
 swagger:
   controllerPackage: seat.controller
 
-OrderServiceHost: 127.0.0.1
-OrderServicePort: 12031
-OrderOtherServiceHost: 127.0.0.1
-OrderOtherServicePort: 12032
-ConfigServiceHost: 127.0.0.1
-ConfigServicePort: 15679
+OrderServiceHost: ${ORDER_SERVICE_HOST:ts-order-service}
+OrderServicePort: ${ORDER_SERVICE_PORT:12031}
+OrderOtherServiceHost: ${ORDER_OTHER_SERVICE_HOST:ts-order-other-service}
+OrderOtherServicePort: ${ORDER_OTHER_SERVICE_PORT:12032}
+ConfigServiceHost: ${CONFIG_SERVICE_HOST:ts-config-service}
+ConfigServicePort: ${CONFIG_SERVICE_PORT:15679}

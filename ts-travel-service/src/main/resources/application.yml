@@ -25,14 +25,14 @@ spring:
 swagger:
   controllerPackage: travel.controller
 
-# Peer hosts for RestTemplate (must match @Value names in TravelServiceImpl)
-BasicServiceHost: 127.0.0.1
-BasicServicePort: 15680
-TrainServiceHost: 127.0.0.1
-TrainServicePort: 14567
-RouteServiceHost: 127.0.0.1
-RouteServicePort: 11178
-SeatServiceHost: 127.0.0.1
-SeatServicePort: 18898
-OrderServiceHost: 127.0.0.1
-OrderServicePort: 12031
+# Cluster defaults = service DNS; local scripts set *_SERVICE_HOST=127.0.0.1
+BasicServiceHost: ${BASIC_SERVICE_HOST:ts-basic-service}
+BasicServicePort: ${BASIC_SERVICE_PORT:15680}
+TrainServiceHost: ${TRAIN_SERVICE_HOST:ts-train-service}
+TrainServicePort: ${TRAIN_SERVICE_PORT:14567}
+RouteServiceHost: ${ROUTE_SERVICE_HOST:ts-route-service}
+RouteServicePort: ${ROUTE_SERVICE_PORT:11178}
+SeatServiceHost: ${SEAT_SERVICE_HOST:ts-seat-service}
+SeatServicePort: ${SEAT_SERVICE_PORT:18898}
+OrderServiceHost: ${ORDER_SERVICE_HOST:ts-order-service}
+OrderServicePort: ${ORDER_SERVICE_PORT:12031}
