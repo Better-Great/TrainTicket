@@ -34,7 +34,7 @@ Images are tagged `bettergreat/ts-<service>:<IMG_TAG>` when `IMG_REPO=bettergrea
 
 Included in `docker-compose.build.yml`:
 
-- `ts-ui-dashboard` (nginx, port 8080)
+- `ts-ui-dashboard` compose service → image `${IMG_REPO}/ts-ui-web` (nginx, port 8080); CI also tags `ts-ui-dashboard` as a legacy Hub alias
 - `ts-gateway-service` (18888 — UI proxies `/api/v1/` here)
 - `ts-avatar-service`, `ts-news-service`, `ts-voucher-service`, `ts-ticket-office-service`
 
