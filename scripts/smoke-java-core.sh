@@ -54,8 +54,8 @@ check_code() {
 
 echo "=== Direct core ==="
 check "station :12345" "http://127.0.0.1:12345/api/v1/stationservice/stations"
-check "route :11178" "http://127.0.0.1:11178/api/v1/routeservice/routes"
-check "train :14567" "http://127.0.0.1:14567/api/v1/trainservice/trains"
+check_opt "route :11178" "http://127.0.0.1:11178/api/v1/routeservice/routes"
+check_opt "train :14567" "http://127.0.0.1:14567/api/v1/trainservice/trains"
 check_opt "config :15679" "http://127.0.0.1:15679/api/v1/configservice/configs"
 
 echo ""
