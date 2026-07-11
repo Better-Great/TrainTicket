@@ -27,14 +27,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * TT-501: central JWT check at the edge for protected prefixes (default: admin APIs).
- * Public Track B routes stay open. Same secret resolution as JWTUtil / JWTProvider.
+ * TT-501: central JWT check at the edge for protected prefixes
+ * (admin + booking preserve/payment by default). {@code /welcome} under those
+ * prefixes stays public for health/smoke. Same secret resolution as JWTUtil.
  */
 @Component
 public class GatewayJwtAuthFilter implements GlobalFilter, Ordered {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GatewayJwtAuthFilter.class);
     private static final String DEFAULT_SECRET = "secret";
+    private static final String DEFAULT_PREFIXES =
+            "/api/v1/admin,/api/v1/preserveservice,/api/v1/paymentservice,/api/v1/inside_pay_service";
 
     private final boolean enabled;
     private final String encodedSecret;
@@ -43,7 +46,7 @@ public class GatewayJwtAuthFilter implements GlobalFilter, Ordered {
     public GatewayJwtAuthFilter(
             @Value("${GATEWAY_JWT_ENABLED:true}") boolean enabled,
             @Value("${JWT_SECRET:${jwt.secret:secret}}") String rawSecret,
-            @Value("${GATEWAY_JWT_PROTECTED_PREFIXES:/api/v1/admin}") String prefixes) {
+            @Value("${GATEWAY_JWT_PROTECTED_PREFIXES:" + DEFAULT_PREFIXES + "}") String prefixes) {
         this.enabled = enabled;
         String secret = (rawSecret == null || rawSecret.trim().isEmpty()) ? DEFAULT_SECRET : rawSecret.trim();
         if (DEFAULT_SECRET.equals(secret)) {
@@ -88,6 +91,9 @@ public class GatewayJwtAuthFilter implements GlobalFilter, Ordered {
     }
 
     private boolean requiresAuth(String path) {
+        if (path.endsWith("/welcome")) {
+            return false;
+        }
         for (String prefix : protectedPrefixes) {
             if (path.startsWith(prefix)) {
                 return true;

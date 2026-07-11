@@ -73,6 +73,7 @@ echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS, http-direct local 
   export GATEWAY_NACOS="$WITH_NACOS"
   export JWT_SECRET="${JWT_SECRET:-change-me-local-dev-only}"
   export GATEWAY_JWT_ENABLED="${GATEWAY_JWT_ENABLED:-true}"
+  export GATEWAY_JWT_PROTECTED_PREFIXES="${GATEWAY_JWT_PROTECTED_PREFIXES:-/api/v1/admin,/api/v1/preserveservice,/api/v1/paymentservice,/api/v1/inside_pay_service}"
   java -Xms96m -Xmx256m \
     -jar "$JAR" \
     --spring.profiles.active=local \
