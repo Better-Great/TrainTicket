@@ -41,7 +41,7 @@ public class PreserveServiceImpl implements PreserveService {
     @Value("${BasicServiceHost:ts-basic-service}")
     private String basicServiceHost;
 
-    @Value("${BasicServicePort:15678}")
+    @Value("${BasicServicePort:15680}")
     private int basicServicePort;
 
     @Value("${SeatServiceHost:ts-seat-service}")

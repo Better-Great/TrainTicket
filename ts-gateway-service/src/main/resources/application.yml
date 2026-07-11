@@ -99,7 +99,7 @@ spring:
             - Path=/api/v1/foodservice/**
 
         - id: inside-payment
-          uri: lb://${INSIDE_PAYMENT_SERVICE_HOST:ts-inside-payment-service}
+          uri: ${INSIDE_PAYMENT_SERVICE_URI:lb://ts-inside-payment-service}
           predicates:
             - Path=/api/v1/inside_pay_service/**
 
@@ -119,7 +119,7 @@ spring:
             - Path=/api/v1/orderservice/**
 
         - id: payment
-          uri: lb://${PAYMENT_SERVICE_HOST:ts-payment-service}
+          uri: ${PAYMENT_SERVICE_URI:lb://ts-payment-service}
           predicates:
             - Path=/api/v1/paymentservice/**
 
@@ -129,7 +129,7 @@ spring:
             - Path=/api/v1/preserveotherservice/**
 
         - id: preserve
-          uri: lb://${PRESERVE_SERVICE_HOST:ts-preserve-service}
+          uri: ${PRESERVE_SERVICE_URI:lb://ts-preserve-service}
           predicates:
             - Path=/api/v1/preserveservice/**
 
