@@ -1,5 +1,6 @@
 package order;
 
+import edu.fudan.common.tracing.RequestIdClientInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -29,6 +30,6 @@ public class OrderApplication {
     @LoadBalanced
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+        return builder.additionalInterceptors(new RequestIdClientInterceptor()).build();
     }
 }

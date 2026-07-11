@@ -1,6 +1,7 @@
 package inside_payment.service;
 
 import edu.fudan.common.entity.Order;
+import edu.fudan.common.idempotency.IdempotencyGuard;
 import edu.fudan.common.util.Response;
 import inside_payment.entity.*;
 import inside_payment.repository.AddMoneyRepository;
@@ -22,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
@@ -43,6 +45,9 @@ public class InsidePaymentServiceImplTest {
     @Mock
     private DiscoveryClient discoveryClient;
 
+    @Mock
+    private IdempotencyGuard idempotencyGuard;
+
     private static final String orderServiceHost = "ts-order-service";
     private static final int orderServicePort = 12031;
     private static final String orderOtherServiceHost = "ts-order-other-service";
@@ -56,6 +61,8 @@ public class InsidePaymentServiceImplTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(idempotencyGuard.reserve(Mockito.anyString())).thenReturn(true);
+        Mockito.when(idempotencyGuard.getCachedResult(Mockito.anyString())).thenReturn(Optional.empty());
         ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderServiceHost", orderServiceHost);
         ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderServicePort", orderServicePort);
         ReflectionTestUtils.setField(insidePaymentServiceImpl, "orderOtherServiceHost", orderOtherServiceHost);

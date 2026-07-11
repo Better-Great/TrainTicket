@@ -1,5 +1,6 @@
 package preserve.service;
 
+import edu.fudan.common.idempotency.IdempotencyGuard;
 import edu.fudan.common.util.Response;
 import edu.fudan.common.util.StringUtils;
 import org.junit.Assert;
@@ -11,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -22,7 +25,10 @@ import edu.fudan.common.entity.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @RunWith(JUnit4.class)
 public class PreserveServiceImplTest {
@@ -38,6 +44,15 @@ public class PreserveServiceImplTest {
 
     @Mock
     private RabbitSend sendService;
+
+    @Mock
+    private IdempotencyGuard idempotencyGuard;
+
+    @Mock
+    private CircuitBreakerFactory circuitBreakerFactory;
+
+    @Mock
+    private CircuitBreaker circuitBreaker;
 
     private static final String basicServiceHost = "ts-basic-service";
     private static final int basicServicePort = 15678;
@@ -90,6 +105,12 @@ public class PreserveServiceImplTest {
         ReflectionTestUtils.setField(preserveServiceImpl, "foodServicePort", foodServicePort);
         ReflectionTestUtils.setField(preserveServiceImpl, "consignServiceHost", consignServiceHost);
         ReflectionTestUtils.setField(preserveServiceImpl, "consignServicePort", consignServicePort);
+
+        Mockito.when(idempotencyGuard.reserve(Mockito.anyString())).thenReturn(true);
+        Mockito.when(idempotencyGuard.getCachedResult(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(circuitBreakerFactory.create(Mockito.anyString())).thenReturn(circuitBreaker);
+        Mockito.when(circuitBreaker.run(Mockito.any(Supplier.class), Mockito.any(Function.class)))
+                .thenAnswer(invocation -> ((Supplier) invocation.getArgument(0)).get());
     }
 
     @Test

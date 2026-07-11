@@ -4,6 +4,8 @@ import com.trainticket.entity.Money;
 import com.trainticket.entity.Payment;
 import com.trainticket.repository.AddMoneyRepository;
 import com.trainticket.repository.PaymentRepository;
+import edu.fudan.common.idempotency.IdempotencyGuard;
+import edu.fudan.common.util.JsonUtils;
 import edu.fudan.common.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,21 +29,37 @@ public class PaymentServiceImpl implements PaymentService{
     @Autowired
     AddMoneyRepository addMoneyRepository;
 
+    @Autowired
+    private IdempotencyGuard idempotencyGuard;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     @Override
     public Response pay(Payment info, HttpHeaders headers){
-
-        if(paymentRepository.findByOrderId(info.getOrderId()) == null){
-            Payment payment = new Payment();
-            payment.setOrderId(info.getOrderId());
-            payment.setPrice(info.getPrice());
-            payment.setUserId(info.getUserId());
-            paymentRepository.save(payment);
-            return new Response<>(1, "Pay Success", null);
-        }else{
-            PaymentServiceImpl.LOGGER.warn("[pay][Pay Failed][Order not found with order id][PaymentId: {}, OrderId: {}]",info.getId(),info.getOrderId());
-            return new Response<>(0, "Pay Failed, order not found with order id" +info.getOrderId(), null);
+        String idempotencyKey = "payment:" + info.getOrderId();
+        if (!idempotencyGuard.reserve(idempotencyKey)) {
+            return idempotencyGuard.getCachedResult(idempotencyKey)
+                    .map(json -> (Response) JsonUtils.json2Object(json, Response.class))
+                    .orElseGet(() -> new Response<>(0, "Payment for this order is already being processed", null));
+        }
+        try {
+            Response result;
+            if (paymentRepository.findByOrderId(info.getOrderId()) == null) {
+                Payment payment = new Payment();
+                payment.setOrderId(info.getOrderId());
+                payment.setPrice(info.getPrice());
+                payment.setUserId(info.getUserId());
+                paymentRepository.save(payment);
+                result = new Response<>(1, "Pay Success", null);
+            } else {
+                PaymentServiceImpl.LOGGER.warn("[pay][Pay Failed][Order not found with order id][PaymentId: {}, OrderId: {}]", info.getId(), info.getOrderId());
+                result = new Response<>(0, "Pay Failed, order not found with order id" + info.getOrderId(), null);
+            }
+            idempotencyGuard.storeResult(idempotencyKey, JsonUtils.object2Json(result));
+            return result;
+        } catch (RuntimeException e) {
+            idempotencyGuard.release(idempotencyKey);
+            throw e;
         }
     }
 
