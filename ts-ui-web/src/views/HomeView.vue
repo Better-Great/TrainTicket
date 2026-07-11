@@ -1,40 +1,82 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { Search, Ticket, TrainFront, ShieldCheck } from 'lucide-vue-next'
+import TrainIllustration from '@/components/illustrations/TrainIllustration.vue'
 import { tomorrowIso } from '@/utils/format'
+
+const steps = [
+  {
+    n: '01',
+    icon: Search,
+    title: 'Search',
+    body: 'Compare high-speed and conventional trains by route, date, and seat class.',
+  },
+  {
+    n: '02',
+    icon: Ticket,
+    title: 'Book',
+    body: 'Pick a passenger, add assurance or food, and reserve the seat in one step.',
+  },
+  {
+    n: '03',
+    icon: TrainFront,
+    title: 'Travel',
+    body: 'Pay, collect your ticket, and track the order — all from the same account.',
+  },
+]
 </script>
 
 <template>
   <section class="hero">
     <div class="hero-bg" aria-hidden="true" />
     <div class="hero-inner">
-      <p class="brand">TrainTicket</p>
-      <h1>Book the next departure with a quieter interface.</h1>
-      <p class="support">
-        Search high-speed and conventional trains, reserve seats, pay, and collect — rebuilt for
-        local-first development.
-      </p>
-      <div class="actions">
-        <RouterLink class="primary" :to="{ name: 'search', query: { date: tomorrowIso() } }">
-          Search trips
-        </RouterLink>
-        <RouterLink class="ghost" to="/advanced">Advanced search</RouterLink>
+      <div class="hero-copy">
+        <p class="brand">TrainTicket</p>
+        <h1>Book the next departure with a quieter interface.</h1>
+        <p class="support">
+          Search high-speed and conventional trains, reserve seats, pay, and collect — rebuilt for
+          local-first development.
+        </p>
+        <div class="actions">
+          <RouterLink class="primary" :to="{ name: 'search', query: { date: tomorrowIso() } }">
+            Search trips
+          </RouterLink>
+          <RouterLink class="ghost" to="/advanced">Advanced search</RouterLink>
+        </div>
       </div>
+      <div class="hero-art" aria-hidden="true">
+        <TrainIllustration />
+      </div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="how-inner">
+      <p class="eyebrow">How it works</p>
+      <ol class="steps">
+        <li v-for="s in steps" :key="s.n" class="step">
+          <span class="step-n">{{ s.n }}</span>
+          <span class="step-icon"><component :is="s.icon" :size="20" /></span>
+          <h2>{{ s.title }}</h2>
+          <p>{{ s.body }}</p>
+        </li>
+      </ol>
     </div>
   </section>
 
   <section class="strip">
     <div class="strip-inner">
-      <div>
-        <h2>One flow</h2>
-        <p>Search → book → pay → collect, without the legacy multi-framework clutter.</p>
+      <div class="strip-item">
+        <ShieldCheck :size="18" class="strip-icon" />
+        <h2>Same contracts</h2>
+        <p>
+          Uses the existing <code>/api/v1/*</code> paths so the SPA stays gateway-compatible.
+        </p>
       </div>
-      <div>
+      <div class="strip-item">
+        <TrainFront :size="18" class="strip-icon" />
         <h2>Local first</h2>
         <p>Mock API by default. Point at the gateway only when you are ready to integrate.</p>
-      </div>
-      <div>
-        <h2>Same contracts</h2>
-        <p>Uses the existing <code>/api/v1/*</code> paths so the SPA stays gateway-compatible.</p>
       </div>
     </div>
   </section>
@@ -45,7 +87,7 @@ import { tomorrowIso } from '@/utils/format'
   position: relative;
   min-height: calc(100vh - var(--header-h) - 2rem);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   overflow: hidden;
   color: var(--paper);
 }
@@ -82,6 +124,10 @@ import { tomorrowIso } from '@/utils/format'
   width: 100%;
   margin: 0 auto;
   padding: 4rem 1.25rem 3.5rem;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 2rem;
   animation: rise 0.7s ease both;
 }
 
@@ -143,6 +189,76 @@ h1 {
   color: var(--paper);
 }
 
+.hero-art {
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.35));
+}
+
+.how {
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+}
+
+.how-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rail);
+  margin-bottom: 1.25rem;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.step {
+  position: relative;
+  padding-top: 0.5rem;
+  border-top: 2px solid var(--line);
+}
+
+.step-n {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--mist);
+  color: var(--rail);
+  margin-bottom: 0.75rem;
+}
+
+.step h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.step p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .strip {
   background: var(--mist);
   border-top: 1px solid var(--line);
@@ -153,18 +269,23 @@ h1 {
   margin: 0 auto;
   padding: 2.5rem 1.25rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
 }
 
-.strip h2 {
-  font-size: 1.15rem;
+.strip-icon {
+  color: var(--rail);
   margin-bottom: 0.5rem;
+}
+
+.strip h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
 }
 
 .strip p {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .strip code {
@@ -172,7 +293,17 @@ h1 {
   color: var(--rail);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-art {
+    max-width: 22rem;
+    margin: 0 auto;
+  }
+
+  .steps,
   .strip-inner {
     grid-template-columns: 1fr;
   }

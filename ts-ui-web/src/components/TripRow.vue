@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Armchair, TrainFront } from 'lucide-vue-next'
 import { formatMoney } from '@/utils/format'
 
 defineProps<{
@@ -39,7 +40,7 @@ defineEmits<{
     </div>
 
     <div class="meta">
-      <p class="id">{{ tripId }}</p>
+      <p class="id"><TrainFront :size="15" /> {{ tripId }}</p>
       <div class="seats">
         <label class="seat">
           <input
@@ -47,6 +48,7 @@ defineEmits<{
             :checked="selectedSeat === 3"
             @change="$emit('update:selectedSeat', 3)"
           />
+          <Armchair :size="16" class="seat-icon" />
           <span>
             Economy · {{ formatMoney(economyPrice) }}
             <small>{{ economySeats }} left</small>
@@ -58,6 +60,7 @@ defineEmits<{
             :checked="selectedSeat === 2"
             @change="$emit('update:selectedSeat', 2)"
           />
+          <Armchair :size="16" class="seat-icon seat-icon-comfort" />
           <span>
             Comfort · {{ formatMoney(comfortPrice) }}
             <small>{{ comfortSeats }} left</small>
@@ -135,8 +138,12 @@ defineEmits<{
 }
 
 .id {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: var(--rail);
 }
 
 .seats {
@@ -157,6 +164,15 @@ defineEmits<{
   display: block;
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+.seat-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.seat-icon-comfort {
+  color: var(--signal);
 }
 
 .book {

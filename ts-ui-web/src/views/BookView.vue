@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Ticket, MapPin, CalendarDays, Armchair, User, ShieldCheck, CheckCircle2 } from 'lucide-vue-next'
 import { createContact, listContacts, preserveTicket } from '@/api/services'
 import type { Contact } from '@/api/types'
 import { useAuthStore } from '@/stores/auth'
@@ -94,26 +95,26 @@ onMounted(() => {
 
     <div class="summary">
       <div>
-        <span>Trip</span>
+        <span><Ticket :size="13" /> Trip</span>
         <strong>{{ tripId }}</strong>
       </div>
       <div>
-        <span>Route</span>
+        <span><MapPin :size="13" /> Route</span>
         <strong>{{ from }} → {{ to }}</strong>
       </div>
       <div>
-        <span>Date</span>
+        <span><CalendarDays :size="13" /> Date</span>
         <strong>{{ date }}</strong>
       </div>
       <div>
-        <span>Seat</span>
+        <span><Armchair :size="13" /> Seat</span>
         <strong>
           {{ seatType === '2' ? 'Comfort' : 'Economy' }} · {{ formatMoney(seatPrice) }}
         </strong>
       </div>
     </div>
 
-    <h2>Passenger</h2>
+    <h2><User :size="18" /> Passenger</h2>
     <div class="contacts">
       <label v-for="c in contacts" :key="c.id" class="contact">
         <input v-model="selectedId" type="radio" :value="c.id" />
@@ -142,7 +143,7 @@ onMounted(() => {
     </details>
 
     <label class="assurance">
-      <span>Assurance</span>
+      <span><ShieldCheck :size="14" /> Assurance</span>
       <select v-model.number="assurance">
         <option :value="0">No assurance</option>
         <option :value="1">Traffic accident assurance</option>
@@ -150,7 +151,7 @@ onMounted(() => {
     </label>
 
     <p v-if="error" class="error" role="alert">{{ error }}</p>
-    <p v-if="success" class="ok" role="status">{{ success }}</p>
+    <p v-if="success" class="ok" role="status"><CheckCircle2 :size="16" /> {{ success }}</p>
 
     <button class="submit" type="button" :disabled="loading" @click="confirm">
       {{ loading ? 'Reserving…' : 'Confirm reservation' }}
@@ -189,7 +190,9 @@ h1 {
 }
 
 .summary span {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--muted);
@@ -198,6 +201,9 @@ h1 {
 }
 
 h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 1.15rem;
   margin-bottom: 0.75rem;
 }
@@ -251,6 +257,12 @@ button {
   margin: 1rem 0;
 }
 
+.assurance span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .submit {
   background: var(--signal);
   color: var(--signal-ink);
@@ -264,6 +276,9 @@ button {
   color: var(--danger);
 }
 .ok {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--ok);
 }
 

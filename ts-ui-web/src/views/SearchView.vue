@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { MapPin, CalendarDays, TrainFront, Search } from 'lucide-vue-next'
 import TripRow from '@/components/TripRow.vue'
+import RouteMapIllustration from '@/components/illustrations/RouteMapIllustration.vue'
 import { searchTrips } from '@/api/services'
 import { tomorrowIso } from '@/utils/format'
 
@@ -94,19 +96,19 @@ onMounted(() => {
 
     <form class="filters" @submit.prevent="runSearch">
       <label>
-        <span>From</span>
+        <span><MapPin :size="14" /> From</span>
         <input v-model="form.from" required />
       </label>
       <label>
-        <span>To</span>
+        <span><MapPin :size="14" /> To</span>
         <input v-model="form.to" required />
       </label>
       <label>
-        <span>Date</span>
+        <span><CalendarDays :size="14" /> Date</span>
         <input v-model="form.date" type="date" required />
       </label>
       <label>
-        <span>Train type</span>
+        <span><TrainFront :size="14" /> Train type</span>
         <select v-model.number="form.trainType">
           <option :value="0">All</option>
           <option :value="1">G / D</option>
@@ -114,6 +116,7 @@ onMounted(() => {
         </select>
       </label>
       <button type="submit" :disabled="loading">
+        <Search :size="16" />
         {{ loading ? 'Searching…' : 'Search' }}
       </button>
     </form>
@@ -141,7 +144,10 @@ onMounted(() => {
         @update:selected-seat="(v) => (t.selectedSeat = v)"
         @book="book(i)"
       />
-      <p v-if="!trips.length && !error" class="empty">No results yet.</p>
+      <div v-if="!trips.length && !error" class="empty">
+        <RouteMapIllustration />
+        <p>No results yet.</p>
+      </div>
     </div>
   </section>
 </template>
@@ -200,6 +206,12 @@ label {
   color: var(--muted);
 }
 
+label span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 input,
 select,
 button {
@@ -210,6 +222,10 @@ button {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
@@ -244,6 +260,13 @@ button {
 .empty {
   color: var(--muted);
   padding: 2rem 0;
+  max-width: 22rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.empty p {
+  margin-top: 1rem;
 }
 
 @media (max-width: 900px) {
