@@ -69,6 +69,8 @@ echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS, http-direct local 
   export PRESERVE_SERVICE_URI=http://127.0.0.1:14568
   export PAYMENT_SERVICE_URI=http://127.0.0.1:19001
   export INSIDE_PAYMENT_SERVICE_URI=http://127.0.0.1:18673
+  export USER_SERVICE_URI=http://127.0.0.1:12342
+  export CONTACTS_SERVICE_URI=http://127.0.0.1:12347
   export NACOS_ADDRS="${NACOS_ADDRS:-127.0.0.1:8848}"
   export GATEWAY_NACOS="$WITH_NACOS"
   export JWT_SECRET="${JWT_SECRET:-change-me-local-dev-only}"

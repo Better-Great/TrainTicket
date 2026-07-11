@@ -84,7 +84,7 @@ spring:
             - Path=/api/v1/consignservice/**
 
         - id: contacts
-          uri: lb://${CONTACTS_SERVICE_HOST:ts-contacts-service}
+          uri: ${CONTACTS_SERVICE_URI:lb://ts-contacts-service}
           predicates:
             - Path=/api/v1/contactservice/**
 
@@ -199,7 +199,7 @@ spring:
             - Path=/api/v1/travelservice/**
 
         - id: user
-          uri: lb://${USER_SERVICE_HOST:ts-user-service}
+          uri: ${USER_SERVICE_URI:lb://ts-user-service}
           predicates:
             - Path=/api/v1/userservice/users/**
 
