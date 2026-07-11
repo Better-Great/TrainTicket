@@ -11,3 +11,13 @@ spring:
 
 swagger:
   controllerPackage: fdse.microservice.controller
+
+# Local Track B peers (override via env StationServiceHost=… in compose/k8s)
+StationServiceHost: 127.0.0.1
+StationServicePort: 12345
+TrainServiceHost: 127.0.0.1
+TrainServicePort: 14567
+RouteServiceHost: 127.0.0.1
+RouteServicePort: 11178
+PriceServiceHost: 127.0.0.1
+PriceServicePort: 16579

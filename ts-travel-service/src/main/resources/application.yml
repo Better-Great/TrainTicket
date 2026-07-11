@@ -25,17 +25,14 @@ spring:
 swagger:
   controllerPackage: travel.controller
 
-train-service:
-  url: http://${TRAIN_SERVICE_HOST:127.0.0.1}:${TRAIN_SERVICE_PORT:14567}
-
-order-service:
-  url: http://${ORDER_SERVICE_HOST:127.0.0.1}:${ORDER_SERVICE_PORT:12031}
-
-route-service:
-  url: http://${ROUTE_SERVICE_HOST:127.0.0.1}:${ROUTE_SERVICE_PORT:11178}
-
-basic-service:
-  url: http://${BASIC_SERVICE_HOST:127.0.0.1}:${BASIC_SERVICE_PORT:15680}
-
-seat-service:
-  url: http://${SEAT_SERVICE_HOST:127.0.0.1}:${SEAT_SERVICE_PORT:18898}
+# Peer hosts for RestTemplate (must match @Value names in TravelServiceImpl)
+BasicServiceHost: 127.0.0.1
+BasicServicePort: 15680
+TrainServiceHost: 127.0.0.1
+TrainServicePort: 14567
+RouteServiceHost: 127.0.0.1
+RouteServicePort: 11178
+SeatServiceHost: 127.0.0.1
+SeatServicePort: 18898
+OrderServiceHost: 127.0.0.1
+OrderServicePort: 12031

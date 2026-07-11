@@ -134,7 +134,7 @@ spring:
             - Path=/api/v1/preserveservice/**
 
         - id: price
-          uri: lb://${PRICE_SERVICE_HOST:ts-price-service}
+          uri: ${PRICE_SERVICE_URI:lb://ts-price-service}
           predicates:
             - Path=/api/v1/priceservice/**
 
@@ -154,7 +154,7 @@ spring:
             - Path=/api/v1/routeservice/**
 
         - id: seat
-          uri: lb://${SEAT_SERVICE_HOST:ts-seat-service}
+          uri: ${SEAT_SERVICE_URI:lb://ts-seat-service}
           predicates:
             - Path=/api/v1/seatservice/**
 

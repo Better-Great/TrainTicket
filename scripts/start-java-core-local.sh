@@ -29,6 +29,8 @@ SERVICES=(
   "ts-travel-service|ts-travel-service|12346|ts-travel-mysql|TRAVEL"
   "ts-auth-service|ts-auth-service|12340|ts-auth-mysql|AUTH"
   "ts-basic-service|ts-basic-service|15680|-|BASIC"
+  "ts-price-service|ts-price-service|16579|ts-price-mysql|PRICE"
+  "ts-seat-service|ts-seat-service|18898|-|SEAT"
 )
 
 ensure_dbs() {
@@ -47,6 +49,7 @@ ensure_dbs() {
     CREATE DATABASE IF NOT EXISTS \`ts-food-delivery-mysql\` CHARACTER SET utf8mb4;
     CREATE DATABASE IF NOT EXISTS \`ts-order-mysql\` CHARACTER SET utf8mb4;
     CREATE DATABASE IF NOT EXISTS \`ts-travel-mysql\` CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS \`ts-price-mysql\` CHARACTER SET utf8mb4;
   " 2>/dev/null || true
 }
 

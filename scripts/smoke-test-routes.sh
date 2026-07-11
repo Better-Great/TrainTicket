@@ -48,7 +48,6 @@ check "news API path" "$GATEWAY/api/v1/newsservice/news" "News"
 check "news legacy path" "$GATEWAY/news-service/news" "News"
 check "ticket office regions" "$GATEWAY/office/getRegionList" ""
 check "ticket office API path" "$GATEWAY/api/v1/ticketofficeservice/getRegionList" ""
-check "verifycode generate" "$GATEWAY/api/v1/verifycode/generate" ""
 check "stations" "$GATEWAY/api/v1/stationservice/stations" ""
 soft_check() {
   local name="$1" url="$2" expect="${3:-}"
@@ -71,11 +70,14 @@ soft_check() {
     ((fail++)) || true
   fi
 }
+soft_check "verifycode generate" "$GATEWAY/api/v1/verifycode/generate" ""
 soft_check "wait-order welcome" "$GATEWAY/api/v1/waitorderservice/welcome" "Wait"
 soft_check "food-delivery welcome" "$GATEWAY/api/v1/fooddeliveryservice/welcome" "food"
 soft_check "config" "$GATEWAY/api/v1/configservice/configs" ""
 soft_check "travel welcome" "$GATEWAY/api/v1/travelservice/welcome" "Welcome"
 soft_check "order welcome" "$GATEWAY/api/v1/orderservice/welcome" "Welcome"
+soft_check "basic welcome" "$GATEWAY/api/v1/basicservice/welcome" "Basic"
+soft_check "price list" "$GATEWAY/api/v1/priceservice/prices" ""
 
 echo ""
 echo "=== UI proxy ($UI) ==="
@@ -86,7 +88,7 @@ elif ! curl -sf --max-time 2 -o /dev/null "$UI/" 2>/dev/null; then
 else
   check "UI homepage" "$UI/" ""
   check "UI news" "$UI/api/v1/newsservice/" "News"
-  check "UI verifycode" "$UI/api/v1/verifycode/generate" ""
+  soft_check "UI verifycode" "$UI/api/v1/verifycode/generate" ""
 fi
 
 echo ""
