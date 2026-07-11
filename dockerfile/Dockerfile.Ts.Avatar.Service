@@ -32,4 +32,7 @@ USER app
 
 EXPOSE ${AVATAR_SERVICE_PORT}
 
+HEALTHCHECK --interval=10s --timeout=5s --retries=10 \
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['AVATAR_SERVICE_PORT'] + '/health', timeout=3)" || exit 1
+
 CMD ["sh", "-c", "exec gunicorn -w 2 -b 0.0.0.0:${AVATAR_SERVICE_PORT} --timeout 120 --chdir \"${APP_HOME}\" app:app"]

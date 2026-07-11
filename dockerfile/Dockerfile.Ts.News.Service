@@ -16,4 +16,6 @@ RUN chown train-ticket:train-ticket /news && chmod 0555 /news
 USER train-ticket:train-ticket
 ENV NEWS_SERVICE_PORT=${NEWS_SERVICE_PORT}
 EXPOSE ${NEWS_SERVICE_PORT}
+HEALTHCHECK --interval=10s --timeout=5s --retries=10 \
+    CMD wget -qO- "http://127.0.0.1:${NEWS_SERVICE_PORT}/" > /dev/null || exit 1
 ENTRYPOINT ["/news"]

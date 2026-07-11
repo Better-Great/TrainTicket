@@ -5,8 +5,7 @@
 | File | Role |
 |------|------|
 | `docker-compose.minimal.yml` | MySQL, Nacos, RabbitMQ, Redis, Kafka, Zipkin |
-| `docker-compose.build.yml` | **Includes minimal** + all app images (Java + non-Java) |
-| `docker-compose.yml` | Legacy full compose (alternate layout) |
+| `docker-compose.build.yml` | **Includes minimal** + all app images (Java + non-Java) — canonical, single source of truth |
 | `dockerfile/Dockerfile.Ts.*` | Per-service Dockerfiles (build context = repo root) |
 | `.env` | Ports, credentials, `IMG_REPO`, `IMG_TAG` |
 
