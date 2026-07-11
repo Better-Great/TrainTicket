@@ -1082,9 +1082,11 @@ services:
 
   ts-ui-dashboard:
     build:
-      context: .
-      dockerfile: dockerfile/Dockerfile.Ts.Ui.Dashboard
-    image: ${IMG_REPO}/ts-ui-dashboard:${IMG_TAG}
+      context: ts-ui-web
+      dockerfile: Dockerfile
+    # Image name matches source module (ts-ui-web). CI also pushes a legacy
+    # ts-ui-dashboard alias for older pulls.
+    image: ${IMG_REPO}/ts-ui-web:${IMG_TAG}
     container_name: ts-ui-dashboard
     mem_limit: 512m
     cpus: 0.5
