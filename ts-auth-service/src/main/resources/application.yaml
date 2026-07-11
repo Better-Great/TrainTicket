@@ -4,21 +4,20 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_ADDRS:nacos-0.nacos-headless.default.svc.cluster.local,nacos-1.nacos-headless.default.svc.cluster.local,nacos-2.nacos-headless.default.svc.cluster.local}
+        server-addr: ${NACOS_ADDRS:127.0.0.1:8848}
   application:
     name: ts-auth-service
   datasource:
-    url: jdbc:mysql://${AUTH_MYSQL_HOST:ts-auth-mysql}:${AUTH_MYSQL_PORT:3306}/${AUTH_MYSQL_DATABASE:ts-auth-mysql}?useSSL=false
+    url: jdbc:mysql://${AUTH_MYSQL_HOST:127.0.0.1}:${AUTH_MYSQL_PORT:3307}/${AUTH_MYSQL_DATABASE:ts-auth-mysql}?useSSL=false&allowPublicKeyRetrieval=true
     username: ${AUTH_MYSQL_USER:root}
-    password: ${AUTH_MYSQL_PASSWORD:Abcd1234#}
+    password: ${AUTH_MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
-
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 swagger:
   controllerPackage: auth.controller

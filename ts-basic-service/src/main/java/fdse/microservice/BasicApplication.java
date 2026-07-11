@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.integration.annotation.IntegrationComponentScan;
@@ -27,7 +26,10 @@ public class BasicApplication {
 		SpringApplication.run(BasicApplication.class, args);
 	}
 
-	@LoadBalanced
+	/**
+	 * Direct HTTP RestTemplate (host:port from config).
+	 * No {@code @LoadBalanced} so local 127.0.0.1 peers are not treated as service ids.
+	 */
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
 		return builder.build();

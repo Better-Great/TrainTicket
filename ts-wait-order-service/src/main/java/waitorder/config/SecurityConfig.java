@@ -1,6 +1,8 @@
 package waitorder.config;
 
 import edu.fudan.common.security.jwt.JWTFilter;
+import edu.fudan.common.security.cors.CorsOrigins;
+import edu.fudan.common.security.swagger.SwaggerAccess;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,7 +29,7 @@ import static org.springframework.web.cors.CorsConfiguration.ALL;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     String admin = "ADMIN";
-    String order = "/api/v1/orderservice/order";
+    String waitOrder = "/api/v1/waitorderservice/**";
 
     /**
      * load password encoder
@@ -53,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(ALL)
+                        .allowedOrigins(CorsOrigins.resolveAllowedOrigins())
                         .allowedMethods(ALL)
                         .allowedHeaders(ALL)
                         .allowCredentials(false)
@@ -72,14 +74,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST, order).hasAnyRole(admin, "USER")
-                .antMatchers(HttpMethod.PUT, order).hasAnyRole(admin, "USER")
-                .antMatchers(HttpMethod.DELETE, order).hasAnyRole(admin, "USER")
-                .antMatchers(HttpMethod.POST, "/api/v1/orderservice/order/admin").hasAnyRole(admin)
-                .antMatchers(HttpMethod.PUT, "/api/v1/orderservice/order/admin").hasAnyRole(admin)
-                .antMatchers("/api/v1/orderservice/order/**").permitAll()
+                .antMatchers("/api/v1/waitorderservice/welcome").permitAll()
+                .antMatchers(HttpMethod.GET, waitOrder).permitAll()
+                .antMatchers(HttpMethod.POST, waitOrder).hasAnyRole(admin, "USER")
+                .antMatchers(HttpMethod.PUT, waitOrder).hasAnyRole(admin, "USER")
+                .antMatchers(HttpMethod.DELETE, waitOrder).hasAnyRole(admin, "USER")
                 .antMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
-                        "/configuration/**", "/swagger-resources/**", "/v2/**").permitAll()
+                        "/configuration/**", "/swagger-resources/**", "/v2/**")
+                        .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -27,7 +27,6 @@ public class AdminTravelController {
         return "Welcome to [ AdminTravel Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/admintravel")
     public HttpEntity getAllTravels(@RequestHeader HttpHeaders headers) {
         logger.info("[getAllTravels][Get all travels]");

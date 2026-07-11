@@ -28,7 +28,6 @@ public class PreserveController {
         return "Welcome to [ Preserve Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/preserve")
     public HttpEntity preserve(@RequestBody OrderTicketsInfo oti,
                                @RequestHeader HttpHeaders headers) {

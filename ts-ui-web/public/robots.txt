@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /book
+Disallow: /orders
+Disallow: /collect
+Disallow: /contacts
+Disallow: /wallet
+Disallow: /waitlist
+Disallow: /admin/
+
+Sitemap: /sitemap.xml

@@ -22,7 +22,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR"
 
 # Services to exclude (non-Java services)
-EXCLUDED_SERVICES=("ts-avatar-service" "ts-ticket-office-service" "ts-ui-dashboard" "ts-voucher-service")
+EXCLUDED_SERVICES=("ts-avatar-service" "ts-ticket-office-service" "ts-ui-web" "ts-ui-dashboard" "ts-voucher-service")
 
 # Function to print usage
 usage() {

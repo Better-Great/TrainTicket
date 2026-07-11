@@ -2,6 +2,10 @@
 
 Python scripts for analyzing and generating configuration files for TrainTicket microservices.
 
+**Maintainer-only scaffolding tool** — use this when adding a new service or resetting the
+property scaffolding from scratch. For routine builds/deploys, use `../generate-properties.sh`
+and `../replace-tokens.sh` instead (see `ai-docs/DECISIONS.md` ADR-009 for why both exist).
+
 ## 📋 Scripts Overview
 
 | Script | Purpose |

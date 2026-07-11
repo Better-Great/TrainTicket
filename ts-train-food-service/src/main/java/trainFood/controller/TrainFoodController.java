@@ -24,14 +24,12 @@ public class TrainFoodController {
         return "Welcome to [ Train Food Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/trainfoods")
     public HttpEntity getAllTrainFood(@RequestHeader HttpHeaders headers) {
         TrainFoodController.LOGGER.info("[Food Map Service][Get All TrainFoods]");
         return ok(trainFoodService.listTrainFood(headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/trainfoods/{tripId}")
     public HttpEntity getTrainFoodOfTrip(@PathVariable String tripId, @RequestHeader HttpHeaders headers) {
         TrainFoodController.LOGGER.info("[Food Map Service][Get TrainFoods By TripId]");

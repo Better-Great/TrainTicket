@@ -2,6 +2,8 @@ package inside_payment.service;
 
 import edu.fudan.common.entity.OrderStatus;
 import edu.fudan.common.entity.Order;
+import edu.fudan.common.idempotency.IdempotencyGuard;
+import edu.fudan.common.util.JsonUtils;
 import edu.fudan.common.util.Response;
 import inside_payment.entity.*;
 import inside_payment.repository.AddMoneyRepository;
@@ -54,6 +56,9 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
     @Value("${PaymentServicePort:19001}")
     private int paymentServicePort;
 
+    @Autowired
+    private IdempotencyGuard idempotencyGuard;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InsidePaymentServiceImpl.class);
 
     private String getServiceUrl(String serviceHost, int servicePort) {
@@ -62,6 +67,23 @@ public class InsidePaymentServiceImpl implements InsidePaymentService {
 
     @Override
     public Response pay(PaymentInfo info, HttpHeaders headers) {
+        String idempotencyKey = "inside_payment:" + info.getOrderId();
+        if (!idempotencyGuard.reserve(idempotencyKey)) {
+            return idempotencyGuard.getCachedResult(idempotencyKey)
+                    .map(json -> (Response) JsonUtils.json2Object(json, Response.class))
+                    .orElseGet(() -> new Response<>(0, "Payment for this order is already being processed", null));
+        }
+        try {
+            Response result = doPay(info, headers);
+            idempotencyGuard.storeResult(idempotencyKey, JsonUtils.object2Json(result));
+            return result;
+        } catch (RuntimeException e) {
+            idempotencyGuard.release(idempotencyKey);
+            throw e;
+        }
+    }
+
+    private Response doPay(PaymentInfo info, HttpHeaders headers) {
 
         String userId = info.getUserId();
 

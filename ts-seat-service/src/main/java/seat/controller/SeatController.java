@@ -35,7 +35,6 @@ public class SeatController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/seats")
     public HttpEntity create(@RequestBody Seat seatRequest, @RequestHeader HttpHeaders headers) {
         SeatController.LOGGER.info("[distributeSeat][Create seat][TravelDate: {},TrainNumber: {},SeatType: {}]",seatRequest.getTravelDate(),seatRequest.getTrainNumber(),seatRequest.getSeatType());
@@ -50,7 +49,6 @@ public class SeatController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/seats/left_tickets")
     public HttpEntity getLeftTicketOfInterval(@RequestBody Seat seatRequest, @RequestHeader HttpHeaders headers) {
         // int

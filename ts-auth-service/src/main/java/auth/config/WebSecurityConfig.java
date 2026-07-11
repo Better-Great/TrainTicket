@@ -2,6 +2,8 @@ package auth.config;
 
 
 import edu.fudan.common.security.jwt.JWTFilter;
+import edu.fudan.common.security.cors.CorsOrigins;
+import edu.fudan.common.security.swagger.SwaggerAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -56,7 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(ALL)
+                        .allowedOrigins(CorsOrigins.resolveAllowedOrigins())
                         .allowedMethods(ALL)
                         .allowedHeaders(ALL)
                         .allowCredentials(false)
@@ -90,7 +92,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // create user and role while user register
                 .antMatchers("/user/**").permitAll()
                 .antMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
-                        "/configuration/**", "/swagger-resources/**", "/v2/**").permitAll()
+                        "/configuration/**", "/swagger-resources/**", "/v2/**")
+                        .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
                 .antMatchers("/actuator/health", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
                 .and()

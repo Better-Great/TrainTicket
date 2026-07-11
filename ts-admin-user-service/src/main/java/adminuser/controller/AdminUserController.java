@@ -27,7 +27,6 @@ public class AdminUserController {
         return "Welcome to [ AdminUser Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping
     public HttpEntity getAllUsers(@RequestHeader HttpHeaders headers) {
         logger.info("[getAllUsers][Get all users]");

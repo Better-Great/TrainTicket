@@ -1,5 +1,6 @@
 package preserve.service;
 
+import edu.fudan.common.idempotency.IdempotencyGuard;
 import edu.fudan.common.util.JsonUtils;
 import edu.fudan.common.util.Response;
 import edu.fudan.common.util.StringUtils;
@@ -8,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -38,10 +41,16 @@ public class PreserveServiceImpl implements PreserveService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Autowired
+    private IdempotencyGuard idempotencyGuard;
+
+    @Autowired
+    private CircuitBreakerFactory circuitBreakerFactory;
+
     @Value("${BasicServiceHost:ts-basic-service}")
     private String basicServiceHost;
 
-    @Value("${BasicServicePort:15678}")
+    @Value("${BasicServicePort:15680}")
     private int basicServicePort;
 
     @Value("${SeatServiceHost:ts-seat-service}")
@@ -112,6 +121,38 @@ public class PreserveServiceImpl implements PreserveService {
 
     @Override
     public Response preserve(OrderTicketsInfo oti, HttpHeaders headers) {
+        String idempotencyKey = resolveIdempotencyKey(oti, headers);
+        if (!idempotencyGuard.reserve(idempotencyKey)) {
+            return idempotencyGuard.getCachedResult(idempotencyKey)
+                    .map(json -> (Response) JsonUtils.json2Object(json, Response.class))
+                    .orElseGet(() -> new Response<>(0,
+                            "A booking request with the same details is already being processed. "
+                                    + "Please wait and check your orders before retrying.", null));
+        }
+        try {
+            Response result = doPreserve(oti, headers);
+            idempotencyGuard.storeResult(idempotencyKey, JsonUtils.object2Json(result));
+            return result;
+        } catch (RuntimeException e) {
+            idempotencyGuard.release(idempotencyKey);
+            throw e;
+        }
+    }
+
+    private String resolveIdempotencyKey(OrderTicketsInfo oti, HttpHeaders headers) {
+        String clientKey = headers.getFirst("Idempotency-Key");
+        if (clientKey != null && !clientKey.trim().isEmpty()) {
+            return clientKey.trim();
+        }
+        return String.join(":",
+                String.valueOf(oti.getAccountId()),
+                String.valueOf(oti.getTripId()),
+                String.valueOf(oti.getDate()),
+                String.valueOf(oti.getContactsId()),
+                String.valueOf(oti.getSeatType()));
+    }
+
+    private Response doPreserve(OrderTicketsInfo oti, HttpHeaders headers) {
         //1.detect ticket scalper
         //PreserveServiceImpl.LOGGER.info("[Step 1] Check Security");
 
@@ -242,6 +283,10 @@ public class PreserveServiceImpl implements PreserveService {
         PreserveServiceImpl.LOGGER.info("[preserve][Step 4][Do Order][Order Price][Price is: {}]", order.getPrice());
 
         Response<Order> cor = createOrder(order, headers);
+        if (cor == null) {
+            PreserveServiceImpl.LOGGER.error("[preserve][Step 4][Do Order][Create Order Fail][OrderId: {}, Reason: order service unavailable]", order.getId());
+            return new Response<>(0, "Order service unavailable, please retry", null);
+        }
         if (cor.getStatus() == 0) {
             PreserveServiceImpl.LOGGER.error("[preserve][Step 4][Do Order][Create Order Fail][OrderId: {},  Reason: {}]", order.getId(), cor.getMsg());
             return new Response<>(0, cor.getMsg(), null);
@@ -353,14 +398,20 @@ public class PreserveServiceImpl implements PreserveService {
 
         HttpEntity requestEntityTicket = new HttpEntity(seatRequest, httpHeaders);
         String seat_service_url = getServiceUrl(seatServiceHost, seatServicePort);
-        ResponseEntity<Response<Ticket>> reTicket = restTemplate.exchange(
-                seat_service_url + "/api/v1/seatservice/seats",
-                HttpMethod.POST,
-                requestEntityTicket,
-                new ParameterizedTypeReference<Response<Ticket>>() {
+        CircuitBreaker seatDispatchBreaker = circuitBreakerFactory.create("seatDispatch");
+        ResponseEntity<Response<Ticket>> reTicket = seatDispatchBreaker.run(
+                () -> restTemplate.exchange(
+                        seat_service_url + "/api/v1/seatservice/seats",
+                        HttpMethod.POST,
+                        requestEntityTicket,
+                        new ParameterizedTypeReference<Response<Ticket>>() {
+                        }),
+                throwable -> {
+                    PreserveServiceImpl.LOGGER.error("[dipatchSeat][Circuit breaker fallback][{}]", throwable.toString());
+                    return null;
                 });
 
-        if (reTicket.getBody() == null || reTicket.getBody().getData() == null) {
+        if (reTicket == null || reTicket.getBody() == null || reTicket.getBody().getData() == null) {
             PreserveServiceImpl.LOGGER.error("[dipatchSeat][Dispatch Seat Fail][Response is null or data is null]");
             return null;
         }
@@ -479,14 +530,20 @@ public class PreserveServiceImpl implements PreserveService {
 
         HttpEntity requestEntityCreateOrderResult = new HttpEntity(coi, httpHeaders);
         String order_service_url = getServiceUrl(orderServiceHost, orderServicePort);
-        ResponseEntity<Response<Order>> reCreateOrderResult = restTemplate.exchange(
-                order_service_url + "/api/v1/orderservice/order",
-                HttpMethod.POST,
-                requestEntityCreateOrderResult,
-                new ParameterizedTypeReference<Response<Order>>() {
+        CircuitBreaker orderCreateBreaker = circuitBreakerFactory.create("orderCreate");
+        ResponseEntity<Response<Order>> reCreateOrderResult = orderCreateBreaker.run(
+                () -> restTemplate.exchange(
+                        order_service_url + "/api/v1/orderservice/order",
+                        HttpMethod.POST,
+                        requestEntityCreateOrderResult,
+                        new ParameterizedTypeReference<Response<Order>>() {
+                        }),
+                throwable -> {
+                    PreserveServiceImpl.LOGGER.error("[createOrder][Circuit breaker fallback][{}]", throwable.toString());
+                    return null;
                 });
 
-        return reCreateOrderResult.getBody();
+        return reCreateOrderResult == null ? null : reCreateOrderResult.getBody();
     }
 
     private Response createFoodOrder(FoodOrder afi, HttpHeaders httpHeaders) {

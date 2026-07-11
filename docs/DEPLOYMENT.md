@@ -32,10 +32,6 @@ Details: [DOCKER.md](DOCKER.md).
 MySQL → Nacos → microservices → Gateway (18888) → UI (8080)
 ```
 
-## Legacy compose
-
-`docker-compose.yml` is an older layout (mixed image names). Prefer **`docker-compose.build.yml`** for builds aligned with `dockerfile/Dockerfile.Ts.*`.
-
 ## Config generation
 
 Environment-specific Java config:

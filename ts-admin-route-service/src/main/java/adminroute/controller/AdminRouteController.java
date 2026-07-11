@@ -29,7 +29,6 @@ public class AdminRouteController {
         return "Welcome to [ AdminRoute Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/adminroute")
     public HttpEntity getAllRoutes(@RequestHeader HttpHeaders headers) {
         logger.info("[getAllRoutes][Get all routes request]");

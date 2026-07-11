@@ -1,6 +1,8 @@
 package fdse.microservice.config;
 
 import edu.fudan.common.security.jwt.JWTFilter;
+import edu.fudan.common.security.cors.CorsOrigins;
+import edu.fudan.common.security.swagger.SwaggerAccess;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -50,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(ALL)
+                        .allowedOrigins(CorsOrigins.resolveAllowedOrigins())
                         .allowedMethods(ALL)
                         .allowedHeaders(ALL)
                         .allowCredentials(false)
@@ -74,7 +76,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, stations).hasAnyRole(admin)
                 .antMatchers("/api/v1/stationservice/**").permitAll()
                 .antMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
-                        "/configuration/**", "/swagger-resources/**", "/v2/**").permitAll()
+                        "/configuration/**", "/swagger-resources/**", "/v2/**")
+                        .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class);

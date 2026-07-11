@@ -4,6 +4,7 @@ import com.trainticket.entity.Money;
 import com.trainticket.entity.Payment;
 import com.trainticket.repository.AddMoneyRepository;
 import com.trainticket.repository.PaymentRepository;
+import edu.fudan.common.idempotency.IdempotencyGuard;
 import edu.fudan.common.util.Response;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RunWith(JUnit4.class)
 public class PaymentServiceImplTest {
@@ -31,11 +33,16 @@ public class PaymentServiceImplTest {
     @Mock
     private AddMoneyRepository addMoneyRepository;
 
+    @Mock
+    private IdempotencyGuard idempotencyGuard;
+
     private HttpHeaders headers = new HttpHeaders();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(idempotencyGuard.reserve(Mockito.anyString())).thenReturn(true);
+        Mockito.when(idempotencyGuard.getCachedResult(Mockito.anyString())).thenReturn(Optional.empty());
     }
 
     @Test

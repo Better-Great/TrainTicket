@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
@@ -19,7 +20,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author fdse
+ * JWT helpers shared by microservices.
+ * Signing key: {@code JWT_SECRET} env, else {@code jwt.secret} system property, else refuses to start
+ * unless {@code ALLOW_DEFAULT_JWT_SECRET=true} is explicitly set (local scratch testing only).
  */
 public class JWTUtil {
 
@@ -28,8 +31,35 @@ public class JWTUtil {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTUtil.class);
-    private static String secretKey = Base64.getEncoder().encodeToString("secret".getBytes());
+    private static final String DEFAULT_SECRET = "secret";
+    private static final String secretKey = encodeSecret(resolveRawSecret());
 
+    static String resolveRawSecret() {
+        String fromEnv = System.getenv("JWT_SECRET");
+        if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+            return fromEnv.trim();
+        }
+        String fromProp = System.getProperty("jwt.secret");
+        if (fromProp != null && !fromProp.trim().isEmpty()) {
+            return fromProp.trim();
+        }
+        boolean explicitlyAllowed = "true".equalsIgnoreCase(System.getenv("ALLOW_DEFAULT_JWT_SECRET"))
+                || "true".equalsIgnoreCase(System.getProperty("allow.default.jwt.secret"));
+        if (!explicitlyAllowed) {
+            throw new IllegalStateException(
+                    "[JWT] No JWT_SECRET set. Refusing to start with the insecure default signing key. "
+                            + "Set JWT_SECRET (or -Djwt.secret=) to a real secret, or set "
+                            + "ALLOW_DEFAULT_JWT_SECRET=true to explicitly opt into the insecure default "
+                            + "for local scratch testing only.");
+        }
+        LOGGER.warn("[JWT] Using insecure default secret — ALLOW_DEFAULT_JWT_SECRET=true was set explicitly. "
+                + "Do not use this outside local scratch testing.");
+        return DEFAULT_SECRET;
+    }
+
+    static String encodeSecret(String raw) {
+        return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+    }
 
     public static Authentication getJWTAuthentication(ServletRequest request) {
         String token = getTokenFromHeader((HttpServletRequest) request);
@@ -71,7 +101,6 @@ public class JWTUtil {
                     return true;
                 }
             };
-            // send to spring security
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         }
         return null;
@@ -89,7 +118,7 @@ public class JWTUtil {
     private static String getTokenFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7, bearerToken.length());
+            return bearerToken.substring(7);
         }
         return null;
     }
@@ -99,19 +128,19 @@ public class JWTUtil {
             Jws<Claims> claimsJws = getClaims(token);
             return !claimsJws.getBody().getExpiration().before(new Date());
         } catch (ExpiredJwtException e) {
-            LOGGER.error("[validateToken][getClaims][Token expired][ExpiredJwtException: {} ]" , e);
+            LOGGER.error("[validateToken][Token expired][{}]", e.toString());
             throw new TokenException("Token expired");
         } catch (UnsupportedJwtException e) {
-            LOGGER.error("[validateToken][getClaims][Token format error][UnsupportedJwtException: {}]", e);
+            LOGGER.error("[validateToken][Token format error][{}]", e.toString());
             throw new TokenException("Token format error");
         } catch (MalformedJwtException e) {
-            LOGGER.error("[validateToken][getClaims][Token is not properly constructed][MalformedJwtException: {}]", e);
+            LOGGER.error("[validateToken][Token is not properly constructed][{}]", e.toString());
             throw new TokenException("Token is not properly constructed");
         } catch (SignatureException e) {
-            LOGGER.error("[validateToken][getClaims][Signature failure][SignatureException: {}]", e);
+            LOGGER.error("[validateToken][Signature failure][{}]", e.toString());
             throw new TokenException("Signature failure");
         } catch (IllegalArgumentException e) {
-            LOGGER.error("[validateToken][getClaims][Illegal parameter exception][IllegalArgumentException: {}]", e);
+            LOGGER.error("[validateToken][Illegal parameter exception][{}]", e.toString());
             throw new TokenException("Illegal parameter exception");
         }
     }

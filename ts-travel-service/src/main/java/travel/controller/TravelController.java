@@ -63,7 +63,6 @@ public class TravelController {
         return ok(travelService.getTripByRoute(routeIds, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips")
     public HttpEntity<?> createTrip(@RequestBody TravelInfo routeIds, @RequestHeader HttpHeaders headers) {
         // null
@@ -78,7 +77,6 @@ public class TravelController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trips/{tripId}")
     public HttpEntity retrieve(@PathVariable String tripId, @RequestHeader HttpHeaders headers) {
         // Trip
@@ -86,7 +84,6 @@ public class TravelController {
         return ok(travelService.retrieve(tripId, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PutMapping(value = "/trips")
     public HttpEntity updateTrip(@RequestBody TravelInfo info, @RequestHeader HttpHeaders headers) {
         // Trip
@@ -94,7 +91,6 @@ public class TravelController {
         return ok(travelService.update(info, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @DeleteMapping(value = "/trips/{tripId}")
     public HttpEntity deleteTrip(@PathVariable String tripId, @RequestHeader HttpHeaders headers) {
         // string
@@ -109,7 +105,6 @@ public class TravelController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips/left")
     public HttpEntity queryInfo(@RequestBody TripInfo info, @RequestHeader HttpHeaders headers) {
         if (info.getStartPlace() == null || info.getStartPlace().length() == 0 ||
@@ -130,7 +125,6 @@ public class TravelController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips/left_parallel")
     public HttpEntity queryInfoInparallel(@RequestBody TripInfo info, @RequestHeader HttpHeaders headers) {
         if (info.getStartPlace() == null || info.getStartPlace().length() == 0 ||
@@ -151,7 +145,6 @@ public class TravelController {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trip_detail")
     public HttpEntity getTripAllDetailInfo(@RequestBody TripAllDetailInfo gtdi, @RequestHeader HttpHeaders headers) {
         // TripAllDetailInfo
@@ -160,7 +153,6 @@ public class TravelController {
         return ok(travelService.getTripAllDetailInfo(gtdi, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trips")
     public HttpEntity queryAll(@RequestHeader HttpHeaders headers) {
         // List<Trip>
@@ -168,7 +160,6 @@ public class TravelController {
         return ok(travelService.queryAll(headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/admin_trip")
     public HttpEntity adminQueryAll(@RequestHeader HttpHeaders headers) {
         // ArrayList<AdminTrip>

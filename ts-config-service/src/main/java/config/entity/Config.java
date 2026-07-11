@@ -1,9 +1,10 @@
 package config.entity;
 
 import lombok.Data;
-import javax.persistence.Id;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -13,16 +14,20 @@ import javax.validation.constraints.NotNull;
 @Data
 @Entity
 public class Config {
+    /** Cap PK length for MySQL 8 utf8mb4 (255*4 exceeds 1000-byte index limit). */
     @Valid
     @Id
     @NotNull
+    @Column(length = 64)
     private String name;
 
     @Valid
     @NotNull
+    @Column(length = 255)
     private String value;
 
     @Valid
+    @Column(length = 255)
     private String description;
 
     public Config() {

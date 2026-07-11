@@ -28,7 +28,6 @@ public class AdminOrderController {
         return "Welcome to [Admin Order Service] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/adminorder")
     public HttpEntity getAllOrders(@RequestHeader HttpHeaders headers) {
         logger.info("[getAllOrders][Get all orders][getAllOrders]");

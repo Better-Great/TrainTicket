@@ -1,163 +1,227 @@
 /**
- * MySQL pool for ts-ticket-office-service.
- * All connection settings come from the environment (e.g. .env); no defaults in code.
+ * Data access for ts-ticket-office-service.
+ * Modes:
+ *   - mysql (default): TICKET_OFFICE_MYSQL_* required
+ *   - file: TICKET_OFFICE_DATA_MODE=file — uses bin/office.json (no MySQL)
  */
 
-var REQUIRED_MYSQL = [
-  'TICKET_OFFICE_MYSQL_HOST',
-  'TICKET_OFFICE_MYSQL_PORT',
-  'TICKET_OFFICE_MYSQL_USER',
-  'TICKET_OFFICE_MYSQL_PASSWORD',
-  'TICKET_OFFICE_MYSQL_DATABASE'
-];
+var fs = require('fs')
+var path = require('path')
 
-(function requireMysqlEnv() {
-  var missing = REQUIRED_MYSQL.filter(function (name) {
-    var v = process.env[name];
-    return v === undefined || String(v).trim() === '';
-  });
-  if (missing.length) {
-    console.error('[ts-ticket-office-service] Missing required environment variables:');
-    missing.forEach(function (m) {
-      console.error('  - ' + m);
-    });
-    console.error('Copy .env.example to .env and fill in values.');
-    process.exit(1);
-  }
-})();
+var MODE = (process.env.TICKET_OFFICE_DATA_MODE || 'mysql').toLowerCase()
+var officeFile = path.join(__dirname, 'office.json')
+var fileStore = null
+var pool = null
 
-var HOST = process.env.TICKET_OFFICE_MYSQL_HOST;
-var PORT = parseInt(process.env.TICKET_OFFICE_MYSQL_PORT, 10);
-if (isNaN(PORT)) {
-  console.error('TICKET_OFFICE_MYSQL_PORT must be a number.');
-  process.exit(1);
+function loadFileStore() {
+  if (fileStore) return fileStore
+  fileStore = JSON.parse(fs.readFileSync(officeFile, 'utf8'))
+  return fileStore
 }
-var USER = process.env.TICKET_OFFICE_MYSQL_USER;
-var PASSWORD = process.env.TICKET_OFFICE_MYSQL_PASSWORD;
-var DATABASE = process.env.TICKET_OFFICE_MYSQL_DATABASE;
 
-console.log(
-  '[ts-ticket-office-service] MySQL:',
-  USER + '@' + HOST + ':' + PORT + '/' + DATABASE
-);
+function initMysqlMode(callback) {
+  var REQUIRED_MYSQL = [
+    'TICKET_OFFICE_MYSQL_HOST',
+    'TICKET_OFFICE_MYSQL_PORT',
+    'TICKET_OFFICE_MYSQL_USER',
+    'TICKET_OFFICE_MYSQL_PASSWORD',
+    'TICKET_OFFICE_MYSQL_DATABASE',
+  ]
+  var missing = REQUIRED_MYSQL.filter(function (name) {
+    var v = process.env[name]
+    return v === undefined || String(v).trim() === ''
+  })
+  if (missing.length) {
+    console.error('[ts-ticket-office-service] Missing required environment variables:')
+    missing.forEach(function (m) {
+      console.error('  - ' + m)
+    })
+    callback({ ok: false })
+    return
+  }
 
-var pool = require('mysql').createPool({
+  var HOST = process.env.TICKET_OFFICE_MYSQL_HOST
+  var PORT = parseInt(process.env.TICKET_OFFICE_MYSQL_PORT, 10)
+  if (isNaN(PORT)) {
+    console.error('TICKET_OFFICE_MYSQL_PORT must be a number.')
+    callback({ ok: false })
+    return
+  }
+  var USER = process.env.TICKET_OFFICE_MYSQL_USER
+  var PASSWORD = process.env.TICKET_OFFICE_MYSQL_PASSWORD
+  var DATABASE = process.env.TICKET_OFFICE_MYSQL_DATABASE
+
+  console.log(
+    '[ts-ticket-office-service] MySQL:',
+    USER + '@' + HOST + ':' + PORT + '/' + DATABASE,
+  )
+
+  pool = require('mysql').createPool({
     host: HOST,
     port: PORT,
     user: USER,
     password: PASSWORD,
     database: DATABASE,
-    connectionLimit: 5
-});
+    connectionLimit: 5,
+  })
 
-var initData = function(callback){
-    pool.query("SELECT 1", function (err, result) {
-        if (err) {
-            console.error("MySQL connection error:", err.message || err);
-            callback({ok: false});
-            return;
-        }
-        console.log("Database connection verified");
-        callback({ok: true});
-    });
-};
-
-var getAllOffices = function(db, callback){
-    pool.query("SELECT * FROM office", function (err, result, fields) {
-        if (err) throw err;
-        console.log(result);
-        callback(result);
-    });
-};
-
-/*根据省市区信息获取该地区的代售点列表*/
-var getSpecificOffices = function(province, city, region, db, callback){
-    var where_sql= "WHERE province = '" + province + "' AND city = '" + city + "' AND region = '" + region + "'";
-    var sql = "SELECT * FROM office " + where_sql;
-    console.log("getSpecificOffices sql:", sql);
-    pool.query(sql, function (err, result, fields) {
-        if (err) throw err;
-        console.log(result);
-        callback(result);
-    });
-};
-
-/*根据省市区信息添加代售点*/
-var addOffice = function(province, city, region, office, db, callback){
-    insertEntry(office.name, city, province, region, office.address, office.workTime, office.windowNum);
-    callback("insert succeed.")
-};
-
-/*根据省市区和代售点名称删除代售点*/
-var deleteOffice = function(province, city, region, officeName, db, callback){
-    var where_sql= "WHERE name = '" + officeName + "' AND province = '" + province + "' AND city = '" + city + "' AND region = '" + region + "'";
-    var sql = "DELETE FROM office " + where_sql;
-    pool.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Number of records deleted: " + result.affectedRows);
-        callback(result);
-    });
-};
-
-
-/*根据省市区代售点信息更新代售点*/
-var updateOffice = function(province, city, region, oldOfficeName, newOffice, db, callback){
-    var where_sql= "WHERE name = '" + oldOfficeName + "' AND province = '" + province + "' AND city = '" + city + "' AND region = '" + region + "'";
-    var set_sql = "SET name = '" + newOffice.name + "', address = '" + newOffice.address + "', workTime = '" + newOffice.workTime + "', windowNum = " + newOffice.windowNum;
-    var sql = "UPDATE office " + set_sql + " " + where_sql;
-    console.log("update sql:", sql);
-    pool.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Number of records updated: " + result.affectedRows);
-        callback(result);
-    });
-
-};
-
-var insertEntry = function(name, city, province, region, address, workTime, windowNum){
-    values = "('" + name + "','" + city +"','" + province + "','" + region +"','"+address +"','"+workTime +"',"+windowNum+")";
-    var sql = "INSERT INTO office (name, city, province, region, address, workTime, windowNum)" +
-        " VALUES " + values;
-    console.log("insert sql", sql);
-    pool.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("1 record inserted, ", result);
-    });
+  pool.query('SELECT 1', function (err) {
+    if (err) {
+      console.error('MySQL connection error:', err.message || err)
+      callback({ ok: false })
+      return
+    }
+    console.log('Database connection verified')
+    callback({ ok: true })
+  })
 }
 
-exports.initMysql = function(callback){
-    initData(function(result){
-        if (result.ok) console.log("initMysql connected.");
-        callback(result);
-    });
-};
+exports.initMysql = function (callback) {
+  if (MODE === 'file') {
+    try {
+      loadFileStore()
+      console.log('[ts-ticket-office-service] DATA_MODE=file using', officeFile)
+      callback({ ok: true })
+    } catch (e) {
+      console.error('Failed to load office.json:', e.message || e)
+      callback({ ok: false })
+    }
+    return
+  }
+  initMysqlMode(callback)
+}
 
-exports.getAll = function(callback){
-    getAllOffices(null, function(result){
-        callback(result);
-    });
-};
+exports.getAll = function (callback) {
+  if (MODE === 'file') {
+    callback(loadFileStore())
+    return
+  }
+  pool.query('SELECT * FROM office', function (err, result) {
+    if (err) throw err
+    callback(result)
+  })
+}
 
-exports.getSpecificOffices = function(province, city, region, callback){
-    getSpecificOffices(province, city, region, null, function(result){
-        callback(result);
-    });
-};
+exports.getSpecificOffices = function (province, city, region, callback) {
+  if (MODE === 'file') {
+    var rows = loadFileStore().filter(function (row) {
+      return row.province === province && row.city === city && row.region === region
+    })
+    var offices = []
+    rows.forEach(function (row) {
+      ;(row.offices || []).forEach(function (o) {
+        offices.push(o)
+      })
+    })
+    callback(offices)
+    return
+  }
+  var sql =
+    'SELECT * FROM office WHERE province = ? AND city = ? AND region = ?'
+  pool.query(sql, [province, city, region], function (err, result) {
+    if (err) throw err
+    callback(result)
+  })
+}
 
-exports.addOffice = function(province, city, region, office, callback){
-    addOffice(province, city, region, office, null, function(result){
-        callback(result);
-    });
-};
+exports.addOffice = function (province, city, region, office, callback) {
+  if (MODE === 'file') {
+    var store = loadFileStore()
+    var row = store.find(function (r) {
+      return r.province === province && r.city === city && r.region === region
+    })
+    if (!row) {
+      row = { province: province, city: city, region: region, offices: [] }
+      store.push(row)
+    }
+    row.offices = row.offices || []
+    row.offices.push({
+      officeName: office.name || office.officeName,
+      address: office.address,
+      workTime: office.workTime,
+      windowNum: office.windowNum,
+    })
+    fs.writeFileSync(officeFile, JSON.stringify(store, null, 2))
+    callback('insert succeed.')
+    return
+  }
+  var values = [
+    office.name,
+    city,
+    province,
+    region,
+    office.address,
+    office.workTime,
+    office.windowNum,
+  ]
+  pool.query(
+    'INSERT INTO office (name, city, province, region, address, workTime, windowNum) VALUES (?,?,?,?,?,?,?)',
+    values,
+    function (err) {
+      if (err) throw err
+      callback('insert succeed.')
+    },
+  )
+}
 
-exports.deleteOffice = function(province, city, region, officeName, callback){
-    deleteOffice(province, city, region, officeName, null, function(result){
-        callback(result);
-    });
-};
+exports.deleteOffice = function (province, city, region, officeName, callback) {
+  if (MODE === 'file') {
+    var store = loadFileStore()
+    store.forEach(function (row) {
+      if (row.province === province && row.city === city && row.region === region) {
+        row.offices = (row.offices || []).filter(function (o) {
+          return o.officeName !== officeName
+        })
+      }
+    })
+    fs.writeFileSync(officeFile, JSON.stringify(store, null, 2))
+    callback({ affectedRows: 1 })
+    return
+  }
+  pool.query(
+    'DELETE FROM office WHERE name = ? AND province = ? AND city = ? AND region = ?',
+    [officeName, province, city, region],
+    function (err, result) {
+      if (err) throw err
+      callback(result)
+    },
+  )
+}
 
-exports.updateOffice = function(province, city, region, oldOfficeName, newOffice, callback){
-    updateOffice(province, city, region, oldOfficeName, newOffice, null, function(result){
-        callback(result);
-    });
-};
+exports.updateOffice = function (province, city, region, oldOfficeName, newOffice, callback) {
+  if (MODE === 'file') {
+    var store = loadFileStore()
+    store.forEach(function (row) {
+      if (row.province === province && row.city === city && row.region === region) {
+        ;(row.offices || []).forEach(function (o) {
+          if (o.officeName === oldOfficeName) {
+            o.officeName = newOffice.name || newOffice.officeName
+            o.address = newOffice.address
+            o.workTime = newOffice.workTime
+            o.windowNum = newOffice.windowNum
+          }
+        })
+      }
+    })
+    fs.writeFileSync(officeFile, JSON.stringify(store, null, 2))
+    callback({ affectedRows: 1 })
+    return
+  }
+  pool.query(
+    'UPDATE office SET name = ?, address = ?, workTime = ?, windowNum = ? WHERE name = ? AND province = ? AND city = ? AND region = ?',
+    [
+      newOffice.name,
+      newOffice.address,
+      newOffice.workTime,
+      newOffice.windowNum,
+      oldOfficeName,
+      province,
+      city,
+      region,
+    ],
+    function (err, result) {
+      if (err) throw err
+      callback(result)
+    },
+  )
+}

@@ -17,4 +17,6 @@ RUN chown -R app:app /app
 USER app
 
 EXPOSE 16101
+HEALTHCHECK --interval=10s --timeout=5s --retries=10 \
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('VOUCHER_SERVICE_PORT','16101') + '/health', timeout=3)" || exit 1
 CMD ["python", "server.py"]

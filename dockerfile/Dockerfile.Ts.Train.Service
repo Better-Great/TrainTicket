@@ -26,23 +26,8 @@ COPY --chown=train-ticket:train-ticket jar/ts-train-service.jar jar/ts-token-rep
 COPY --chown=train-ticket:train-ticket dockerfile/templates/ts-train-service/application.properties.ini ${TEMPLATE_DIR}/
 RUN chmod 444 ${JAR_DIR}/*.jar ${TEMPLATE_DIR}/application.properties.ini
 
-RUN echo '#!/bin/sh' > /entrypoint.sh && \
-    echo 'set -e' >> /entrypoint.sh && \
-    echo 'PROP_FILE="${EXTERNAL_CONFIG_DIR}/${ENVIRONMENT}.application.ini"' >> /entrypoint.sh && \
-    echo 'if [ ! -f "$PROP_FILE" ]; then echo "Error: No env config at $PROP_FILE"; ls -la "${EXTERNAL_CONFIG_DIR}/" 2>/dev/null || true; exit 1; fi' >> /entrypoint.sh && \
-    echo 'mkdir -p "${PROJECT_ROOT}/properties" "${PROJECT_ROOT}/ts-train-service/src/main/resources"' >> /entrypoint.sh && \
-    echo 'cp "$PROP_FILE" "${PROJECT_ROOT}/properties/${ENVIRONMENT}.application.ini"' >> /entrypoint.sh && \
-    echo 'cp "${TEMPLATE_DIR}/application.properties.ini" "${PROJECT_ROOT}/ts-train-service/"' >> /entrypoint.sh && \
-    echo 'java -jar "${JAR_DIR}/${TOKEN_JAR_NAME}" "${ENVIRONMENT}" "${PROJECT_ROOT}"' >> /entrypoint.sh && \
-    echo 'if [ ! -f "${PROJECT_ROOT}/ts-train-service/src/main/resources/application.properties" ]; then echo "Error: Token replacement failed"; exit 1; fi' >> /entrypoint.sh && \
-    echo 'cp "${PROJECT_ROOT}/ts-train-service/src/main/resources/application.properties" "${CONFIG_DIR}/application-external.properties"' >> /entrypoint.sh && \
-    echo 'chmod 600 "${CONFIG_DIR}/application-external.properties"' >> /entrypoint.sh && \
-    echo 'exec java ${JAVA_OPTS:--Xmx256m -Xms128m} -jar "${JAR_DIR}/${JAR_NAME}" \' >> /entrypoint.sh && \
-    echo '  --spring.config.location=file:${CONFIG_DIR}/application-external.properties \' >> /entrypoint.sh && \
-    echo '  --server.port="${PORT:-14567}" \' >> /entrypoint.sh && \
-    echo '  --logging.file.name=${LOGS_DIR}/ts-train-service.log \' >> /entrypoint.sh && \
-    echo '  --logging.file.max-size=10MB --logging.file.max-history=5' >> /entrypoint.sh && \
-    chmod 755 /entrypoint.sh
+COPY dockerfile/entrypoint.sh /entrypoint.sh
+RUN chmod 755 /entrypoint.sh
 
 WORKDIR ${CONFIG_DIR}
 USER train-ticket

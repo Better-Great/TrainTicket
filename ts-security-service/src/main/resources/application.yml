@@ -2,12 +2,12 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_ADDRS:nacos-0.nacos-headless.default.svc.cluster.local,nacos-1.nacos-headless.default.svc.cluster.local,nacos-2.nacos-headless.default.svc.cluster.local}
+        server-addr: ${NACOS_ADDRS:127.0.0.1:8848}
   application:
     name: ts-security-service
 
   datasource:
-    url: jdbc:mysql://${SECURITY_MYSQL_HOST:ts-security-mysql}:${SECURITY_MYSQL_PORT:3306}/${SECURITY_MYSQL_DATABASE:ts-security-mysql}?useSSL=false
+    url: jdbc:mysql://${SECURITY_MYSQL_HOST:ts-security-mysql}:${SECURITY_MYSQL_PORT:3306}/${SECURITY_MYSQL_DATABASE:ts-security-mysql}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: ${SECURITY_MYSQL_USER:root}
     password: ${SECURITY_MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -17,11 +17,10 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
-# HTTP Server
 server:
-  port: 11188  # HTTP (Tomcat) port
+  port: 11188
 
 swagger:
   controllerPackage: security.controller
