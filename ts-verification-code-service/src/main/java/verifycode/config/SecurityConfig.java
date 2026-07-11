@@ -1,6 +1,7 @@
 package verifycode.config;
 
 import edu.fudan.common.security.jwt.JWTFilter;
+import edu.fudan.common.security.cors.CorsOrigins;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -49,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(ALL)
+                        .allowedOrigins(CorsOrigins.resolveAllowedOrigins())
                         .allowedMethods(ALL)
                         .allowedHeaders(ALL)
                         .allowCredentials(false)

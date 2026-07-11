@@ -30,7 +30,6 @@ public class TrainController {
         return "Welcome to [ Train Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trains")
     public HttpEntity create(@RequestBody TrainType trainType, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[create][Create train][TrainTypeId: {}]",trainType.getId());
@@ -42,7 +41,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trains/{id}")
     public HttpEntity retrieve(@PathVariable String id, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[retrieve][Retrieve train][TrainTypeId: {}]",id);
@@ -54,7 +52,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trains/byName/{name}")
     public HttpEntity retrieveByName(@PathVariable String name, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[retrieveByName][Retrieve train][TrainTypeName: {}]", name);
@@ -66,7 +63,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trains/byNames")
     public HttpEntity retrieveByName(@RequestBody List<String> names, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[retrieveByNames][Retrieve train][TrainTypeNames: {}]", names);
@@ -78,7 +74,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @PutMapping(value = "/trains")
     public HttpEntity update(@RequestBody TrainType trainType, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[update][Update train][TrainTypeId: {}]",trainType.getId());
@@ -90,7 +85,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @DeleteMapping(value = "/trains/{id}")
     public HttpEntity delete(@PathVariable String id, @RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[delete][Delete train][TrainTypeId: {}]",id);
@@ -102,7 +96,6 @@ public class TrainController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trains")
     public HttpEntity query(@RequestHeader HttpHeaders headers) {
         TrainController.LOGGER.info("[query][Query train]");

@@ -56,7 +56,6 @@ public class Travel2Controller {
         return ok(service.getTripByRoute(routeIds, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips")
     public HttpEntity<?> createTrip(@RequestBody edu.fudan.common.entity.TravelInfo routeIds, @RequestHeader HttpHeaders headers) {
         // null
@@ -71,7 +70,6 @@ public class Travel2Controller {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trips/{tripId}")
     public HttpEntity retrieve(@PathVariable String tripId, @RequestHeader HttpHeaders headers) {
         // Trip
@@ -79,7 +77,6 @@ public class Travel2Controller {
         return ok(service.retrieve(tripId, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PutMapping(value = "/trips")
     public HttpEntity updateTrip(@RequestBody edu.fudan.common.entity.TravelInfo info, @RequestHeader HttpHeaders headers) {
         // Trip
@@ -87,7 +84,6 @@ public class Travel2Controller {
         return ok(service.update(info, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @DeleteMapping(value = "/trips/{tripId}")
     public HttpEntity deleteTrip(@PathVariable String tripId, @RequestHeader HttpHeaders headers) {
         // string
@@ -102,7 +98,6 @@ public class Travel2Controller {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trips/left")
     public HttpEntity queryInfo(@RequestBody edu.fudan.common.entity.TripInfo info, @RequestHeader HttpHeaders headers) {
         if (info.getStartPlace() == null || info.getStartPlace().length() == 0 ||
@@ -123,14 +118,12 @@ public class Travel2Controller {
      * @param headers headers
      * @return HttpEntity
      */
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/trip_detail")
     public HttpEntity getTripAllDetailInfo(@RequestBody edu.fudan.common.entity.TripAllDetailInfo gtdi, @RequestHeader HttpHeaders headers) {
         Travel2Controller.LOGGER.info("[getTripAllDetailInfo][Get trip detail][TripId: {}]",gtdi.getTripId());
         return ok(service.getTripAllDetailInfo(gtdi, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/trips")
     public HttpEntity queryAll(@RequestHeader HttpHeaders headers) {
         // List<Trip>
@@ -138,7 +131,6 @@ public class Travel2Controller {
         return ok(service.queryAll(headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/admin_trip")
     public HttpEntity adminQueryAll(@RequestHeader HttpHeaders headers) {
         // ArrayList<AdminTrip>

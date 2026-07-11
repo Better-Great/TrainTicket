@@ -26,21 +26,18 @@ public class StationFoodController {
         return "Welcome to [ Food store Service ] !";
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/stationfoodstores")
     public HttpEntity getAllFoodStores(@RequestHeader HttpHeaders headers) {
         StationFoodController.LOGGER.info("[Food Map Service][Get All FoodStores]");
         return ok(stationFoodService.listFoodStores(headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping("/stationfoodstores/{stationId}")
     public HttpEntity getFoodStoresOfStation(@PathVariable("stationId") String stationName, @RequestHeader HttpHeaders headers) {
         StationFoodController.LOGGER.info("[Food Map Service][Get FoodStores By StationName]");
         return ok(stationFoodService.listFoodStoresByStationName(stationName, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping("/stationfoodstores")
     public HttpEntity getFoodStoresByStationNames(@RequestBody List<String> stationNameList) {
         StationFoodController.LOGGER.info("[Food Map Service][Get FoodStores By StationNames]");

@@ -65,7 +65,6 @@ public class StationController {
     }
 
     // according to station name list --->  query all station ids
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/stations/idlist")
     public HttpEntity queryForIdBatch(@RequestBody List<String> stationNameList, @RequestHeader HttpHeaders headers) {
         StationController.LOGGER.info("[queryForIdBatch][Query stations for id batch][StationNameNumbers: {}]",stationNameList.size());
@@ -73,7 +72,6 @@ public class StationController {
     }
 
     // according to station id ---> query station name
-    @CrossOrigin(origins = "*")
     @GetMapping(value = "/stations/name/{stationIdForName}")
     public HttpEntity queryById(@PathVariable(value = "stationIdForName")
                                         String stationId, @RequestHeader HttpHeaders headers) {
@@ -83,7 +81,6 @@ public class StationController {
     }
 
     // according to station id list  ---> query all station names
-    @CrossOrigin(origins = "*")
     @PostMapping(value = "/stations/namelist")
     public HttpEntity queryForNameBatch(@RequestBody List<String> stationIdList, @RequestHeader HttpHeaders headers) {
         StationController.LOGGER.info("[queryByIdBatch][Query stations for name batch][StationIdNumbers: {}]",stationIdList.size());

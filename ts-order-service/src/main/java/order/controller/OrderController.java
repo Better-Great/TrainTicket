@@ -40,20 +40,17 @@ public class OrderController {
         return ok(orderService.getSoldTickets(seatRequest, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(path = "/order")
     public HttpEntity createNewOrder(@RequestBody Order createOrder, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[createNewOrder][Create Order][from {} to {} at {}]", createOrder.getFrom(), createOrder.getTo(), createOrder.getTravelDate());
         return ok(orderService.create(createOrder, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(path = "/order/admin")
     public HttpEntity addcreateNewOrder(@RequestBody Order order, @RequestHeader HttpHeaders headers) {
         return ok(orderService.addNewOrder(order, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(path = "/order/query")
     public HttpEntity queryOrders(@RequestBody OrderInfo qi,
                                   @RequestHeader HttpHeaders headers) {
@@ -61,7 +58,6 @@ public class OrderController {
         return ok(orderService.queryOrders(qi, qi.getLoginId(), headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PostMapping(path = "/order/refresh")
     public HttpEntity queryOrdersForRefresh(@RequestBody OrderInfo qi,
                                             @RequestHeader HttpHeaders headers) {
@@ -69,7 +65,6 @@ public class OrderController {
         return ok(orderService.queryOrdersForRefresh(qi, qi.getLoginId(), headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/{travelDate}/{trainNumber}")
     public HttpEntity calculateSoldTicket(@PathVariable String travelDate, @PathVariable String trainNumber,
                                           @RequestHeader HttpHeaders headers) {
@@ -77,7 +72,6 @@ public class OrderController {
         return ok(orderService.queryAlreadySoldOrders(StringUtils.String2Date(travelDate), trainNumber, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/price/{orderId}")
     public HttpEntity getOrderPrice(@PathVariable String orderId, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[getOrderPrice][Get Order Price][OrderId: {}]", orderId);
@@ -86,7 +80,6 @@ public class OrderController {
     }
 
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/orderPay/{orderId}")
     public HttpEntity payOrder(@PathVariable String orderId, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[payOrder][Pay Order][OrderId: {}]", orderId);
@@ -94,7 +87,6 @@ public class OrderController {
         return ok(orderService.payOrder(orderId, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/{orderId}")
     public HttpEntity getOrderById(@PathVariable String orderId, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[getOrderById][Get Order By Id][OrderId: {}]", orderId);
@@ -102,7 +94,6 @@ public class OrderController {
         return ok(orderService.getOrderById(orderId, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/status/{orderId}/{status}")
     public HttpEntity modifyOrder(@PathVariable String orderId, @PathVariable int status, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[modifyOrder][Modify Order Status][OrderId: {}]", orderId);
@@ -111,7 +102,6 @@ public class OrderController {
     }
 
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order/security/{checkDate}/{accountId}")
     public HttpEntity securityInfoCheck(@PathVariable String checkDate, @PathVariable String accountId,
                                         @RequestHeader HttpHeaders headers) {
@@ -120,7 +110,6 @@ public class OrderController {
     }
 
 
-    @CrossOrigin(origins = "*")
     @PutMapping(path = "/order")
     public HttpEntity saveOrderInfo(@RequestBody Order orderInfo,
                                     @RequestHeader HttpHeaders headers) {
@@ -129,7 +118,6 @@ public class OrderController {
         return ok(orderService.saveChanges(orderInfo, headers));
     }
 
-    @CrossOrigin(origins = "*")
     @PutMapping(path = "/order/admin")
     public HttpEntity updateOrder(@RequestBody Order order, @RequestHeader HttpHeaders headers) {
         // Order
@@ -138,7 +126,6 @@ public class OrderController {
     }
 
 
-    @CrossOrigin(origins = "*")
     @DeleteMapping(path = "/order/{orderId}")
     public HttpEntity deleteOrder(@PathVariable String orderId, @RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[deleteOrder][Delete Order][OrderId: {}]", orderId);
@@ -148,7 +135,6 @@ public class OrderController {
 
     /***************For super admin(Single Service Test*******************/
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/order")
     public HttpEntity findAllOrder(@RequestHeader HttpHeaders headers) {
         OrderController.LOGGER.info("[getAllOrders][Find All Order]");
