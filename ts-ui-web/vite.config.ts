@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import type { ProxyOptions } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 /**
@@ -14,7 +15,7 @@ const newsUrl = process.env.VITE_NEWS_URL ?? 'http://localhost:12862'
 const officeUrl = process.env.VITE_OFFICE_URL ?? 'http://localhost:16108'
 const voucherUrl = process.env.VITE_VOUCHER_URL ?? 'http://localhost:16101'
 
-const proxy = polyglotDirect
+const proxy: Record<string, ProxyOptions> = polyglotDirect
   ? {
       '/api/v1/newsservice': {
         target: newsUrl,
