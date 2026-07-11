@@ -71,11 +71,14 @@ echo "=== Starting gateway (profile=local, nacos=$WITH_NACOS, http-direct local 
   export INSIDE_PAYMENT_SERVICE_URI=http://127.0.0.1:18673
   export USER_SERVICE_URI=http://127.0.0.1:12342
   export CONTACTS_SERVICE_URI=http://127.0.0.1:12347
+  # Assurance cannot share host :18888 with gateway — local uses 18887
+  export ASSURANCE_SERVICE_URI=http://127.0.0.1:18887
+  export SECURITY_SERVICE_URI=http://127.0.0.1:11188
   export NACOS_ADDRS="${NACOS_ADDRS:-127.0.0.1:8848}"
   export GATEWAY_NACOS="$WITH_NACOS"
   export JWT_SECRET="${JWT_SECRET:-change-me-local-dev-only}"
   export GATEWAY_JWT_ENABLED="${GATEWAY_JWT_ENABLED:-true}"
-  export GATEWAY_JWT_PROTECTED_PREFIXES="${GATEWAY_JWT_PROTECTED_PREFIXES:-/api/v1/admin,/api/v1/preserveservice,/api/v1/paymentservice,/api/v1/inside_pay_service}"
+  export GATEWAY_JWT_PROTECTED_PREFIXES="${GATEWAY_JWT_PROTECTED_PREFIXES:-/api/v1/admin,/api/v1/preserveservice,/api/v1/paymentservice,/api/v1/inside_pay_service,/api/v1/orderservice,/api/v1/contactservice,/api/v1/userservice}"
   java -Xms96m -Xmx256m \
     -jar "$JAR" \
     --spring.profiles.active=local \

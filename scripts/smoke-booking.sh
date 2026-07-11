@@ -51,10 +51,11 @@ check_code() {
   fi
 }
 
-# Welcome stays open; preserve without Bearer must be 401 at the edge
+# Welcome stays open; mutating booking/order paths need Bearer at the edge
 check_code "GW preserve POST no token → 401" "$GW/api/v1/preserveservice/preserve" "401"
 check_code "GW payment POST no token → 401" "$GW/api/v1/paymentservice/payment" "401"
 check_code "GW inside-pay POST no token → 401" "$GW/api/v1/inside_pay_service/inside_payment" "401"
+check_code "GW order POST no token → 401" "$GW/api/v1/orderservice/order" "401"
 
 echo ""
 echo "=== Results: $pass passed, $fail failed ==="

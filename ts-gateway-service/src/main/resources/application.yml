@@ -39,7 +39,7 @@ spring:
             - Path=/api/v1/adminuserservice/users/**
 
         - id: assurance
-          uri: lb://${ASSURANCE_SERVICE_HOST:ts-assurance-service}
+          uri: ${ASSURANCE_SERVICE_URI:lb://ts-assurance-service}
           predicates:
             - Path=/api/v1/assuranceservice/**
 
@@ -159,7 +159,7 @@ spring:
             - Path=/api/v1/seatservice/**
 
         - id: security
-          uri: lb://${SECURITY_SERVICE_HOST:ts-security-service}
+          uri: ${SECURITY_SERVICE_URI:lb://ts-security-service}
           predicates:
             - Path=/api/v1/securityservice/**
 

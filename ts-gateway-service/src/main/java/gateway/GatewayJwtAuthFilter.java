@@ -28,8 +28,10 @@ import java.util.stream.Collectors;
 
 /**
  * TT-501: central JWT check at the edge for protected prefixes
- * (admin + booking preserve/payment by default). {@code /welcome} under those
- * prefixes stays public for health/smoke. Same secret resolution as JWTUtil.
+ * (admin, booking, orders, contacts, userservice). {@code /welcome} under those
+ * prefixes stays public for health/smoke. Login stays on {@code /api/v1/users/**}
+ * (auth route) and is not covered by {@code /api/v1/userservice}.
+ * Same secret resolution as JWTUtil.
  */
 @Component
 public class GatewayJwtAuthFilter implements GlobalFilter, Ordered {
@@ -37,7 +39,13 @@ public class GatewayJwtAuthFilter implements GlobalFilter, Ordered {
     private static final Logger LOGGER = LoggerFactory.getLogger(GatewayJwtAuthFilter.class);
     private static final String DEFAULT_SECRET = "secret";
     private static final String DEFAULT_PREFIXES =
-            "/api/v1/admin,/api/v1/preserveservice,/api/v1/paymentservice,/api/v1/inside_pay_service";
+            "/api/v1/admin,"
+                    + "/api/v1/preserveservice,"
+                    + "/api/v1/paymentservice,"
+                    + "/api/v1/inside_pay_service,"
+                    + "/api/v1/orderservice,"
+                    + "/api/v1/contactservice,"
+                    + "/api/v1/userservice";
 
     private final boolean enabled;
     private final String encodedSecret;
