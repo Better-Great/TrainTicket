@@ -4,7 +4,8 @@
 set -euo pipefail
 
 GW="${GATEWAY_URL:-http://127.0.0.1:18888}"
-SPA="${SPA_URL:-http://127.0.0.1:5173}"
+SPA="${SPA_URL:-http://127.0.0.1:8080}"
+AUTH_PORT="${AUTH_SERVICE_PORT:-12349}"
 
 pass=0
 fail=0
@@ -63,7 +64,7 @@ echo "=== Direct booking / auth ==="
 check "preserve :14568" "http://127.0.0.1:14568/api/v1/preserveservice/welcome"
 check "payment :19001" "http://127.0.0.1:19001/api/v1/paymentservice/welcome"
 check "inside-payment :18673" "http://127.0.0.1:18673/api/v1/inside_pay_service/welcome"
-check_opt "auth :12340" "http://127.0.0.1:12340/api/v1/users/hello"
+check_opt "auth :${AUTH_PORT}" "http://127.0.0.1:${AUTH_PORT}/api/v1/users/hello"
 
 echo ""
 echo "=== Via gateway $GW ==="

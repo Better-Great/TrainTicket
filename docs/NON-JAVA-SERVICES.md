@@ -74,7 +74,8 @@ curl http://localhost:12862/
 ### Run via Docker (with gateway proxy for `/api/v1/`)
 
 ```bash
-./scripts/up-docker.sh
+./scripts/up-lean.sh
+# or full: ./scripts/up-docker.sh
 # or only UI + gateway:
 docker compose -f docker-compose.build.yml up -d ts-gateway-service ts-ui-dashboard
 ```

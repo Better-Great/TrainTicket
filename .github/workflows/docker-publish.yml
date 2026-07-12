@@ -1,0 +1,350 @@
+name: Docker Build & Publish
+
+# EPIC-05: build service images and optionally push to Docker Hub.
+#
+# Triggers:
+#   - push to main     → CORE booking-path images only (fast, cheap)
+#   - tag v*.*.*       → FULL service matrix (release)
+#   - workflow_dispatch → choose core | full
+#
+# Repo settings (Settings → Secrets and variables → Actions):
+#   - Variable DOCKERHUB_USERNAME
+#   - Secret   DOCKERHUB_TOKEN
+# Without them, images still build; push is skipped.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      matrix:
+        description: Image set to build
+        required: true
+        default: core
+        type: choice
+        options: [core, full]
+
+concurrency:
+  group: docker-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan matrix
+    runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.set.outputs.scope }}
+      java-matrix: ${{ steps.set.outputs.java-matrix }}
+      polyglot-matrix: ${{ steps.set.outputs.polyglot-matrix }}
+    steps:
+      - id: set
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SCOPE="${{ inputs.matrix }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            SCOPE=full
+          else
+            SCOPE=core
+          fi
+          echo "scope=$SCOPE" >> "$GITHUB_OUTPUT"
+          echo "Docker publish scope=$SCOPE"
+
+          if [ "$SCOPE" = "full" ]; then
+            JAVA=$(cat <<'EOF'
+          [
+            {"service":"ts-admin-basic-info-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service"},
+            {"service":"ts-admin-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Order.Service"},
+            {"service":"ts-admin-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Route.Service"},
+            {"service":"ts-admin-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Travel.Service"},
+            {"service":"ts-admin-user-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.User.Service"},
+            {"service":"ts-assurance-service","dockerfile":"dockerfile/Dockerfile.Ts.Assurance.Service"},
+            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
+            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
+            {"service":"ts-cancel-service","dockerfile":"dockerfile/Dockerfile.Ts.Cancel.Service"},
+            {"service":"ts-config-service","dockerfile":"dockerfile/Dockerfile.Ts.Config.Service"},
+            {"service":"ts-consign-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Price.Service"},
+            {"service":"ts-consign-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Service"},
+            {"service":"ts-contacts-service","dockerfile":"dockerfile/Dockerfile.Ts.Contacts.Service"},
+            {"service":"ts-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Delivery.Service"},
+            {"service":"ts-execute-service","dockerfile":"dockerfile/Dockerfile.Ts.Execute.Service"},
+            {"service":"ts-food-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Delivery.Service"},
+            {"service":"ts-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Service"},
+            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
+            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
+            {"service":"ts-notification-service","dockerfile":"dockerfile/Dockerfile.Ts.Notification.Service"},
+            {"service":"ts-order-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Other.Service"},
+            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
+            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
+            {"service":"ts-preserve-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Other.Service"},
+            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
+            {"service":"ts-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Price.Service"},
+            {"service":"ts-rebook-service","dockerfile":"dockerfile/Dockerfile.Ts.Rebook.Service"},
+            {"service":"ts-route-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Plan.Service"},
+            {"service":"ts-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Service"},
+            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"},
+            {"service":"ts-security-service","dockerfile":"dockerfile/Dockerfile.Ts.Security.Service"},
+            {"service":"ts-station-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Food.Service"},
+            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
+            {"service":"ts-train-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Food.Service"},
+            {"service":"ts-train-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Service"},
+            {"service":"ts-travel-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Plan.Service"},
+            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
+            {"service":"ts-travel2-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel2.Service"},
+            {"service":"ts-user-service","dockerfile":"dockerfile/Dockerfile.Ts.User.Service"},
+            {"service":"ts-verification-code-service","dockerfile":"dockerfile/Dockerfile.Ts.Verification.Code.Service"},
+            {"service":"ts-wait-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Wait.Order.Service"}
+          ]
+          EOF
+          )
+            POLY=$(cat <<'EOF'
+          [
+            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"},
+            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
+            {"service":"ts-avatar-service","dockerfile":"dockerfile/Dockerfile.Ts.Avatar.Service"},
+            {"service":"ts-ticket-office-service","dockerfile":"dockerfile/Dockerfile.Ts.Ticket.Office.Service"}
+          ]
+          EOF
+          )
+          else
+            JAVA=$(cat <<'EOF'
+          [
+            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
+            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
+            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
+            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
+            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
+            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
+            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
+            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
+            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
+            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"}
+          ]
+          EOF
+          )
+            POLY=$(cat <<'EOF'
+          [
+            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
+            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"}
+          ]
+          EOF
+          )
+          fi
+          # Compact JSON for GITHUB_OUTPUT (single line)
+          echo "java-matrix=$(echo "$JAVA" | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "polyglot-matrix=$(echo "$POLY" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+  build-jars:
+    name: Build Java artifacts
+    needs: plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Package all Java services
+        run: mvn -B -T 2C -DskipTests package
+
+      - name: Package token-replacement service
+        working-directory: ts-token-replacement-service
+        run: mvn -B -DskipTests package
+
+      - name: Collect jars into jar/ (fail if any expected jar is missing)
+        run: |
+          set -euo pipefail
+          mkdir -p jar
+          missing=0
+          for d in ts-*-service; do
+            [ -f "$d/pom.xml" ] || continue
+            name="$(basename "$d")"
+            jarfile=$(ls "$d"/target/*-1.0.jar 2>/dev/null | grep -v original | head -1 || true)
+            if [ -z "${jarfile:-}" ]; then
+              echo "MISSING jar for $name"
+              missing=1
+              continue
+            fi
+            cp "$jarfile" "jar/${name}.jar"
+          done
+          if [ ! -f ts-token-replacement-service/target/token-replacement-service.jar ]; then
+            echo "MISSING ts-token-replacement-service.jar"
+            missing=1
+          else
+            cp ts-token-replacement-service/target/token-replacement-service.jar \
+              jar/ts-token-replacement-service.jar
+          fi
+          echo "Collected jars:"
+          ls -la jar/
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::One or more expected jars were missing after mvn package"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: java-jars
+          path: jar/
+          retention-days: 1
+
+  docker-publish-java:
+    name: Publish ${{ matrix.service }}
+    needs: [plan, build-jars]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.java-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: java-jars
+          path: jar/
+
+      - name: Require jar for this service
+        run: |
+          test -f "jar/${{ matrix.service }}.jar" \
+            || { echo "::error::Missing jar/${{ matrix.service }}.jar"; exit 1; }
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
+          flavor: |
+            latest=auto
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.service }}
+
+  docker-publish-polyglot:
+    name: Publish ${{ matrix.service }} (polyglot)
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.polyglot-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require Dockerfile
+        run: test -f "${{ matrix.dockerfile }}" || { echo "::error::Missing ${{ matrix.dockerfile }}"; exit 1; }
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
+          flavor: |
+            latest=auto
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.service }}
+
+  docker-publish-ui:
+    name: Publish ts-ui-web (SPA)
+    needs: plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          # Primary: ts-ui-web. Legacy alias ts-ui-dashboard for older compose pulls.
+          images: |
+            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-web
+            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-dashboard
+          flavor: |
+            latest=auto
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: ts-ui-web
+          file: ts-ui-web/Dockerfile
+          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
+          load: ${{ vars.DOCKERHUB_USERNAME == '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=ts-ui-web
+          cache-to: type=gha,mode=min,scope=ts-ui-web
+
+      - name: Smoke healthcheck (when image is loaded locally)
+        if: ${{ vars.DOCKERHUB_USERNAME == '' }}
+        run: |
+          set -euo pipefail
+          img=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          cid=$(docker run -d -p 18080:8080 "$img")
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -sf --max-time 2 http://127.0.0.1:18080/ >/dev/null; then
+              echo "SPA health OK"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs "$cid" || true
+          echo "::error::SPA container failed healthcheck"
+          exit 1

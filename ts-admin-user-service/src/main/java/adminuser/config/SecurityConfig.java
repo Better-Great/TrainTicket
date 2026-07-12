@@ -74,6 +74,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/configuration/**", "/swagger-resources/**", "/v2/**")
                         .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
                 .antMatchers("/api/v1/adminuserservice/users/**").hasRole("ADMIN")
+                .antMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class);

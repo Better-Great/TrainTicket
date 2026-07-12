@@ -42,4 +42,4 @@ Background runs log to `logs/<service>.log` when using `start.sh` / `start-local
 
 ## vs Docker
 
-Prefer **`./scripts/up-docker.sh`** when you want the full stack without installing Java/Maven on the host. See [GETTING-STARTED.md](GETTING-STARTED.md).
+Prefer **`./scripts/up-lean.sh`** on small hosts, or **`./scripts/up-docker.sh`** when you want the full stack without installing Java/Maven on the host. See [GETTING-STARTED.md](GETTING-STARTED.md).

@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .antMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
                         "/configuration/**", "/swagger-resources/**", "/v2/**")
                         .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
+                .antMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class);
