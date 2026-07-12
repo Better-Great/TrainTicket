@@ -20,8 +20,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Auth.Service
     image: ${IMG_REPO}/ts-auth-service:${IMG_TAG}
     container_name: ts-auth-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -46,8 +46,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service
     image: ${IMG_REPO}/ts-admin-basic-info-service:${IMG_TAG}
     container_name: ts-admin-basic-info-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -72,8 +72,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Order.Service
     image: ${IMG_REPO}/ts-admin-order-service:${IMG_TAG}
     container_name: ts-admin-order-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -98,8 +98,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Verification.Code.Service
     image: ${IMG_REPO}/ts-verification-code-service:${IMG_TAG}
     container_name: ts-verification-code-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -124,8 +124,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Contacts.Service
     image: ${IMG_REPO}/ts-contacts-service:${IMG_TAG}
     container_name: ts-contacts-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -150,8 +150,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Order.Service
     image: ${IMG_REPO}/ts-order-service:${IMG_TAG}
     container_name: ts-order-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -176,8 +176,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Order.Other.Service
     image: ${IMG_REPO}/ts-order-other-service:${IMG_TAG}
     container_name: ts-order-other-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -202,8 +202,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Config.Service
     image: ${IMG_REPO}/ts-config-service:${IMG_TAG}
     container_name: ts-config-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -228,8 +228,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Station.Service
     image: ${IMG_REPO}/ts-station-service:${IMG_TAG}
     container_name: ts-station-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -254,8 +254,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Train.Service
     image: ${IMG_REPO}/ts-train-service:${IMG_TAG}
     container_name: ts-train-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -280,8 +280,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Travel.Service
     image: ${IMG_REPO}/ts-travel-service:${IMG_TAG}
     container_name: ts-travel-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -306,8 +306,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Travel2.Service
     image: ${IMG_REPO}/ts-travel2-service:${IMG_TAG}
     container_name: ts-travel2-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -332,8 +332,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Preserve.Service
     image: ${IMG_REPO}/ts-preserve-service:${IMG_TAG}
     container_name: ts-preserve-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -358,8 +358,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Preserve.Other.Service
     image: ${IMG_REPO}/ts-preserve-other-service:${IMG_TAG}
     container_name: ts-preserve-other-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -384,8 +384,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Basic.Service
     image: ${IMG_REPO}/ts-basic-service:${IMG_TAG}
     container_name: ts-basic-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -410,8 +410,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Price.Service
     image: ${IMG_REPO}/ts-price-service:${IMG_TAG}
     container_name: ts-price-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -436,8 +436,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Notification.Service
     image: ${IMG_REPO}/ts-notification-service:${IMG_TAG}
     container_name: ts-notification-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -462,8 +462,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Security.Service
     image: ${IMG_REPO}/ts-security-service:${IMG_TAG}
     container_name: ts-security-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -488,8 +488,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Inside.Payment.Service
     image: ${IMG_REPO}/ts-inside-payment-service:${IMG_TAG}
     container_name: ts-inside-payment-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -514,8 +514,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Execute.Service
     image: ${IMG_REPO}/ts-execute-service:${IMG_TAG}
     container_name: ts-execute-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -540,8 +540,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Payment.Service
     image: ${IMG_REPO}/ts-payment-service:${IMG_TAG}
     container_name: ts-payment-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -566,8 +566,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Rebook.Service
     image: ${IMG_REPO}/ts-rebook-service:${IMG_TAG}
     container_name: ts-rebook-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -592,8 +592,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Cancel.Service
     image: ${IMG_REPO}/ts-cancel-service:${IMG_TAG}
     container_name: ts-cancel-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -618,8 +618,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Route.Service
     image: ${IMG_REPO}/ts-route-service:${IMG_TAG}
     container_name: ts-route-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -644,8 +644,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Assurance.Service
     image: ${IMG_REPO}/ts-assurance-service:${IMG_TAG}
     container_name: ts-assurance-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -653,9 +653,9 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-docker}
       TZ: ${TZ:-UTC}
-      PORT: ${ASSURANCE_SERVICE_PORT:-18888}
+      PORT: ${ASSURANCE_SERVICE_PORT:-18887}
     ports:
-      - "${ASSURANCE_SERVICE_PORT:-18888}:18888"
+      - "${ASSURANCE_SERVICE_PORT:-18887}:${ASSURANCE_SERVICE_PORT:-18887}"
     networks:
       - trainticket-net
     depends_on:
@@ -670,8 +670,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Seat.Service
     image: ${IMG_REPO}/ts-seat-service:${IMG_TAG}
     container_name: ts-seat-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -696,8 +696,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Travel.Plan.Service
     image: ${IMG_REPO}/ts-travel-plan-service:${IMG_TAG}
     container_name: ts-travel-plan-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -722,8 +722,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Route.Plan.Service
     image: ${IMG_REPO}/ts-route-plan-service:${IMG_TAG}
     container_name: ts-route-plan-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -748,8 +748,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Food.Service
     image: ${IMG_REPO}/ts-food-service:${IMG_TAG}
     container_name: ts-food-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -774,8 +774,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Station.Food.Service
     image: ${IMG_REPO}/ts-station-food-service:${IMG_TAG}
     container_name: ts-station-food-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -800,8 +800,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Consign.Price.Service
     image: ${IMG_REPO}/ts-consign-price-service:${IMG_TAG}
     container_name: ts-consign-price-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -826,8 +826,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Consign.Service
     image: ${IMG_REPO}/ts-consign-service:${IMG_TAG}
     container_name: ts-consign-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -852,8 +852,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Route.Service
     image: ${IMG_REPO}/ts-admin-route-service:${IMG_TAG}
     container_name: ts-admin-route-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -878,8 +878,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Admin.Travel.Service
     image: ${IMG_REPO}/ts-admin-travel-service:${IMG_TAG}
     container_name: ts-admin-travel-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -904,8 +904,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Admin.User.Service
     image: ${IMG_REPO}/ts-admin-user-service:${IMG_TAG}
     container_name: ts-admin-user-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -930,8 +930,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.User.Service
     image: ${IMG_REPO}/ts-user-service:${IMG_TAG}
     container_name: ts-user-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -956,8 +956,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Delivery.Service
     image: ${IMG_REPO}/ts-delivery-service:${IMG_TAG}
     container_name: ts-delivery-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -982,8 +982,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Train.Food.Service
     image: ${IMG_REPO}/ts-train-food-service:${IMG_TAG}
     container_name: ts-train-food-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -1008,8 +1008,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Gateway.Service
     image: ${IMG_REPO}/ts-gateway-service:${IMG_TAG}
     container_name: ts-gateway-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 400m
+    cpus: 0.35
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -1018,6 +1018,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-docker}
       TZ: ${TZ:-UTC}
       PORT: ${GATEWAY_SERVICE_PORT:-18888}
+      JAVA_OPTS: ${GATEWAY_JAVA_OPTS:--Xms64m -Xmx192m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}
     ports:
       - "${GATEWAY_SERVICE_PORT:-18888}:18888"
     networks:
@@ -1034,8 +1035,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Food.Delivery.Service
     image: ${IMG_REPO}/ts-food-delivery-service:${IMG_TAG}
     container_name: ts-food-delivery-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -1060,8 +1061,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Wait.Order.Service
     image: ${IMG_REPO}/ts-wait-order-service:${IMG_TAG}
     container_name: ts-wait-order-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 320m
+    cpus: 0.25
     env_file: .env
     volumes:
       - ./properties:/app/external-config:ro
@@ -1088,8 +1089,8 @@ services:
     # ts-ui-dashboard alias for older pulls.
     image: ${IMG_REPO}/ts-ui-web:${IMG_TAG}
     container_name: ts-ui-dashboard
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 64m
+    cpus: 0.10
     ports:
       - "${UI_DASHBOARD_PORT:-8080}:8080"
     networks:
@@ -1103,8 +1104,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Avatar.Service
     image: ${IMG_REPO}/ts-avatar-service:${IMG_TAG}
     container_name: ts-avatar-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 128m
+    cpus: 0.15
     env_file: .env
     environment:
       AVATAR_SERVICE_PORT: ${AVATAR_SERVICE_PORT:-17001}
@@ -1119,8 +1120,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Voucher.Service
     image: ${IMG_REPO}/ts-voucher-service:${IMG_TAG}
     container_name: ts-voucher-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 128m
+    cpus: 0.15
     env_file: .env
     environment:
       VOUCHER_MYSQL_HOST: ${VOUCHER_MYSQL_HOST:-mysql}
@@ -1142,8 +1143,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.Ticket.Office.Service
     image: ${IMG_REPO}/ts-ticket-office-service:${IMG_TAG}
     container_name: ts-ticket-office-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 128m
+    cpus: 0.15
     env_file: .env
     environment:
       TICKET_OFFICE_MYSQL_HOST: ${TICKET_OFFICE_MYSQL_HOST:-mysql}
@@ -1167,8 +1168,8 @@ services:
       dockerfile: dockerfile/Dockerfile.Ts.News.Service
     image: ${IMG_REPO}/ts-news-service:${IMG_TAG}
     container_name: ts-news-service
-    mem_limit: 512m
-    cpus: 0.5
+    mem_limit: 96m
+    cpus: 0.15
     environment:
       NEWS_SERVICE_PORT: ${NEWS_SERVICE_PORT:-12862}
       PORT: ${NEWS_SERVICE_PORT:-12862}

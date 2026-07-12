@@ -27,6 +27,11 @@ CREATE DATABASE IF NOT EXISTS `ts-wait-order-mysql` CHARACTER SET utf8mb4 COLLAT
 CREATE DATABASE IF NOT EXISTS `ts-voucher-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-ticket-office-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS `ts-inside-payment-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-config-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-contacts-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-rebook-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-news-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ts-delivery-mysql` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Grant privileges on specific databases
 GRANT ALL PRIVILEGES ON `ts-auth-mysql`.* TO 'beta'@'%';
@@ -53,5 +58,10 @@ GRANT ALL PRIVILEGES ON `ts-wait-order-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-voucher-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-ticket-office-mysql`.* TO 'beta'@'%';
 GRANT ALL PRIVILEGES ON `ts-inside-payment-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-config-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-contacts-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-rebook-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-news-mysql`.* TO 'beta'@'%';
+GRANT ALL PRIVILEGES ON `ts-delivery-mysql`.* TO 'beta'@'%';
 FLUSH PRIVILEGES;
 

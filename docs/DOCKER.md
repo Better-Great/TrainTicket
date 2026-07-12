@@ -4,10 +4,11 @@
 
 | File | Role |
 |------|------|
-| `docker-compose.minimal.yml` | MySQL, Nacos, RabbitMQ, Redis, Kafka, Zipkin |
-| `docker-compose.build.yml` | **Includes minimal** + all app images (Java + non-Java) — canonical, single source of truth |
+| `docker-compose.minimal.yml` | MySQL, Nacos, RabbitMQ, Redis (Kafka/Zipkin via `--profile full-infra`) |
+| `docker-compose.build.yml` | **Includes minimal** + all app images — Java services ~320MiB / 128MiB heap by default |
+| `scripts/up-lean.sh` | Start infra + ~22 booking-path services for small hosts |
 | `dockerfile/Dockerfile.Ts.*` | Per-service Dockerfiles (build context = repo root) |
-| `.env` | Ports, credentials, `IMG_REPO`, `IMG_TAG` |
+| `.env` | Ports, credentials, `IMG_REPO`, `IMG_TAG`, lean `JAVA_OPTS` |
 
 ## Quick commands
 
@@ -17,7 +18,10 @@ cp .env.example .env
 # Build all app images (46 services)
 docker compose -f docker-compose.build.yml build
 
-# Start stack
+# Start dense booking-path stack (recommended on ≤8GiB)
+./scripts/up-lean.sh
+
+# Start full app set
 ./scripts/up-docker.sh
 
 # Stop stack

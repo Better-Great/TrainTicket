@@ -32,7 +32,8 @@ All modernization work happens in this repo and is tracked, ticket by ticket, ag
 ```bash
 cp .env.example .env
 docker compose -f docker-compose.build.yml build   # first time
-./scripts/up-docker.sh
+./scripts/up-lean.sh          # dense booking-path stack (~8GiB hosts)
+# or full stack: ./scripts/up-docker.sh
 ```
 
 - **UI:** http://localhost:8080
