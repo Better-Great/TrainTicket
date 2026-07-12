@@ -21,26 +21,53 @@ All modernization work happens in this repo and is tracked, ticket by ticket, ag
 | **Frontend** — Bun + Vite + Vue 3 + TypeScript SPA replacing the original Vue2/jQuery/AngularJS mix | Done |
 | **Gateway** — single north-south entry point, JWT gates, CORS policy | Done |
 | **Backend hardening** — fail-closed JWT secret, CORS/Swagger lockdown across all 40 services, Redis-backed idempotency on the booking path, a circuit breaker on the riskiest saga hops, request-ID log correlation | Done |
-| **Containerization** — one shared Docker entrypoint script (was 40+ copies of the same `echo`-chain), non-root containers, healthchecks, resource limits, a stale/broken legacy compose file removed | Done |
+| **Containerization** — one shared Docker entrypoint (was 40+ copies of the same `echo`-chain), non-root containers, healthchecks, resource limits | Done |
+| **Lean packing** — defaults that fit the booking path on ~8 GiB hosts (see below) | Done |
 | **CI/CD** — GitHub Actions build+test gate; Docker publish with **core** matrix on `main` and **full** matrix on `v*` tags / manual dispatch | Done (see below) |
 | **Kubernetes + Helm** — manifests for the core booking path, then the full service set, then a Helm chart | Planned, next up |
 | **Observability** — distributed tracing, Prometheus/Grafana, structured logs keyed on the request-ID work already in place | Planned |
 | **MLOps** — demand forecasting → dynamic pricing, a genuinely new feature (not a port of upstream), with a real train → register → serve → monitor → retrain loop | Planned |
 
+## Why the lean Docker defaults exist
+
+The full 46-service set wants more RAM than a typical laptop or small VM has. Rather than pretend otherwise, the compose + entrypoint defaults are tuned so the **booking path** can come up on ~8 GiB:
+
+- Shared `dockerfile/entrypoint.sh` gives every Java service a small SerialGC heap (`-Xmx128m` by default) and uses `spring.config.additional-location` so in-jar config (gateway routes especially) is not wiped.
+- Compose caps Java apps around **320 MiB** (gateway a bit higher). Earlier we tried 192 MiB — that was below heap + metaspace and the kernel OOM-killed containers.
+- Nacos' image defaults young-gen / metaspace huge (`JVM_XMN=512m`). We override those or it dies under a 640 MiB limit.
+- Kafka and Zipkin sit behind Compose profile `full-infra` — useful later, not required for login → search → book → pay.
+- `/actuator/health` is permitted without a JWT so Docker healthchecks mean something. Public APIs stay behind the same security rules as before.
+
+If you have a bigger machine and want everything, use `./scripts/up-docker.sh` instead of the lean script.
+
 ## Quick start (Docker)
 
 ```bash
 cp .env.example .env
-docker compose -f docker-compose.build.yml build   # first time
-./scripts/up-lean.sh          # dense booking-path stack (~8GiB hosts)
-# or full stack: ./scripts/up-docker.sh
+# Set JWT_SECRET to something real (or leave the example for local scratch only)
+
+# First time / after Java changes: build jars into jar/, then images
+./scripts/build.sh all          # or a subset
+./scripts/deploy.sh all
+docker compose -f docker-compose.build.yml build
+
+./scripts/up-lean.sh            # booking-path stack on small hosts
+# or: ./scripts/up-docker.sh    # full app set
 ```
 
 - **UI:** http://localhost:8080
 - **Gateway:** http://localhost:18888
-- **Nacos:** http://localhost:8848/nacos
+- **Nacos:** http://localhost:8848/nacos (`nacos` / `nacos`)
+
+Sanity check once things have finished registering (first boot is slow — JVMs on a tight heap take a few minutes each):
+
+```bash
+./scripts/smoke-java-core.sh
+```
 
 Stop: `./scripts/down-docker.sh`
+
+More detail: [docs/DOCKER.md](docs/DOCKER.md), [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md).
 
 ## CI/CD
 
@@ -63,7 +90,7 @@ Without them, the workflow still builds images (proving the Dockerfiles work) �
 All guides live under **[docs/](docs/README.md)**:
 
 - [Getting started](docs/GETTING-STARTED.md) — Docker, local JARs, single services
-- [Docker](docs/DOCKER.md) — build, push to Docker Hub, compose
+- [Docker](docs/DOCKER.md) — lean vs full stack, build, Hub push
 - [Non-Java services](docs/NON-JAVA-SERVICES.md) — UI, news, avatar, voucher, ticket-office
 - [Local development](docs/LOCAL-DEVELOPMENT.md) — local-JAR workflow
 - [Ports](docs/PORTS.md)
@@ -75,13 +102,14 @@ All guides live under **[docs/](docs/README.md)**:
 |------|---------|
 | `ts-*-service/` | Microservice source |
 | `ts-ui-web/` | Modern SPA (Bun + Vite + Vue 3 + TS); legacy UI under `legacy/` |
-| `dockerfile/` | Central Dockerfiles (`Dockerfile.Ts.*`) + the shared `entrypoint.sh` |
+| `dockerfile/` | Central Dockerfiles (`Dockerfile.Ts.*`) + shared `entrypoint.sh` |
 | `.github/workflows/` | CI (`ci.yml`) and Docker build/publish (`docker-publish.yml`) |
-| `docker-compose.build.yml` | Build + run apps + minimal infra |
-| `docker-compose.minimal.yml` | MySQL, Nacos, messaging only |
-| `properties/` | `*.application.ini` for token replacement / Docker |
-| `scripts/` | Build, start/stop, DB init, `up-docker.sh` |
-| `.env` | Local overrides (from `.env.example`) |
+| `docker-compose.build.yml` | Build + run apps (includes minimal infra) |
+| `docker-compose.minimal.yml` | MySQL, Nacos, Redis, RabbitMQ (Kafka/Zipkin optional) |
+| `properties/` | `*.application.ini` for token replacement at container start |
+| `scripts/` | Build, deploy jars, up/down, smoke tests |
+| `jar/` | Staged JARs for Docker builds (from `./scripts/deploy.sh`) |
+| `.env` | Local overrides (from `.env.example`; never commit) |
 
 > During development, a plain clone of upstream lives as a sibling directory (`../train-ticket/`, outside this repo) purely as a read-only reference for feature parity and API contract checks — it's not part of this repo and isn't needed to build or run anything here.
 
@@ -91,6 +119,7 @@ All guides live under **[docs/](docs/README.md)**:
 mvn clean package -DskipTests
 # or
 ./scripts/build.sh all
+./scripts/deploy.sh all   # copies target/*.jar → jar/ts-*-service.jar
 ```
 
 ## Push images to Docker Hub (manual, local alternative to CI)

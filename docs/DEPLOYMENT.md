@@ -1,43 +1,40 @@
 # Deployment overview
 
-## Paths
-
 ```
-Local JARs / scripts  →  Docker Compose (build.yml)  →  Kubernetes (k8s/)
+Local JARs  →  Docker Compose (lean or full)  →  Kubernetes (planned)
 ```
 
 | Mode | When | Entry |
 |------|------|--------|
-| **Docker** | Default; full stack | [GETTING-STARTED.md](GETTING-STARTED.md) Option A |
+| **Lean Docker** | Day-to-day on ≤8 GiB | `./scripts/up-lean.sh` — [GETTING-STARTED.md](GETTING-STARTED.md) |
+| **Full Docker** | Bigger hosts / full matrix | `./scripts/up-docker.sh` |
 | **Local JARs** | Debugging one service | [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) |
-| **Kubernetes** | Production clusters | `kubectl apply -f k8s/` (if manifests present) |
+| **Kubernetes** | Clusters | Planned (Helm next on the roadmap) |
 
-## Docker (current recommended)
+## Docker (what we actually run)
 
 ```bash
-cp .env.example .env
+cp .env.example .env          # set JWT_SECRET
+./scripts/build.sh all && ./scripts/deploy.sh all
 docker compose -f docker-compose.build.yml build
-./scripts/up-docker.sh
+./scripts/up-lean.sh
+./scripts/smoke-java-core.sh
 ```
 
-- **46** app images (Java + UI, avatar, news, voucher, ticket-office)
-- Infra from included `docker-compose.minimal.yml` (MySQL, Nacos, …)
-- Registry push: `IMG_REPO=bettergreat` + `./scripts/docker-build-push.sh`
+Why lean exists (heap vs cgroup, Nacos, gateway routes): [DOCKER.md](DOCKER.md).
 
-Details: [DOCKER.md](DOCKER.md).
+## Config at runtime
+
+Containers do **not** need a pre-generated `application.properties` on the host. The shared entrypoint runs `ts-token-replacement-service` against `properties/<env>.application.ini` on every start.
+
+For a one-off local expand (IDE / jar on host):
+
+```bash
+./ts-token-replacement-service/replace-tokens.sh docker
+```
 
 ## Minimal dependency chain
 
 ```
 MySQL → Nacos → microservices → Gateway (18888) → UI (8080)
 ```
-
-## Config generation
-
-Environment-specific Java config:
-
-```bash
-./replace-tokens.sh dev|qa|prod|docker
-```
-
-Uses `properties/<env>.application.ini` and `ts-token-replacement-service`.
