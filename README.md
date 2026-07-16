@@ -81,7 +81,7 @@ Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
   - Images are versioned (`X.Y.Z`, `X.Y`, `sha-<short>`, `latest` on `main`).
 
 To actually push images, set these in the repo's **Settings → Secrets and variables → Actions**:
-- `DOCKERHUB_USERNAME` (**secret** — or a variable; both work)
+- `DOCKERHUB_USERNAME` (repository **variable**)
 - `DOCKERHUB_TOKEN` (**secret** — a Docker Hub access token, not your password)
 
 Without them, the workflow still builds images (proving the Dockerfiles work) — it just skips the push step. On core runs without Hub creds, the SPA job also smoke-checks `/` via a local `docker run`.
