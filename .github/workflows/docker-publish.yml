@@ -14,7 +14,8 @@ name: Docker Build & Publish
 
 on:
   push:
-    branches: [main]
+    # feat: exercise the pipeline before merge (sha tags only; latest stays main-only)
+    branches: [main, feat]
     tags: ["v*.*.*"]
   workflow_dispatch:
     inputs:
@@ -163,20 +164,34 @@ jobs:
           for d in ts-*-service; do
             [ -f "$d/pom.xml" ] || continue
             name="$(basename "$d")"
-            jarfile=$(ls "$d"/target/*-1.0.jar 2>/dev/null | grep -v original | head -1 || true)
+            # Shaded finalName is token-replacement-service.jar (version 1.0.0) — handled below
+            if [ "$name" = "ts-token-replacement-service" ]; then
+              continue
+            fi
+            # Prefer artifactId-version.jar; accept any non-original jar as fallback
+            jarfile=$(ls "$d"/target/"${name}"-*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
             if [ -z "${jarfile:-}" ]; then
+              jarfile=$(ls "$d"/target/*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
+            fi
+            if [ -z "${jarfile:-}" ] || [ ! -f "$jarfile" ]; then
               echo "MISSING jar for $name"
               missing=1
               continue
             fi
             cp "$jarfile" "jar/${name}.jar"
+            echo "OK $name ← $(basename "$jarfile")"
           done
-          if [ ! -f ts-token-replacement-service/target/token-replacement-service.jar ]; then
-            echo "MISSING ts-token-replacement-service.jar"
+          token_jar="ts-token-replacement-service/target/token-replacement-service.jar"
+          if [ ! -f "$token_jar" ]; then
+            # Fallback if shade finalName changes
+            token_jar=$(ls ts-token-replacement-service/target/ts-token-replacement-service-*.jar 2>/dev/null | grep -v original | head -1 || true)
+          fi
+          if [ -z "${token_jar:-}" ] || [ ! -f "$token_jar" ]; then
+            echo "MISSING jar for ts-token-replacement-service"
             missing=1
           else
-            cp ts-token-replacement-service/target/token-replacement-service.jar \
-              jar/ts-token-replacement-service.jar
+            cp "$token_jar" jar/ts-token-replacement-service.jar
+            echo "OK ts-token-replacement-service ← $(basename "$token_jar")"
           fi
           echo "Collected jars:"
           ls -la jar/
