@@ -1,20 +1,20 @@
 name: Docker Build & Publish
 
-# EPIC-05: build service images and optionally push to Docker Hub.
+# Build every service image (and optionally push to Docker Hub).
 #
 # Triggers:
-#   - push to main/feat → FULL matrix (all Java + polyglot + UI) to Docker Hub
-#   - tag v*.*.*        → FULL matrix (semver tags)
-#   - workflow_dispatch → choose core | full (core kept for quick smoke)
+#   - push to main/feat → full matrix (sha tags; latest only on main)
+#   - tag v*.*.*        → full matrix (semver tags)
+#   - workflow_dispatch → core | full (core = quick smoke subset)
 #
-# Repo settings (Settings → Secrets and variables → Actions):
-#   - Variable DOCKERHUB_USERNAME  (required for push; secrets cannot be used in if:)
-#   - Secret   DOCKERHUB_TOKEN
-# Without them, images still build; push is skipped.
+# Secrets (Settings → Secrets and variables → Actions → Secrets):
+#   DOCKERHUB_USERNAME
+#   DOCKERHUB_TOKEN
+# Both required to push. Images still build if either is missing.
+# Username stays a secret: push is gated via step outputs (secrets cannot be used in job if:).
 
 on:
   push:
-    # feat: exercise the pipeline before merge (sha tags only; latest stays main-only)
     branches: [main, feat]
     tags: ["v*.*.*"]
   workflow_dispatch:
@@ -35,120 +35,119 @@ jobs:
     name: Plan matrix
     runs-on: ubuntu-latest
     outputs:
-      scope: ${{ steps.set.outputs.scope }}
-      java-matrix: ${{ steps.set.outputs.java-matrix }}
-      polyglot-matrix: ${{ steps.set.outputs.polyglot-matrix }}
+      scope: ${{ steps.discover.outputs.scope }}
+      # Only non-secret flags cross jobs. Username must NOT be a job output —
+      # Actions redacts secret-valued outputs to empty for downstream jobs.
+      push: ${{ steps.hub.outputs.push }}
+      java-matrix: ${{ steps.discover.outputs.java-matrix }}
+      image-matrix: ${{ steps.discover.outputs.image-matrix }}
+      java-count: ${{ steps.discover.outputs.java-count }}
     steps:
-      - id: set
+      - uses: actions/checkout@v4
+
+      - name: Resolve whether to push (secrets → boolean output only)
+        id: hub
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          HUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            SCOPE="${{ inputs.matrix }}"
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            SCOPE=full
+          if [ -n "${HUB_USER:-}" ] && [ -n "${HUB_TOKEN:-}" ]; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+            echo "Docker Hub push enabled"
           else
-            # main/feat pushes publish every service image
-            SCOPE=full
+            echo "push=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::DOCKERHUB_USERNAME and/or DOCKERHUB_TOKEN secret missing — build only, no push"
           fi
-          echo "scope=$SCOPE" >> "$GITHUB_OUTPUT"
-          echo "Docker publish scope=$SCOPE"
 
-          if [ "$SCOPE" = "full" ]; then
-            JAVA=$(cat <<'EOF'
-          [
-            {"service":"ts-admin-basic-info-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service"},
-            {"service":"ts-admin-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Order.Service"},
-            {"service":"ts-admin-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Route.Service"},
-            {"service":"ts-admin-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Travel.Service"},
-            {"service":"ts-admin-user-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.User.Service"},
-            {"service":"ts-assurance-service","dockerfile":"dockerfile/Dockerfile.Ts.Assurance.Service"},
-            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
-            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
-            {"service":"ts-cancel-service","dockerfile":"dockerfile/Dockerfile.Ts.Cancel.Service"},
-            {"service":"ts-config-service","dockerfile":"dockerfile/Dockerfile.Ts.Config.Service"},
-            {"service":"ts-consign-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Price.Service"},
-            {"service":"ts-consign-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Service"},
-            {"service":"ts-contacts-service","dockerfile":"dockerfile/Dockerfile.Ts.Contacts.Service"},
-            {"service":"ts-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Delivery.Service"},
-            {"service":"ts-execute-service","dockerfile":"dockerfile/Dockerfile.Ts.Execute.Service"},
-            {"service":"ts-food-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Delivery.Service"},
-            {"service":"ts-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Service"},
-            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
-            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
-            {"service":"ts-notification-service","dockerfile":"dockerfile/Dockerfile.Ts.Notification.Service"},
-            {"service":"ts-order-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Other.Service"},
-            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
-            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
-            {"service":"ts-preserve-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Other.Service"},
-            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
-            {"service":"ts-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Price.Service"},
-            {"service":"ts-rebook-service","dockerfile":"dockerfile/Dockerfile.Ts.Rebook.Service"},
-            {"service":"ts-route-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Plan.Service"},
-            {"service":"ts-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Service"},
-            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"},
-            {"service":"ts-security-service","dockerfile":"dockerfile/Dockerfile.Ts.Security.Service"},
-            {"service":"ts-station-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Food.Service"},
-            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
-            {"service":"ts-train-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Food.Service"},
-            {"service":"ts-train-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Service"},
-            {"service":"ts-travel-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Plan.Service"},
-            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
-            {"service":"ts-travel2-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel2.Service"},
-            {"service":"ts-user-service","dockerfile":"dockerfile/Dockerfile.Ts.User.Service"},
-            {"service":"ts-verification-code-service","dockerfile":"dockerfile/Dockerfile.Ts.Verification.Code.Service"},
-            {"service":"ts-wait-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Wait.Order.Service"}
-          ]
-          EOF
+      - name: Discover images from Dockerfiles
+        id: discover
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          DISPATCH_MATRIX: ${{ inputs.matrix }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, pathlib, re, sys
+
+          event = os.environ["EVENT_NAME"]
+          ref = os.environ["REF"]
+          if event == "workflow_dispatch":
+              scope = os.environ.get("DISPATCH_MATRIX") or "full"
+          elif ref.startswith("refs/tags/v"):
+              scope = "full"
+          else:
+              scope = "full"
+
+          # Smoke subset for workflow_dispatch → core only
+          CORE = {
+              "ts-gateway-service",
+              "ts-auth-service",
+              "ts-preserve-service",
+              "ts-payment-service",
+              "ts-inside-payment-service",
+              "ts-order-service",
+              "ts-travel-service",
+              "ts-basic-service",
+              "ts-station-service",
+              "ts-seat-service",
+              "ts-news-service",
+              "ts-voucher-service",
+          }
+
+          java, standalone = [], []
+          root = pathlib.Path("dockerfile")
+          for path in sorted(root.glob("Dockerfile.Ts.*.Service")):
+              text = path.read_text(encoding="utf-8")
+              rel = str(path).replace("\\", "/")
+              jar = re.search(r'JAR_NAME="(ts-[a-z0-9-]+\.jar)"', text)
+              if jar:
+                  service = jar.group(1)[: -len(".jar")]
+                  java.append({"service": service, "dockerfile": rel, "kind": "java"})
+              else:
+                  # Dockerfile.Ts.Foo.Bar.Service → ts-foo-bar-service
+                  stem = path.name.replace("Dockerfile.", "").rsplit(".Service", 1)[0]
+                  parts = stem.split(".")
+                  if parts[0] != "Ts":
+                      print(f"::error::Unexpected Dockerfile name: {path.name}", file=sys.stderr)
+                      sys.exit(1)
+                  service = "ts-" + "-".join(p.lower() for p in parts[1:]) + "-service"
+                  standalone.append({"service": service, "dockerfile": rel, "kind": "standalone"})
+
+          if scope == "core":
+              java = [x for x in java if x["service"] in CORE]
+              standalone = [x for x in standalone if x["service"] in CORE]
+
+          images = java + standalone
+          if not images:
+              print("::error::Image matrix is empty", file=sys.stderr)
+              sys.exit(1)
+          if scope == "full" and (len(java) < 40 or len(standalone) < 4):
+              print(
+                  f"::error::Full matrix incomplete (java={len(java)} standalone={len(standalone)})",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          def out(key: str, value: str) -> None:
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+                  fh.write(f"{key}={value}\n")
+
+          out("scope", scope)
+          out("java-matrix", json.dumps(java, separators=(",", ":")))
+          out("image-matrix", json.dumps(images, separators=(",", ":")))
+          out("java-count", str(len(java)))
+          print(
+              f"scope={scope} java={len(java)} standalone={len(standalone)} "
+              f"total={len(images)} (+ ts-ui-web)"
           )
-            POLY=$(cat <<'EOF'
-          [
-            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"},
-            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
-            {"service":"ts-avatar-service","dockerfile":"dockerfile/Dockerfile.Ts.Avatar.Service"},
-            {"service":"ts-ticket-office-service","dockerfile":"dockerfile/Dockerfile.Ts.Ticket.Office.Service"}
-          ]
-          EOF
-          )
-          else
-            JAVA=$(cat <<'EOF'
-          [
-            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
-            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
-            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
-            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
-            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
-            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
-            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
-            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
-            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
-            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"}
-          ]
-          EOF
-          )
-            POLY=$(cat <<'EOF'
-          [
-            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
-            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"}
-          ]
-          EOF
-          )
-          fi
-          # Compact JSON for GITHUB_OUTPUT (single line)
-          echo "java-matrix=$(echo "$JAVA" | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "polyglot-matrix=$(echo "$POLY" | jq -c .)" >> "$GITHUB_OUTPUT"
-          JAVA_N=$(echo "$JAVA" | jq 'length')
-          POLY_N=$(echo "$POLY" | jq 'length')
-          echo "Planned images: java=$JAVA_N polyglot=$POLY_N ui=1 (plus ts-ui-dashboard alias)"
-          if [ "$SCOPE" = "full" ]; then
-            if [ "$JAVA_N" -lt 40 ] || [ "$POLY_N" -lt 4 ]; then
-              echo "::error::Full matrix looks incomplete (java=$JAVA_N poly=$POLY_N)"
-              exit 1
-            fi
-          fi
+          PY
 
   build-jars:
     name: Build Java artifacts
     needs: plan
+    if: needs.plan.outputs.java-count != '0'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,47 +165,48 @@ jobs:
         working-directory: ts-token-replacement-service
         run: mvn -B -DskipTests package
 
-      - name: Collect jars into jar/ (fail if any expected jar is missing)
+      - name: Collect jars required by this matrix
+        env:
+          JAVA_MATRIX: ${{ needs.plan.outputs.java-matrix }}
         run: |
           set -euo pipefail
           mkdir -p jar
           missing=0
-          for d in ts-*-service; do
-            [ -f "$d/pom.xml" ] || continue
-            name="$(basename "$d")"
-            # Shaded finalName is token-replacement-service.jar (version 1.0.0) — handled below
+
+          collect_one() {
+            local name="$1"
+            local jarfile=""
             if [ "$name" = "ts-token-replacement-service" ]; then
-              continue
-            fi
-            # Prefer artifactId-version.jar; accept any non-original jar as fallback
-            jarfile=$(ls "$d"/target/"${name}"-*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
-            if [ -z "${jarfile:-}" ]; then
-              jarfile=$(ls "$d"/target/*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
+              jarfile="ts-token-replacement-service/target/token-replacement-service.jar"
+              if [ ! -f "$jarfile" ]; then
+                jarfile=$(ls ts-token-replacement-service/target/ts-token-replacement-service-*.jar 2>/dev/null | grep -v original | head -1 || true)
+              fi
+            else
+              jarfile=$(ls "$name"/target/"${name}"-*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
+              if [ -z "${jarfile:-}" ]; then
+                jarfile=$(ls "$name"/target/*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
+              fi
             fi
             if [ -z "${jarfile:-}" ] || [ ! -f "$jarfile" ]; then
               echo "MISSING jar for $name"
               missing=1
-              continue
+              return 0
             fi
             cp "$jarfile" "jar/${name}.jar"
             echo "OK $name ← $(basename "$jarfile")"
+          }
+
+          # Token jar is COPY'd into every Java image
+          collect_one ts-token-replacement-service
+          mapfile -t services < <(echo "$JAVA_MATRIX" | jq -r '.[].service')
+          for name in "${services[@]}"; do
+            collect_one "$name"
           done
-          token_jar="ts-token-replacement-service/target/token-replacement-service.jar"
-          if [ ! -f "$token_jar" ]; then
-            # Fallback if shade finalName changes
-            token_jar=$(ls ts-token-replacement-service/target/ts-token-replacement-service-*.jar 2>/dev/null | grep -v original | head -1 || true)
-          fi
-          if [ -z "${token_jar:-}" ] || [ ! -f "$token_jar" ]; then
-            echo "MISSING jar for ts-token-replacement-service"
-            missing=1
-          else
-            cp "$token_jar" jar/ts-token-replacement-service.jar
-            echo "OK ts-token-replacement-service ← $(basename "$token_jar")"
-          fi
+
           echo "Collected jars:"
           ls -la jar/
           if [ "$missing" -ne 0 ]; then
-            echo "::error::One or more expected jars were missing after mvn package"
+            echo "::error::One or more jars required by the matrix are missing"
             exit 1
           fi
 
@@ -216,68 +216,33 @@ jobs:
           path: jar/
           retention-days: 1
 
-  docker-publish-java:
+  publish:
     name: Publish ${{ matrix.service }}
     needs: [plan, build-jars]
+    # Always run when plan succeeded; skip jar wait if no Java images
+    if: always() && needs.plan.result == 'success' && (needs.build-jars.result == 'success' || needs.build-jars.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.java-matrix) }}
+        include: ${{ fromJSON(needs.plan.outputs.image-matrix) }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - name: Download jars
+        if: matrix.kind == 'java'
+        uses: actions/download-artifact@v4
         with:
           name: java-jars
           path: jar/
 
       - name: Require jar for this service
+        if: matrix.kind == 'java'
         run: |
           test -f "jar/${{ matrix.service }}.jar" \
             || { echo "::error::Missing jar/${{ matrix.service }}.jar"; exit 1; }
-
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
-          flavor: |
-            latest=auto
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.service }}
-
-  docker-publish-polyglot:
-    name: Publish ${{ matrix.service }} (polyglot)
-    needs: plan
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.plan.outputs.polyglot-matrix) }}
-    steps:
-      - uses: actions/checkout@v4
+          test -f jar/ts-token-replacement-service.jar \
+            || { echo "::error::Missing jar/ts-token-replacement-service.jar"; exit 1; }
 
       - name: Require Dockerfile
         run: test -f "${{ matrix.dockerfile }}" || { echo "::error::Missing ${{ matrix.dockerfile }}"; exit 1; }
@@ -285,16 +250,28 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        if: needs.plan.outputs.push == 'true'
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Image namespace (secret stays in this job)
+        id: ns
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DO_PUSH: ${{ needs.plan.outputs.push }}
+        run: |
+          if [ "$DO_PUSH" = "true" ]; then
+            echo "namespace=${HUB_USER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "namespace=local" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
+          images: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
           flavor: |
             latest=auto
           tags: |
@@ -307,13 +284,13 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
+          push: ${{ needs.plan.outputs.push == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=min,scope=${{ matrix.service }}
 
-  docker-publish-ui:
+  publish-ui:
     name: Publish ts-ui-web (SPA)
     needs: plan
     runs-on: ubuntu-latest
@@ -323,19 +300,31 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        if: needs.plan.outputs.push == 'true'
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Image namespace (secret stays in this job)
+        id: ns
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DO_PUSH: ${{ needs.plan.outputs.push }}
+        run: |
+          if [ "$DO_PUSH" = "true" ]; then
+            echo "namespace=${HUB_USER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "namespace=local" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: docker/metadata-action@v5
         id: meta
         with:
           # Primary: ts-ui-web. Legacy alias ts-ui-dashboard for older compose pulls.
           images: |
-            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-web
-            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-dashboard
+            ${{ steps.ns.outputs.namespace }}/ts-ui-web
+            ${{ steps.ns.outputs.namespace }}/ts-ui-dashboard
           flavor: |
             latest=auto
           tags: |
@@ -349,15 +338,15 @@ jobs:
         with:
           context: ts-ui-web
           file: ts-ui-web/Dockerfile
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
-          load: ${{ vars.DOCKERHUB_USERNAME == '' }}
+          push: ${{ needs.plan.outputs.push == 'true' }}
+          load: ${{ needs.plan.outputs.push != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=ts-ui-web
           cache-to: type=gha,mode=min,scope=ts-ui-web
 
       - name: Smoke healthcheck (when image is loaded locally)
-        if: ${{ vars.DOCKERHUB_USERNAME == '' }}
+        if: needs.plan.outputs.push != 'true'
         run: |
           set -euo pipefail
           img=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
