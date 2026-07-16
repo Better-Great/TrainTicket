@@ -61,6 +61,10 @@ export default defineConfig({
     proxy,
   },
   test: {
+    // Hermetic: don't rely on a local (gitignored) .env for mock mode — CI has none.
+    env: {
+      VITE_USE_MOCK: 'true',
+    },
     environment: 'happy-dom',
     globals: true,
     include: ['src/**/*.{test,spec}.ts'],
