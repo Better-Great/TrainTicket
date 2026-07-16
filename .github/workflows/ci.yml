@@ -19,32 +19,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Need full history so paths-filter can diff locally (no GitHub API).
           fetch-depth: 0
 
-      - uses: dorny/paths-filter@v4
+      # Local git diff only — no dorny/paths-filter, no GitHub "list PR files" API
+      # (that API has been returning unicorn/503 HTML and failing the job).
+      - name: Detect path filters
         id: filter
-        with:
-          # Git diff between base→ref avoids REST "list PR files" (unicorn/503 HTML failures).
-          base: ${{ github.event.pull_request.base.sha || github.event.before }}
-          ref: ${{ github.sha }}
-          filters: |
-            backend:
-              - 'pom.xml'
-              - '**/pom.xml'
-              - 'ts-*/**'
-              - '!ts-ui-web/**'
-              - '!ts-news-service/**'
-              - '!ts-voucher-service/**'
-              - '!ts-avatar-service/**'
-              - '!ts-ticket-office-service/**'
-              - 'ts-common/**'
-              - 'ts-token-replacement-service/**'
-              - '.github/workflows/ci.yml'
-              - '.github/workflows/docker-publish.yml'
-            frontend:
-              - 'ts-ui-web/**'
-              - '.github/workflows/ci.yml'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE="${PR_BASE:-}"
+            HEAD="${PR_HEAD:-$SHA}"
+          else
+            BASE="${BEFORE:-}"
+            HEAD="$SHA"
+          fi
+
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "No usable base SHA — running all jobs"
+            exit 0
+          fi
+
+          backend=false
+          frontend=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              .github/workflows/ci.yml)
+                backend=true
+                frontend=true
+                ;;
+              .github/workflows/docker-publish.yml|pom.xml|*/pom.xml|ts-common/*|ts-token-replacement-service/*)
+                backend=true
+                ;;
+              ts-ui-web/*)
+                frontend=true
+                ;;
+              ts-news-service/*|ts-voucher-service/*|ts-avatar-service/*|ts-ticket-office-service/*)
+                ;;
+              ts-*-service/*)
+                backend=true
+                ;;
+            esac
+          done < <(git diff --name-only "$BASE" "$HEAD")
+
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "Diff $BASE..$HEAD → backend=$backend frontend=$frontend"
 
   backend:
     name: Backend (Maven)
