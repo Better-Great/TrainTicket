@@ -59,7 +59,7 @@ docker login
 ./scripts/docker-build-push.sh
 ```
 
-Tags look like `${IMG_REPO}/ts-<service>:${IMG_TAG}` (see `.env`). CI publishes a smaller **core** matrix on `main` and the full set on version tags — see the root README.
+Tags look like `${IMG_REPO}/ts-<service>:${IMG_TAG}` (see `.env`). CI publishes the full set on `main`, `feat`, and version tags; manual runs can select the smaller `core` matrix. Unrelated docs/CI-only commits do not rebuild all images — see the root README.
 
 ## Non-Java services in compose
 

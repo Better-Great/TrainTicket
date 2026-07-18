@@ -17,6 +17,17 @@ on:
   push:
     branches: [main, feat]
     tags: ["v*.*.*"]
+    # Avoid rebuilding all 46 images for docs or CI-only changes.
+    # Tag pushes are not path-filtered by GitHub.
+    paths:
+      - "pom.xml"
+      - "**/pom.xml"
+      - "ts-*-service/**"
+      - "ts-common/**"
+      - "ts-ui-web/**"
+      - "dockerfile/**"
+      - ".dockerignore"
+      - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
     inputs:
       matrix:
@@ -28,7 +39,11 @@ on:
 
 concurrency:
   group: docker-publish-${{ github.ref }}
-  cancel-in-progress: false
+  # Keep releases/main deterministic; supersede stale feature-branch builds.
+  cancel-in-progress: ${{ github.ref == 'refs/heads/feat' }}
+
+permissions:
+  contents: read
 
 jobs:
   plan:
@@ -43,7 +58,7 @@ jobs:
       image-matrix: ${{ steps.discover.outputs.image-matrix }}
       java-count: ${{ steps.discover.outputs.java-count }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Resolve whether to push (secrets → boolean output only)
         id: hub
@@ -150,9 +165,9 @@ jobs:
     if: needs.plan.outputs.java-count != '0'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
@@ -210,7 +225,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: java-jars
           path: jar/
@@ -224,14 +239,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # Avoid a 45-job burst against Docker Hub and GitHub cache services.
+      max-parallel: 12
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.image-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download jars
         if: matrix.kind == 'java'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: java-jars
           path: jar/
@@ -247,11 +264,11 @@ jobs:
       - name: Require Dockerfile
         run: test -f "${{ matrix.dockerfile }}" || { echo "::error::Missing ${{ matrix.dockerfile }}"; exit 1; }
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Log in to Docker Hub
         if: needs.plan.outputs.push == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -268,9 +285,11 @@ jobs:
             echo "namespace=local" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
+          # Resolve ref/SHA from the checkout, avoiding GitHub API unicorn/503 failures.
+          context: git
           images: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
           flavor: |
             latest=auto
@@ -280,7 +299,7 @@ jobs:
             type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ matrix.dockerfile }}
@@ -295,13 +314,13 @@ jobs:
     needs: plan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Log in to Docker Hub
         if: needs.plan.outputs.push == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -318,9 +337,11 @@ jobs:
             echo "namespace=local" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
+          # Resolve ref/SHA from the checkout, avoiding GitHub API unicorn/503 failures.
+          context: git
           # Primary: ts-ui-web. Legacy alias ts-ui-dashboard for older compose pulls.
           images: |
             ${{ steps.ns.outputs.namespace }}/ts-ui-web
@@ -333,7 +354,7 @@ jobs:
             type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         id: build
         with:
           context: ts-ui-web
