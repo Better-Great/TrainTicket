@@ -1,0 +1,147 @@
+version: 2
+
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:15"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # Docker Compose manifests are not supported by Dependabot's Docker updater.
+  - package-ecosystem: docker
+    directory: /dockerfile
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:30"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /ts-ui-web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:45"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /ts-ui-web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /ts-ticket-office-service
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:15"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: pip
+    directory: /ts-avatar-service
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: pip
+    directory: /ts-voucher-service
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:45"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: gomod
+    directory: /ts-news-service
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - security
+    groups:
+      patch-and-minor:
+        patterns: ["*"]
+        update-types: [minor, patch]

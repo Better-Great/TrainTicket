@@ -1,0 +1,189 @@
+name: Security
+
+on:
+  push:
+    branches: [main, feat]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, javascript-typescript]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@bb16b9baa2ec4010b29f5c606d57d01190139edd # v4.37.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@bb16b9baa2ec4010b29f5c606d57d01190139edd # v4.37.1
+        with:
+          category: /language:${{ matrix.language }}
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+
+  gitleaks:
+    name: Gitleaks (full history)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan Git history
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+  trivy:
+    name: Trivy filesystem and configuration
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Scan filesystem vulnerabilities
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          format: sarif
+          output: trivy-fs.sarif
+          trivy-config: trivy.yaml
+          skip-dirs: .git,node_modules,target,logs,log,jar
+          skip-files: "**/.env,**/local.env,**/*.jar,**/*.log"
+
+      - name: Upload filesystem results
+        if: always() && hashFiles('trivy-fs.sarif') != ''
+        uses: github/codeql-action/upload-sarif@bb16b9baa2ec4010b29f5c606d57d01190139edd # v4.37.1
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-filesystem
+
+      - name: Scan configuration
+        if: always()
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          scanners: misconfig
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          format: sarif
+          output: trivy-config.sarif
+          trivy-config: trivy.yaml
+          skip-dirs: .git,node_modules,target,logs,log,jar
+          skip-files: "**/.env,**/local.env,**/*.jar,**/*.log"
+
+      - name: Upload configuration results
+        if: always() && hashFiles('trivy-config.sarif') != ''
+        uses: github/codeql-action/upload-sarif@bb16b9baa2ec4010b29f5c606d57d01190139edd # v4.37.1
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-configuration
+
+  dockerfile-plan:
+    name: Discover canonical Dockerfiles
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      files: ${{ steps.files.outputs.files }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Build lint matrix
+        id: files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          files = sorted(
+              str(path) for path in Path("dockerfile").glob("Dockerfile.Ts.*.Service")
+          )
+          files.append("ts-ui-web/Dockerfile")
+          missing = [path for path in files if not Path(path).is_file()]
+          if missing:
+              raise SystemExit(f"Missing canonical Dockerfiles: {', '.join(missing)}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"files={json.dumps(files, separators=(',', ':'))}\n")
+          PY
+
+  hadolint:
+    name: Hadolint (${{ matrix.dockerfile }})
+    needs: dockerfile-plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: ${{ fromJSON(needs.dockerfile-plan.outputs.files) }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+          failure-threshold: error

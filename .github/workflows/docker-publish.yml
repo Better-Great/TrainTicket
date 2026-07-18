@@ -58,7 +58,7 @@ jobs:
       image-matrix: ${{ steps.discover.outputs.image-matrix }}
       java-count: ${{ steps.discover.outputs.java-count }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Resolve whether to push (secrets → boolean output only)
         id: hub
@@ -165,9 +165,9 @@ jobs:
     if: needs.plan.outputs.java-count != '0'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: "17"
@@ -191,16 +191,25 @@ jobs:
           collect_one() {
             local name="$1"
             local jarfile=""
+            local candidate=""
             if [ "$name" = "ts-token-replacement-service" ]; then
               jarfile="ts-token-replacement-service/target/token-replacement-service.jar"
               if [ ! -f "$jarfile" ]; then
-                jarfile=$(ls ts-token-replacement-service/target/ts-token-replacement-service-*.jar 2>/dev/null | grep -v original | head -1 || true)
+                jarfile=""
+                for candidate in ts-token-replacement-service/target/ts-token-replacement-service-*.jar; do
+                  [ -f "$candidate" ] || continue
+                  case "$(basename "$candidate")" in original-*) continue ;; esac
+                  jarfile="$candidate"
+                  break
+                done
               fi
             else
-              jarfile=$(ls "$name"/target/"${name}"-*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
-              if [ -z "${jarfile:-}" ]; then
-                jarfile=$(ls "$name"/target/*.jar 2>/dev/null | grep -v '/original-' | head -1 || true)
-              fi
+              for candidate in "$name"/target/"${name}"-*.jar "$name"/target/*.jar; do
+                [ -f "$candidate" ] || continue
+                case "$(basename "$candidate")" in original-*) continue ;; esac
+                jarfile="$candidate"
+                break
+              done
             fi
             if [ -z "${jarfile:-}" ] || [ ! -f "$jarfile" ]; then
               echo "MISSING jar for $name"
@@ -225,7 +234,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: java-jars
           path: jar/
@@ -237,6 +246,9 @@ jobs:
     # Always run when plan succeeded; skip jar wait if no Java images
     if: always() && needs.plan.result == 'success' && (needs.build-jars.result == 'success' || needs.build-jars.result == 'skipped')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       # Avoid a 45-job burst against Docker Hub and GitHub cache services.
@@ -244,11 +256,11 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.plan.outputs.image-matrix) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Download jars
         if: matrix.kind == 'java'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: java-jars
           path: jar/
@@ -264,11 +276,11 @@ jobs:
       - name: Require Dockerfile
         run: test -f "${{ matrix.dockerfile }}" || { echo "::error::Missing ${{ matrix.dockerfile }}"; exit 1; }
 
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Log in to Docker Hub
         if: needs.plan.outputs.push == 'true'
-        uses: docker/login-action@v4
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -285,42 +297,98 @@ jobs:
             echo "namespace=local" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: docker/metadata-action@v6
-        id: meta
+      - name: Resolve immutable image reference
+        id: image
+        env:
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          SERVICE: ${{ matrix.service }}
+          SHA: ${{ github.sha }}
+        run: echo "ref=${NAMESPACE}/${SERVICE}:sha-${SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: aliases
         with:
-          # Resolve ref/SHA from the checkout, avoiding GitHub API unicorn/503 failures.
           context: git
           images: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
-          flavor: |
-            latest=auto
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        id: build
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           push: ${{ needs.plan.outputs.push == 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.image.outputs.ref }}
+          labels: ${{ steps.aliases.outputs.labels }}
+          sbom: ${{ needs.plan.outputs.push == 'true' }}
+          provenance: ${{ needs.plan.outputs.push == 'true' && 'mode=max' || 'false' }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=min,scope=${{ matrix.service }}
+
+      - name: Scan pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Install Cosign
+        if: needs.plan.outputs.push == 'true'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign and verify immutable digest
+        if: needs.plan.outputs.push == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+          # Docker Hub does not consistently expose OCI 1.1 referrers. Use
+          # Cosign's OCI 1.0-compatible signature manifest/tag fallback.
+          COSIGN_DOCKER_MEDIA_TYPES: "1"
+        run: |
+          set -euo pipefail
+          cosign sign --yes "${IMAGE}@${DIGEST}"
+          cosign verify \
+            --certificate-identity "$CERTIFICATE_IDENTITY" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "${IMAGE}@${DIGEST}"
+
+      - name: Promote release aliases
+        if: needs.plan.outputs.push == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
+          ALIASES: ${{ steps.aliases.outputs.tags }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r alias; do
+            [ -n "$alias" ] || continue
+            docker buildx imagetools create --tag "$alias" "${IMAGE}@${DIGEST}"
+          done <<< "$ALIASES"
 
   publish-ui:
     name: Publish ts-ui-web (SPA)
     needs: plan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Log in to Docker Hub
         if: needs.plan.outputs.push == 'true'
-        uses: docker/login-action@v4
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -337,48 +405,118 @@ jobs:
             echo "namespace=local" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: docker/metadata-action@v6
-        id: meta
+      - name: Resolve immutable image references
+        id: image
+        env:
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "primary=${NAMESPACE}/ts-ui-web:sha-${SHA}"
+            echo "legacy=${NAMESPACE}/ts-ui-dashboard:sha-${SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: aliases
         with:
-          # Resolve ref/SHA from the checkout, avoiding GitHub API unicorn/503 failures.
           context: git
-          # Primary: ts-ui-web. Legacy alias ts-ui-dashboard for older compose pulls.
           images: |
             ${{ steps.ns.outputs.namespace }}/ts-ui-web
             ${{ steps.ns.outputs.namespace }}/ts-ui-dashboard
-          flavor: |
-            latest=auto
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         id: build
         with:
           context: ts-ui-web
           file: ts-ui-web/Dockerfile
           push: ${{ needs.plan.outputs.push == 'true' }}
           load: ${{ needs.plan.outputs.push != 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ steps.image.outputs.primary }}
+            ${{ steps.image.outputs.legacy }}
+          labels: ${{ steps.aliases.outputs.labels }}
+          sbom: ${{ needs.plan.outputs.push == 'true' }}
+          provenance: ${{ needs.plan.outputs.push == 'true' && 'mode=max' || 'false' }}
           cache-from: type=gha,scope=ts-ui-web
           cache-to: type=gha,mode=min,scope=ts-ui-web
+
+      - name: Scan primary pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/ts-ui-web@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Scan legacy pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/ts-ui-dashboard@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Install Cosign
+        if: needs.plan.outputs.push == 'true'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign and verify immutable digests
+        if: needs.plan.outputs.push == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+          COSIGN_DOCKER_MEDIA_TYPES: "1"
+        run: |
+          set -euo pipefail
+          for image in "${NAMESPACE}/ts-ui-web" "${NAMESPACE}/ts-ui-dashboard"; do
+            cosign sign --yes "${image}@${DIGEST}"
+            cosign verify \
+              --certificate-identity "$CERTIFICATE_IDENTITY" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              "${image}@${DIGEST}"
+          done
+
+      - name: Promote release aliases
+        if: needs.plan.outputs.push == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          ALIASES: ${{ steps.aliases.outputs.tags }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r alias; do
+            [ -n "$alias" ] || continue
+            repository="${alias%:*}"
+            docker buildx imagetools create --tag "$alias" "${repository}@${DIGEST}"
+          done <<< "$ALIASES"
 
       - name: Smoke healthcheck (when image is loaded locally)
         if: needs.plan.outputs.push != 'true'
         run: |
           set -euo pipefail
-          img=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          img="${{ steps.image.outputs.primary }}"
           cid=$(docker run -d -p 18080:8080 "$img")
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
-          for i in $(seq 1 30); do
+          attempt=1
+          while [ "$attempt" -le 30 ]; do
             if curl -sf --max-time 2 http://127.0.0.1:18080/ >/dev/null; then
               echo "SPA health OK"
               exit 0
             fi
             sleep 2
+            attempt=$((attempt + 1))
           done
           docker logs "$cid" || true
           echo "::error::SPA container failed healthcheck"
