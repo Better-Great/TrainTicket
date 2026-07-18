@@ -1,0 +1,84 @@
+# Optional local SonarQube stack. It is independent of the TrainTicket runtime.
+name: trainticket-quality
+
+services:
+  postgres:
+    image: postgres:17.10-alpine3.23@sha256:8189a1f6e40904781fc9e2612687877791d21679866db58b1de996b31fc312e4
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    environment:
+      POSTGRES_USER: ${SONAR_DB_USER:-sonar}
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:?Set SONAR_DB_PASSWORD in the environment}
+      POSTGRES_DB: ${SONAR_DB_NAME:-sonar}
+    volumes:
+      - sonar-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  sonarqube:
+    image: sonarqube:26.7.0.124771-community@sha256:160bd2f6a3485bd09b655ef22dd63c02bd1fa7ba82aa5d9973fd010b8bcca0b3
+    restart: unless-stopped
+    init: true
+    mem_limit: 2g
+    cpus: 1.5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/${SONAR_DB_NAME:-sonar}
+      SONAR_JDBC_USERNAME: ${SONAR_DB_USER:-sonar}
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:?Set SONAR_DB_PASSWORD in the environment}
+      SONAR_WEB_JAVAOPTS: -Xms128m -Xmx512m
+      SONAR_CE_JAVAOPTS: -Xms128m -Xmx512m
+      SONAR_SEARCH_JAVAOPTS: -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+    ulimits:
+      nofile:
+        soft: 131072
+        hard: 131072
+    ports:
+      - "${SONAR_PORT:-9000}:9000"
+    volumes:
+      - sonar-data:/opt/sonarqube/data
+      - sonar-extensions:/opt/sonarqube/extensions
+      - sonar-logs:/opt/sonarqube/logs
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
+
+  sonar-scanner:
+    profiles: ["scan"]
+    image: sonarsource/sonar-scanner-cli:12.1.0.3233_8.0.1@sha256:23ca0f137965d9dff2198074043fd48d386280bc5d0ccac8c8349cea4cf096a9
+    init: true
+    mem_limit: 3g
+    cpus: 1.0
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+    environment:
+      SONAR_HOST_URL: http://sonarqube:9000
+      SONAR_TOKEN: ${SONAR_TOKEN:-}
+      SONAR_SCANNER_JAVA_OPTS: -Xms128m -Xmx768m
+    volumes:
+      - .:/usr/src
+    working_dir: /usr/src
+    command:
+      - -Dsonar.qualitygate.wait=true
+      - -Dsonar.qualitygate.timeout=${SONAR_QUALITY_GATE_TIMEOUT:-600}
+
+volumes:
+  sonar-postgres-data:
+  sonar-data:
+  sonar-extensions:
+  sonar-logs:
