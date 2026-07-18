@@ -8,8 +8,11 @@ SERVICE_NAME="${JAR_NAME%.jar}"
 PROP_FILE="${EXTERNAL_CONFIG_DIR}/${ENVIRONMENT}.application.ini"
 
 # Compact heap + SerialGC (lower native overhead than G1 on tiny heaps).
+# Metaspace ceiling is sized for Spring Boot 3 / Jakarta EE (bigger classloading
+# footprint than the old Boot 2.3 baseline this was first tuned for) — 96m OOM'd
+# reliably on every service post-migration, 224m has headroom.
 # Sentinel defaults to /app/logs/csp which breaks when the logs volume is root-owned.
-: "${JAVA_OPTS:=-Xms32m -Xmx128m -Xss256k -XX:MetaspaceSize=48m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}"
+: "${JAVA_OPTS:=-Xms32m -Xmx128m -Xss256k -XX:MetaspaceSize=80m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}"
 
 if [ ! -f "$PROP_FILE" ]; then
     echo "Error: No env config at $PROP_FILE"
@@ -21,8 +24,9 @@ mkdir -p "${PROJECT_ROOT}/properties" "${PROJECT_ROOT}/${SERVICE_NAME}/src/main/
 cp "$PROP_FILE" "${PROJECT_ROOT}/properties/${ENVIRONMENT}.application.ini"
 cp "${TEMPLATE_DIR}/application.properties.ini" "${PROJECT_ROOT}/${SERVICE_NAME}/"
 
-# Token replacement is a one-shot short-lived JVM
-java -Xms16m -Xmx64m -jar "${JAR_DIR}/${TOKEN_JAR_NAME}" "${ENVIRONMENT}" "${PROJECT_ROOT}"
+# Configuration replacement is a one-shot short-lived JVM. The variable name
+# deliberately avoids "TOKEN": this is a jar filename, not a credential.
+java -Xms16m -Xmx64m -jar "${JAR_DIR}/${CONFIG_REPLACER_JAR_NAME}" "${ENVIRONMENT}" "${PROJECT_ROOT}"
 
 if [ ! -f "${PROJECT_ROOT}/${SERVICE_NAME}/src/main/resources/application.properties" ]; then
     echo "Error: Token replacement failed"

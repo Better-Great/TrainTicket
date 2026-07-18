@@ -2,21 +2,25 @@
 # Build from repo root: docker build -f dockerfile/Dockerfile.Ts.Voucher.Service .
 # Expects: ts-voucher-service/server.py, requirements.txt. Configure DB via env (e.g. .env).
 
-FROM python:3.11-slim
+FROM cgr.dev/chainguard/python:latest-dev@sha256:bee63d1fd86c4b31dd2df85bb383be142e8067486e3d469265edb850af93e8e4
 
 # PyMySQL is pure Python; no MySQL client dev packages needed
-RUN groupadd -r app && useradd -r -g app app
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1 \
+    PATH=/venv/bin:${PATH}
+
+USER root
+RUN python -m venv /venv
 
 WORKDIR /app
 COPY ts-voucher-service/requirements.txt ./
-RUN pip install --no-cache-dir cryptography && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
 COPY ts-voucher-service/server.py ./
-RUN chown -R app:app /app
-USER app
+RUN chown -R 65532:65532 /venv /app
+USER 65532:65532
 
 EXPOSE 16101
 HEALTHCHECK --interval=10s --timeout=5s --retries=10 \
     CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('VOUCHER_SERVICE_PORT','16101') + '/health', timeout=3)" || exit 1
-CMD ["python", "server.py"]
+ENTRYPOINT ["/venv/bin/python"]
+CMD ["/app/server.py"]

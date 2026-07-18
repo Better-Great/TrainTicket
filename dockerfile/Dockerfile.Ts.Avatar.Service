@@ -5,34 +5,36 @@
 # Runtime: `env_file` in compose and/or `--env-file`; optional bind-mount `.env` to
 # `/home/app/app/.env` (file is gitignored and not copied into the image).
 
-FROM python:3.11-slim
+FROM cgr.dev/chainguard/python:latest-dev@sha256:bee63d1fd86c4b31dd2df85bb383be142e8067486e3d469265edb850af93e8e4
 
 LABEL com.trainticket.avatar.endpoints='{"service":"ts-avatar-service","health":"/health","avatar_post":"/api/v1/avatar"}'
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HOME=/home/app \
-    APP_HOME=/home/app/app
+    APP_HOME=/home/app/app \
+    PATH=/venv/bin:${PATH}
 
 ENV AVATAR_SERVICE_PORT=${AVATAR_SERVICE_PORT}
 
-RUN groupadd --system --gid 1000 app \
-    && useradd --system --uid 1000 --gid app --create-home --home-dir /home/app app
+USER root
+RUN python -m venv /venv
 
 WORKDIR ${APP_HOME}
 
 COPY ts-avatar-service/requirements.txt ./
-RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ts-avatar-service/ .
 RUN mkdir -p received images \
-    && chown -R app:app "${APP_HOME}"
+    && chown -R 65532:65532 /venv /home/app
 
-USER app
+USER 65532:65532
 
 EXPOSE ${AVATAR_SERVICE_PORT}
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=10 \
-    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['AVATAR_SERVICE_PORT'] + '/health', timeout=3)" || exit 1
+    CMD ["/venv/bin/python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['AVATAR_SERVICE_PORT'] + '/health', timeout=3)"]
 
-CMD ["sh", "-c", "exec gunicorn -w 2 -b 0.0.0.0:${AVATAR_SERVICE_PORT} --timeout 120 --chdir \"${APP_HOME}\" app:app"]
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["exec /venv/bin/gunicorn -w 2 -b 0.0.0.0:${AVATAR_SERVICE_PORT} --timeout 120 --chdir \"${APP_HOME}\" app:app"]

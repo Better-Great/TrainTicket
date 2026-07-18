@@ -1,8 +1,8 @@
 # Production-ready ts-auth-service.
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-alpine@sha256:02320dd4ce20e243dfb915c686089cf9315c763084fafbb12d5c9993aee18b57
 
 ENV JAR_NAME="ts-auth-service.jar" \
-    TOKEN_JAR_NAME="ts-token-replacement-service.jar" \
+    CONFIG_REPLACER_JAR_NAME="ts-token-replacement-service.jar" \
     APP_HOME="/app" \
     CONFIG_DIR="/app/config" \
     TEMPLATE_DIR="/app/templates" \
@@ -14,7 +14,8 @@ ENV JAR_NAME="ts-auth-service.jar" \
     TZ="${TZ:-UTC}" \
     PORT="${PORT:-12349}"
 
-RUN apk add --no-cache tzdata wget && \
+RUN apk upgrade --no-cache && \
+    apk add --no-cache tzdata wget && \
     adduser -D -h "${APP_HOME}" -s /bin/sh train-ticket && \
     mkdir -p "${JAR_DIR}" "${CONFIG_DIR}" "${TEMPLATE_DIR}" "${LOGS_DIR}" "${EXTERNAL_CONFIG_DIR}" && \
     chown -R train-ticket:train-ticket "${APP_HOME}"
