@@ -24,6 +24,7 @@ All modernization work happens in this repo and is tracked, ticket by ticket, ag
 | **Containerization** — one shared Docker entrypoint (was 40+ copies of the same `echo`-chain), non-root containers, healthchecks, resource limits | Done |
 | **Lean packing** — defaults that fit the booking path on ~8 GiB hosts (see below) | Done |
 | **CI/CD** — GitHub Actions build+test gate; Docker publish pushes the **full** service matrix to Hub on `main`/`feat` (and on `v*` tags) | Done (see below) |
+| **Supply chain** — CodeQL, dependency/secret/config/container scanning, SBOM/provenance, and keyless digest signing | Done |
 | **Kubernetes + Helm** — manifests for the core booking path, then the full service set, then a Helm chart | Planned, next up |
 | **Observability** — distributed tracing, Prometheus/Grafana, structured logs keyed on the request-ID work already in place | Planned |
 | **MLOps** — demand forecasting → dynamic pricing, a genuinely new feature (not a port of upstream), with a real train → register → serve → monitor → retrain loop | Planned |
@@ -71,14 +72,15 @@ More detail: [docs/DOCKER.md](docs/DOCKER.md), [docs/GETTING-STARTED.md](docs/GE
 
 ## CI/CD
 
-Two GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
+Three GitHub Actions workflows live in [`.github/workflows/`](.github/workflows/):
 
-- **`ci.yml`** — on push/PR to `main`/`feat`: path-filtered `mvn compile` + `mvn test` for Java, and `bun run check` for the SPA (both always run on `main`).
+- **`ci.yml`** — path-filtered `mvn verify` with JaCoCo XML for Java, plus ESLint, typechecking, tests, and build for the SPA.
+- **`security.yml`** — CodeQL, dependency review, full-history Gitleaks, strict Trivy filesystem/configuration scans, and Hadolint; also runs weekly.
 - **`docker-publish.yml`**
   - **Push to `main` or `feat`** → **full** matrix: all ~41 Java services + news/voucher/avatar/ticket-office + SPA (`ts-ui-web` + legacy `ts-ui-dashboard` alias)
   - **Tag `vX.Y.Z`** → same full set with semver tags
   - **Actions → Run workflow** → choose `full` (default) or `core` for a quick subset smoke
-  - Images are versioned (`X.Y.Z`, `X.Y`, `sha-<short>`, `latest` on `main`).
+  - Images first receive immutable `sha-<full-commit>` tags with SBOM and provenance attestations. Trivy then scans the digest, Cosign signs and verifies it with GitHub OIDC, and only successful images receive `X.Y.Z`, `X.Y`, or `latest` aliases.
 
 To actually push images, set both as **secrets** under **Settings → Secrets and variables → Actions → Secrets**:
 - `DOCKERHUB_USERNAME`
@@ -92,6 +94,7 @@ All guides live under **[docs/](docs/README.md)**:
 
 - [Getting started](docs/GETTING-STARTED.md) — Docker, local JARs, single services
 - [Docker](docs/DOCKER.md) — lean vs full stack, build, Hub push
+- [Security and supply chain](docs/SECURITY.md) — gates, local SonarQube, SBOMs, signatures
 - [Non-Java services](docs/NON-JAVA-SERVICES.md) — UI, news, avatar, voucher, ticket-office
 - [Local development](docs/LOCAL-DEVELOPMENT.md) — local-JAR workflow
 - [Ports](docs/PORTS.md)

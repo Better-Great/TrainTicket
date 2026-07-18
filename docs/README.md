@@ -4,6 +4,7 @@
 |-----|----------|
 | [GETTING-STARTED.md](GETTING-STARTED.md) | First run — prefer `up-lean.sh` on small hosts |
 | [DOCKER.md](DOCKER.md) | Why lean defaults exist; build / Hub / compose |
+| [SECURITY.md](SECURITY.md) | Security gates, local SonarQube, SBOMs, signatures |
 | [NON-JAVA-SERVICES.md](NON-JAVA-SERVICES.md) | UI, news, avatar, voucher, ticket-office |
 | [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) | JARs on the host without full Compose |
 | [PORTS.md](PORTS.md) | Port reference |
