@@ -5,17 +5,16 @@ import edu.fudan.common.security.cors.CorsOrigins;
 import edu.fudan.common.security.swagger.SwaggerAccess;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import static org.springframework.web.cors.CorsConfiguration.ALL;
 
@@ -24,8 +23,8 @@ import static org.springframework.web.cors.CorsConfiguration.ALL;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity
+public class SecurityConfig {
 
     /**
      * load password encoder
@@ -47,7 +46,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurerAdapter() {
+        return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
@@ -61,25 +60,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.httpBasic().disable()
                 // close default csrf
                 .csrf().disable()
                 // close session
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests()
-                .antMatchers("/api/v1/assuranceservice/**").hasRole("USER")
-                .antMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
+                .authorizeHttpRequests()
+                .requestMatchers("/api/v1/assuranceservice/**").hasRole("USER")
+                .requestMatchers("/swagger-ui.html", "/webjars/**", "/images/**",
                         "/configuration/**", "/swagger-resources/**", "/v2/**")
-                        .access(SwaggerAccess.isEnabled() ? "permitAll" : "denyAll")
-                .antMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                        .access(SwaggerAccess.authorizationManager())
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class);
 
         // close cache
         httpSecurity.headers().cacheControl();
+
+        return httpSecurity.build();
     }
 }

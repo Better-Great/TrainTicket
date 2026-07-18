@@ -10,8 +10,9 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-# Shared lean JVM for Java app containers (override per-service in compose if needed)
-export JAVA_OPTS="${JAVA_OPTS:--Xms32m -Xmx128m -Xss256k -XX:MetaspaceSize=48m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}"
+# Shared lean JVM for Java app containers (override per-service in compose if needed).
+# Metaspace ceiling sized for Spring Boot 3 / Jakarta EE — see .env.example.
+export JAVA_OPTS="${JAVA_OPTS:--Xms32m -Xmx128m -Xss256k -XX:MetaspaceSize=80m -XX:MaxMetaspaceSize=160m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}"
 
 CORE=(
   ts-gateway-service

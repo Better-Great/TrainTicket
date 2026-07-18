@@ -1018,7 +1018,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-docker}
       TZ: ${TZ:-UTC}
       PORT: ${GATEWAY_SERVICE_PORT:-18888}
-      JAVA_OPTS: ${GATEWAY_JAVA_OPTS:--Xms64m -Xmx192m -Xss256k -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}
+      JAVA_OPTS: ${GATEWAY_JAVA_OPTS:--Xms64m -Xmx192m -Xss256k -XX:MetaspaceSize=96m -XX:MaxMetaspaceSize=192m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dcsp.sentinel.log.dir=/tmp/csp}
     ports:
       - "${GATEWAY_SERVICE_PORT:-18888}:18888"
     networks:
