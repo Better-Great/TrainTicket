@@ -59,7 +59,13 @@ docker login
 ./scripts/docker-build-push.sh
 ```
 
-Tags look like `${IMG_REPO}/ts-<service>:${IMG_TAG}` (see `.env`). CI publishes a smaller **core** matrix on `main` and the full set on version tags — see the root README.
+Tags look like `${IMG_REPO}/ts-<service>:${IMG_TAG}` (see `.env`). CI publishes the full set on `main`, `feat`, version tags, and the weekly security schedule; manual runs can select the smaller `core` matrix. Unrelated docs/CI-only commits do not rebuild all images.
+
+Publishing is digest-first: BuildKit attaches SBOM and provenance attestations to
+the full-commit SHA image, Trivy blocks High/Critical findings, and Cosign signs
+and verifies the digest with GitHub OIDC. `latest` and semver aliases are created
+only after those checks pass. See [Security and software supply chain](SECURITY.md)
+for inspection and verification commands.
 
 ## Non-Java services in compose
 

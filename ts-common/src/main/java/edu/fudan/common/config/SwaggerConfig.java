@@ -1,16 +1,13 @@
 package edu.fudan.common.config;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * @author fdse
@@ -24,22 +21,21 @@ public class SwaggerConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(SwaggerConfig.class);
 
     @Bean
-    public Docket createRestApi() {
+    public GroupedOpenApi createRestApi() {
         SwaggerConfig.LOGGER.info("[createRestApi][create][controllerPackagePath: {}]", controllerPackagePath);
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(apiInfo())
-                .select().apis(RequestHandlerSelectors.basePackage(controllerPackagePath))
-                .paths(PathSelectors.any())
+        return GroupedOpenApi.builder()
+                .group("train-ticket")
+                .packagesToScan(controllerPackagePath)
                 .build();
     }
 
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-                .title("Springboot builds the API documentation with swagger")
-                .description("Simple and elegant restful style")
-                .termsOfServiceUrl("https://github.com/FudanSELab/train-ticket")
-                .version("1.0")
-                .build();
+    @Bean
+    public OpenAPI trainTicketOpenApi() {
+        return new OpenAPI().info(new Info()
+                .title("TrainTicket API")
+                .description("TrainTicket service REST API")
+                .termsOfService("https://github.com/FudanSELab/train-ticket")
+                .version("1.0"));
     }
 
 }

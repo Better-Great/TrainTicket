@@ -6,16 +6,12 @@
     "start": "node bin/www"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "body-parser": "~1.18.2",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
-    "express": "~4.15.5",
-    "fs": "0.0.1-security",
-    "jade": "~1.11.0",
-    "mongo": "^0.1.0",
-    "morgan": "~1.9.0",
+    "body-parser": "^1.20.6",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "morgan": "^1.11.0",
     "mysql": "^2.18.1",
-    "serve-favicon": "~2.4.5"
+    "serve-favicon": "^2.5.1"
   }
 }

@@ -1,148 +1,173 @@
 name: Docker Build & Publish
 
-# EPIC-05: build service images and optionally push to Docker Hub.
+# Build every service image (and optionally push to Docker Hub).
 #
 # Triggers:
-#   - push to main     → CORE booking-path images only (fast, cheap)
-#   - tag v*.*.*       → FULL service matrix (release)
-#   - workflow_dispatch → choose core | full
+#   - push to main/feat → full matrix (sha tags; latest only on main)
+#   - tag v*.*.*        → full matrix (semver tags)
+#   - workflow_dispatch → core | full (core = quick smoke subset)
 #
-# Repo settings (Settings → Secrets and variables → Actions):
-#   - Variable DOCKERHUB_USERNAME
-#   - Secret   DOCKERHUB_TOKEN
-# Without them, images still build; push is skipped.
+# Secrets (Settings → Secrets and variables → Actions → Secrets):
+#   DOCKERHUB_USERNAME
+#   DOCKERHUB_TOKEN
+# Both required to push. Images still build if either is missing.
+# Username stays a secret: push is gated via step outputs (secrets cannot be used in job if:).
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat]
     tags: ["v*.*.*"]
+    # Avoid rebuilding all 46 images for docs or CI-only changes.
+    # Tag pushes are not path-filtered by GitHub.
+    paths:
+      - "pom.xml"
+      - "**/pom.xml"
+      - "ts-*-service/**"
+      - "ts-common/**"
+      - "ts-ui-web/**"
+      - "dockerfile/**"
+      - ".dockerignore"
+      - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
     inputs:
       matrix:
         description: Image set to build
         required: true
-        default: core
+        default: full
         type: choice
         options: [core, full]
 
 concurrency:
   group: docker-publish-${{ github.ref }}
-  cancel-in-progress: false
+  # Keep releases/main deterministic; supersede stale feature-branch builds.
+  cancel-in-progress: ${{ github.ref == 'refs/heads/feat' }}
+
+permissions:
+  contents: read
 
 jobs:
   plan:
     name: Plan matrix
     runs-on: ubuntu-latest
     outputs:
-      scope: ${{ steps.set.outputs.scope }}
-      java-matrix: ${{ steps.set.outputs.java-matrix }}
-      polyglot-matrix: ${{ steps.set.outputs.polyglot-matrix }}
+      scope: ${{ steps.discover.outputs.scope }}
+      # Only non-secret flags cross jobs. Username must NOT be a job output —
+      # Actions redacts secret-valued outputs to empty for downstream jobs.
+      push: ${{ steps.hub.outputs.push }}
+      java-matrix: ${{ steps.discover.outputs.java-matrix }}
+      image-matrix: ${{ steps.discover.outputs.image-matrix }}
+      java-count: ${{ steps.discover.outputs.java-count }}
     steps:
-      - id: set
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Resolve whether to push (secrets → boolean output only)
+        id: hub
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          HUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            SCOPE="${{ inputs.matrix }}"
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            SCOPE=full
+          if [ -n "${HUB_USER:-}" ] && [ -n "${HUB_TOKEN:-}" ]; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+            echo "Docker Hub push enabled"
           else
-            SCOPE=core
+            echo "push=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::DOCKERHUB_USERNAME and/or DOCKERHUB_TOKEN secret missing — build only, no push"
           fi
-          echo "scope=$SCOPE" >> "$GITHUB_OUTPUT"
-          echo "Docker publish scope=$SCOPE"
 
-          if [ "$SCOPE" = "full" ]; then
-            JAVA=$(cat <<'EOF'
-          [
-            {"service":"ts-admin-basic-info-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Basic.Info.Service"},
-            {"service":"ts-admin-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Order.Service"},
-            {"service":"ts-admin-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Route.Service"},
-            {"service":"ts-admin-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.Travel.Service"},
-            {"service":"ts-admin-user-service","dockerfile":"dockerfile/Dockerfile.Ts.Admin.User.Service"},
-            {"service":"ts-assurance-service","dockerfile":"dockerfile/Dockerfile.Ts.Assurance.Service"},
-            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
-            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
-            {"service":"ts-cancel-service","dockerfile":"dockerfile/Dockerfile.Ts.Cancel.Service"},
-            {"service":"ts-config-service","dockerfile":"dockerfile/Dockerfile.Ts.Config.Service"},
-            {"service":"ts-consign-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Price.Service"},
-            {"service":"ts-consign-service","dockerfile":"dockerfile/Dockerfile.Ts.Consign.Service"},
-            {"service":"ts-contacts-service","dockerfile":"dockerfile/Dockerfile.Ts.Contacts.Service"},
-            {"service":"ts-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Delivery.Service"},
-            {"service":"ts-execute-service","dockerfile":"dockerfile/Dockerfile.Ts.Execute.Service"},
-            {"service":"ts-food-delivery-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Delivery.Service"},
-            {"service":"ts-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Food.Service"},
-            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
-            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
-            {"service":"ts-notification-service","dockerfile":"dockerfile/Dockerfile.Ts.Notification.Service"},
-            {"service":"ts-order-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Other.Service"},
-            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
-            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
-            {"service":"ts-preserve-other-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Other.Service"},
-            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
-            {"service":"ts-price-service","dockerfile":"dockerfile/Dockerfile.Ts.Price.Service"},
-            {"service":"ts-rebook-service","dockerfile":"dockerfile/Dockerfile.Ts.Rebook.Service"},
-            {"service":"ts-route-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Plan.Service"},
-            {"service":"ts-route-service","dockerfile":"dockerfile/Dockerfile.Ts.Route.Service"},
-            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"},
-            {"service":"ts-security-service","dockerfile":"dockerfile/Dockerfile.Ts.Security.Service"},
-            {"service":"ts-station-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Food.Service"},
-            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
-            {"service":"ts-train-food-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Food.Service"},
-            {"service":"ts-train-service","dockerfile":"dockerfile/Dockerfile.Ts.Train.Service"},
-            {"service":"ts-travel-plan-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Plan.Service"},
-            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
-            {"service":"ts-travel2-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel2.Service"},
-            {"service":"ts-user-service","dockerfile":"dockerfile/Dockerfile.Ts.User.Service"},
-            {"service":"ts-verification-code-service","dockerfile":"dockerfile/Dockerfile.Ts.Verification.Code.Service"},
-            {"service":"ts-wait-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Wait.Order.Service"}
-          ]
-          EOF
+      - name: Discover images from Dockerfiles
+        id: discover
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          DISPATCH_MATRIX: ${{ inputs.matrix }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, pathlib, re, sys
+
+          event = os.environ["EVENT_NAME"]
+          ref = os.environ["REF"]
+          if event == "workflow_dispatch":
+              scope = os.environ.get("DISPATCH_MATRIX") or "full"
+          elif ref.startswith("refs/tags/v"):
+              scope = "full"
+          else:
+              scope = "full"
+
+          # Smoke subset for workflow_dispatch → core only
+          CORE = {
+              "ts-gateway-service",
+              "ts-auth-service",
+              "ts-preserve-service",
+              "ts-payment-service",
+              "ts-inside-payment-service",
+              "ts-order-service",
+              "ts-travel-service",
+              "ts-basic-service",
+              "ts-station-service",
+              "ts-seat-service",
+              "ts-news-service",
+              "ts-voucher-service",
+          }
+
+          java, standalone = [], []
+          root = pathlib.Path("dockerfile")
+          for path in sorted(root.glob("Dockerfile.Ts.*.Service")):
+              text = path.read_text(encoding="utf-8")
+              rel = str(path).replace("\\", "/")
+              jar = re.search(r'JAR_NAME="(ts-[a-z0-9-]+\.jar)"', text)
+              if jar:
+                  service = jar.group(1)[: -len(".jar")]
+                  java.append({"service": service, "dockerfile": rel, "kind": "java"})
+              else:
+                  # Dockerfile.Ts.Foo.Bar.Service → ts-foo-bar-service
+                  stem = path.name.replace("Dockerfile.", "").rsplit(".Service", 1)[0]
+                  parts = stem.split(".")
+                  if parts[0] != "Ts":
+                      print(f"::error::Unexpected Dockerfile name: {path.name}", file=sys.stderr)
+                      sys.exit(1)
+                  service = "ts-" + "-".join(p.lower() for p in parts[1:]) + "-service"
+                  standalone.append({"service": service, "dockerfile": rel, "kind": "standalone"})
+
+          if scope == "core":
+              java = [x for x in java if x["service"] in CORE]
+              standalone = [x for x in standalone if x["service"] in CORE]
+
+          images = java + standalone
+          if not images:
+              print("::error::Image matrix is empty", file=sys.stderr)
+              sys.exit(1)
+          if scope == "full" and (len(java) < 40 or len(standalone) < 4):
+              print(
+                  f"::error::Full matrix incomplete (java={len(java)} standalone={len(standalone)})",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          def out(key: str, value: str) -> None:
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+                  fh.write(f"{key}={value}\n")
+
+          out("scope", scope)
+          out("java-matrix", json.dumps(java, separators=(",", ":")))
+          out("image-matrix", json.dumps(images, separators=(",", ":")))
+          out("java-count", str(len(java)))
+          print(
+              f"scope={scope} java={len(java)} standalone={len(standalone)} "
+              f"total={len(images)} (+ ts-ui-web)"
           )
-            POLY=$(cat <<'EOF'
-          [
-            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"},
-            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
-            {"service":"ts-avatar-service","dockerfile":"dockerfile/Dockerfile.Ts.Avatar.Service"},
-            {"service":"ts-ticket-office-service","dockerfile":"dockerfile/Dockerfile.Ts.Ticket.Office.Service"}
-          ]
-          EOF
-          )
-          else
-            JAVA=$(cat <<'EOF'
-          [
-            {"service":"ts-gateway-service","dockerfile":"dockerfile/Dockerfile.Ts.Gateway.Service"},
-            {"service":"ts-auth-service","dockerfile":"dockerfile/Dockerfile.Ts.Auth.Service"},
-            {"service":"ts-preserve-service","dockerfile":"dockerfile/Dockerfile.Ts.Preserve.Service"},
-            {"service":"ts-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Payment.Service"},
-            {"service":"ts-inside-payment-service","dockerfile":"dockerfile/Dockerfile.Ts.Inside.Payment.Service"},
-            {"service":"ts-order-service","dockerfile":"dockerfile/Dockerfile.Ts.Order.Service"},
-            {"service":"ts-travel-service","dockerfile":"dockerfile/Dockerfile.Ts.Travel.Service"},
-            {"service":"ts-basic-service","dockerfile":"dockerfile/Dockerfile.Ts.Basic.Service"},
-            {"service":"ts-station-service","dockerfile":"dockerfile/Dockerfile.Ts.Station.Service"},
-            {"service":"ts-seat-service","dockerfile":"dockerfile/Dockerfile.Ts.Seat.Service"}
-          ]
-          EOF
-          )
-            POLY=$(cat <<'EOF'
-          [
-            {"service":"ts-news-service","dockerfile":"dockerfile/Dockerfile.Ts.News.Service"},
-            {"service":"ts-voucher-service","dockerfile":"dockerfile/Dockerfile.Ts.Voucher.Service"}
-          ]
-          EOF
-          )
-          fi
-          # Compact JSON for GITHUB_OUTPUT (single line)
-          echo "java-matrix=$(echo "$JAVA" | jq -c .)" >> "$GITHUB_OUTPUT"
-          echo "polyglot-matrix=$(echo "$POLY" | jq -c .)" >> "$GITHUB_OUTPUT"
+          PY
 
   build-jars:
     name: Build Java artifacts
     needs: plan
+    if: needs.plan.outputs.java-count != '0'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: "17"
@@ -155,195 +180,366 @@ jobs:
         working-directory: ts-token-replacement-service
         run: mvn -B -DskipTests package
 
-      - name: Collect jars into jar/ (fail if any expected jar is missing)
+      - name: Collect jars required by this matrix
+        env:
+          JAVA_MATRIX: ${{ needs.plan.outputs.java-matrix }}
         run: |
           set -euo pipefail
           mkdir -p jar
           missing=0
-          for d in ts-*-service; do
-            [ -f "$d/pom.xml" ] || continue
-            name="$(basename "$d")"
-            jarfile=$(ls "$d"/target/*-1.0.jar 2>/dev/null | grep -v original | head -1 || true)
-            if [ -z "${jarfile:-}" ]; then
+
+          collect_one() {
+            local name="$1"
+            local jarfile=""
+            local candidate=""
+            if [ "$name" = "ts-token-replacement-service" ]; then
+              jarfile="ts-token-replacement-service/target/token-replacement-service.jar"
+              if [ ! -f "$jarfile" ]; then
+                jarfile=""
+                for candidate in ts-token-replacement-service/target/ts-token-replacement-service-*.jar; do
+                  [ -f "$candidate" ] || continue
+                  case "$(basename "$candidate")" in original-*) continue ;; esac
+                  jarfile="$candidate"
+                  break
+                done
+              fi
+            else
+              for candidate in "$name"/target/"${name}"-*.jar "$name"/target/*.jar; do
+                [ -f "$candidate" ] || continue
+                case "$(basename "$candidate")" in original-*) continue ;; esac
+                jarfile="$candidate"
+                break
+              done
+            fi
+            if [ -z "${jarfile:-}" ] || [ ! -f "$jarfile" ]; then
               echo "MISSING jar for $name"
               missing=1
-              continue
+              return 0
             fi
             cp "$jarfile" "jar/${name}.jar"
+            echo "OK $name ← $(basename "$jarfile")"
+          }
+
+          # Token jar is COPY'd into every Java image
+          collect_one ts-token-replacement-service
+          mapfile -t services < <(echo "$JAVA_MATRIX" | jq -r '.[].service')
+          for name in "${services[@]}"; do
+            collect_one "$name"
           done
-          if [ ! -f ts-token-replacement-service/target/token-replacement-service.jar ]; then
-            echo "MISSING ts-token-replacement-service.jar"
-            missing=1
-          else
-            cp ts-token-replacement-service/target/token-replacement-service.jar \
-              jar/ts-token-replacement-service.jar
-          fi
+
           echo "Collected jars:"
           ls -la jar/
           if [ "$missing" -ne 0 ]; then
-            echo "::error::One or more expected jars were missing after mvn package"
+            echo "::error::One or more jars required by the matrix are missing"
             exit 1
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: java-jars
           path: jar/
           retention-days: 1
 
-  docker-publish-java:
+  publish:
     name: Publish ${{ matrix.service }}
     needs: [plan, build-jars]
+    # Always run when plan succeeded; skip jar wait if no Java images
+    if: always() && needs.plan.result == 'success' && (needs.build-jars.result == 'success' || needs.build-jars.result == 'skipped')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
+      # Avoid a 45-job burst against Docker Hub and GitHub cache services.
+      max-parallel: 12
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.java-matrix) }}
+        include: ${{ fromJSON(needs.plan.outputs.image-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: actions/download-artifact@v4
+      - name: Download jars
+        if: matrix.kind == 'java'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: java-jars
           path: jar/
 
       - name: Require jar for this service
+        if: matrix.kind == 'java'
         run: |
           test -f "jar/${{ matrix.service }}.jar" \
             || { echo "::error::Missing jar/${{ matrix.service }}.jar"; exit 1; }
-
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
-          flavor: |
-            latest=auto
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.service }}
-
-  docker-publish-polyglot:
-    name: Publish ${{ matrix.service }} (polyglot)
-    needs: plan
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.plan.outputs.polyglot-matrix) }}
-    steps:
-      - uses: actions/checkout@v4
+          test -f jar/ts-token-replacement-service.jar \
+            || { echo "::error::Missing jar/ts-token-replacement-service.jar"; exit 1; }
 
       - name: Require Dockerfile
         run: test -f "${{ matrix.dockerfile }}" || { echo "::error::Missing ${{ matrix.dockerfile }}"; exit 1; }
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v3
+        if: needs.plan.outputs.push == 'true'
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5
-        id: meta
+      - name: Image namespace (secret stays in this job)
+        id: ns
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DO_PUSH: ${{ needs.plan.outputs.push }}
+        run: |
+          if [ "$DO_PUSH" = "true" ]; then
+            echo "namespace=${HUB_USER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "namespace=local" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve immutable image reference
+        id: image
+        env:
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          SERVICE: ${{ matrix.service }}
+          SHA: ${{ github.sha }}
+        run: echo "ref=${NAMESPACE}/${SERVICE}:sha-${SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: aliases
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME || 'local' }}/${{ matrix.service }}
-          flavor: |
-            latest=auto
+          context: git
+          images: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        id: build
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: ${{ needs.plan.outputs.push == 'true' }}
+          tags: ${{ steps.image.outputs.ref }}
+          labels: ${{ steps.aliases.outputs.labels }}
+          sbom: ${{ needs.plan.outputs.push == 'true' }}
+          provenance: ${{ needs.plan.outputs.push == 'true' && 'mode=max' || 'false' }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=min,scope=${{ matrix.service }}
 
-  docker-publish-ui:
+      - name: Scan pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Install Cosign
+        if: needs.plan.outputs.push == 'true'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign and verify immutable digest
+        if: needs.plan.outputs.push == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+          # Docker Hub does not consistently expose OCI 1.1 referrers. Use
+          # Cosign's OCI 1.0-compatible signature manifest/tag fallback.
+          COSIGN_DOCKER_MEDIA_TYPES: "1"
+        run: |
+          set -euo pipefail
+          cosign sign --yes "${IMAGE}@${DIGEST}"
+          # Docker Hub can take a few seconds to make a just-pushed signature
+          # manifest/tag readable, especially with 12 matrix jobs signing
+          # concurrently — retry verify instead of failing on the first race.
+          for attempt in 1 2 3 4 5; do
+            if cosign verify \
+              --certificate-identity "$CERTIFICATE_IDENTITY" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              "${IMAGE}@${DIGEST}"; then
+              break
+            fi
+            if [ "$attempt" = 5 ]; then
+              echo "::error::cosign verify failed after 5 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
+
+      - name: Promote release aliases
+        if: needs.plan.outputs.push == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE: ${{ steps.ns.outputs.namespace }}/${{ matrix.service }}
+          ALIASES: ${{ steps.aliases.outputs.tags }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r alias; do
+            [ -n "$alias" ] || continue
+            docker buildx imagetools create --tag "$alias" "${IMAGE}@${DIGEST}"
+          done <<< "$ALIASES"
+
+  publish-ui:
     name: Publish ts-ui-web (SPA)
     needs: plan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Log in to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v3
+        if: needs.plan.outputs.push == 'true'
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5
-        id: meta
+      - name: Image namespace (secret stays in this job)
+        id: ns
+        env:
+          HUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DO_PUSH: ${{ needs.plan.outputs.push }}
+        run: |
+          if [ "$DO_PUSH" = "true" ]; then
+            echo "namespace=${HUB_USER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "namespace=local" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve immutable image references
+        id: image
+        env:
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "primary=${NAMESPACE}/ts-ui-web:sha-${SHA}"
+            echo "legacy=${NAMESPACE}/ts-ui-dashboard:sha-${SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: aliases
         with:
-          # Primary: ts-ui-web. Legacy alias ts-ui-dashboard for older compose pulls.
+          context: git
           images: |
-            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-web
-            ${{ vars.DOCKERHUB_USERNAME || 'local' }}/ts-ui-dashboard
-          flavor: |
-            latest=auto
+            ${{ steps.ns.outputs.namespace }}/ts-ui-web
+            ${{ steps.ns.outputs.namespace }}/ts-ui-dashboard
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         id: build
         with:
           context: ts-ui-web
           file: ts-ui-web/Dockerfile
-          push: ${{ vars.DOCKERHUB_USERNAME != '' }}
-          load: ${{ vars.DOCKERHUB_USERNAME == '' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: ${{ needs.plan.outputs.push == 'true' }}
+          load: ${{ needs.plan.outputs.push != 'true' }}
+          tags: |
+            ${{ steps.image.outputs.primary }}
+            ${{ steps.image.outputs.legacy }}
+          labels: ${{ steps.aliases.outputs.labels }}
+          sbom: ${{ needs.plan.outputs.push == 'true' }}
+          provenance: ${{ needs.plan.outputs.push == 'true' && 'mode=max' || 'false' }}
           cache-from: type=gha,scope=ts-ui-web
           cache-to: type=gha,mode=min,scope=ts-ui-web
 
-      - name: Smoke healthcheck (when image is loaded locally)
-        if: ${{ vars.DOCKERHUB_USERNAME == '' }}
+      - name: Scan primary pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/ts-ui-web@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Scan legacy pushed digest
+        if: needs.plan.outputs.push == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.ns.outputs.namespace }}/ts-ui-dashboard@${{ steps.build.outputs.digest }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "1"
+          format: table
+
+      - name: Install Cosign
+        if: needs.plan.outputs.push == 'true'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign and verify immutable digests
+        if: needs.plan.outputs.push == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          NAMESPACE: ${{ steps.ns.outputs.namespace }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+          COSIGN_DOCKER_MEDIA_TYPES: "1"
         run: |
           set -euo pipefail
-          img=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          for image in "${NAMESPACE}/ts-ui-web" "${NAMESPACE}/ts-ui-dashboard"; do
+            cosign sign --yes "${image}@${DIGEST}"
+            # See the matrix job's comment: retry verify to absorb Docker
+            # Hub's signature-manifest propagation lag.
+            for attempt in 1 2 3 4 5; do
+              if cosign verify \
+                --certificate-identity "$CERTIFICATE_IDENTITY" \
+                --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+                "${image}@${DIGEST}"; then
+                break
+              fi
+              if [ "$attempt" = 5 ]; then
+                echo "::error::cosign verify failed after 5 attempts"
+                exit 1
+              fi
+              sleep $((attempt * 5))
+            done
+          done
+
+      - name: Promote release aliases
+        if: needs.plan.outputs.push == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          ALIASES: ${{ steps.aliases.outputs.tags }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r alias; do
+            [ -n "$alias" ] || continue
+            repository="${alias%:*}"
+            docker buildx imagetools create --tag "$alias" "${repository}@${DIGEST}"
+          done <<< "$ALIASES"
+
+      - name: Smoke healthcheck (when image is loaded locally)
+        if: needs.plan.outputs.push != 'true'
+        run: |
+          set -euo pipefail
+          img="${{ steps.image.outputs.primary }}"
           cid=$(docker run -d -p 18080:8080 "$img")
           trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
-          for i in $(seq 1 30); do
+          attempt=1
+          while [ "$attempt" -le 30 ]; do
             if curl -sf --max-time 2 http://127.0.0.1:18080/ >/dev/null; then
               echo "SPA health OK"
               exit 0
             fi
             sleep 2
+            attempt=$((attempt + 1))
           done
           docker logs "$cid" || true
           echo "::error::SPA container failed healthcheck"

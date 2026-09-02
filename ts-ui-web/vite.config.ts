@@ -70,7 +70,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
+      reporter: ['text', 'html', 'lcov'],
       include: ['src/api/**', 'src/stores/**', 'src/utils/**', 'src/composables/**'],
     },
   },
