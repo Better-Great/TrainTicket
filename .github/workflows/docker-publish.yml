@@ -356,10 +356,22 @@ jobs:
         run: |
           set -euo pipefail
           cosign sign --yes "${IMAGE}@${DIGEST}"
-          cosign verify \
-            --certificate-identity "$CERTIFICATE_IDENTITY" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            "${IMAGE}@${DIGEST}"
+          # Docker Hub can take a few seconds to make a just-pushed signature
+          # manifest/tag readable, especially with 12 matrix jobs signing
+          # concurrently — retry verify instead of failing on the first race.
+          for attempt in 1 2 3 4 5; do
+            if cosign verify \
+              --certificate-identity "$CERTIFICATE_IDENTITY" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              "${IMAGE}@${DIGEST}"; then
+              break
+            fi
+            if [ "$attempt" = 5 ]; then
+              echo "::error::cosign verify failed after 5 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
       - name: Promote release aliases
         if: needs.plan.outputs.push == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
@@ -483,10 +495,21 @@ jobs:
           set -euo pipefail
           for image in "${NAMESPACE}/ts-ui-web" "${NAMESPACE}/ts-ui-dashboard"; do
             cosign sign --yes "${image}@${DIGEST}"
-            cosign verify \
-              --certificate-identity "$CERTIFICATE_IDENTITY" \
-              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-              "${image}@${DIGEST}"
+            # See the matrix job's comment: retry verify to absorb Docker
+            # Hub's signature-manifest propagation lag.
+            for attempt in 1 2 3 4 5; do
+              if cosign verify \
+                --certificate-identity "$CERTIFICATE_IDENTITY" \
+                --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+                "${image}@${DIGEST}"; then
+                break
+              fi
+              if [ "$attempt" = 5 ]; then
+                echo "::error::cosign verify failed after 5 attempts"
+                exit 1
+              fi
+              sleep $((attempt * 5))
+            done
           done
 
       - name: Promote release aliases
